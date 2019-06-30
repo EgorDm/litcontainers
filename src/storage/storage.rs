@@ -1,22 +1,9 @@
 use crate::format::*;
-//use crate::iterator_naive::*;
+use crate::storage::SizedStorage;
 use std::fmt::Debug;
+use std::slice;
+use core::borrow::Borrow;
 
-pub trait SizedStorage<R, C>
-	where R: Dim, C: Dim
-{
-	#[inline]
-	fn row_dim(&self) -> R;
-
-	#[inline]
-	fn row_count(&self) -> usize { self.row_dim().value() }
-
-	#[inline]
-	fn col_dim(&self) -> C;
-
-	#[inline]
-	fn col_count(&self) -> usize { self.col_dim().value() }
-}
 
 pub trait Storage<T, R, C>: SizedStorage<R, C> + Debug + Sized// + Ownable
 	where T: Scalar, R: Dim, C: Dim
@@ -46,6 +33,17 @@ pub trait Storage<T, R, C>: SizedStorage<R, C> + Debug + Sized// + Ownable
 	fn col_index(&self, p: usize) -> usize { p * self.col_stride() }
 
 	#[inline]
+	fn index(&self, r: usize, c: usize) -> usize { r * self.row_stride() + c * self.col_stride() }
+
+	#[inline]
+	unsafe fn get_ptr_unchecked(&self, r: usize, c: usize) -> *const T {
+		self.get_index_ptr_unchecked(self.index(r, c))
+	}
+
+	#[inline]
+	unsafe fn get_index_ptr_unchecked(&self, i: usize) -> *const T;
+
+	#[inline]
 	fn get(&self, r: usize, c: usize) -> T {
 		assert!(r < self.row_count(), "Out of range row!");
 		assert!(c < self.col_count(), "Out of range col!");
@@ -54,7 +52,7 @@ pub trait Storage<T, R, C>: SizedStorage<R, C> + Debug + Sized// + Ownable
 
 	#[inline]
 	unsafe fn get_unchecked(&self, r: usize, c: usize) -> T {
-		*self.get_ref_unchecked(r, c)
+		*self.get_ptr_unchecked(r, c)
 	}
 
 	#[inline]
@@ -65,36 +63,35 @@ pub trait Storage<T, R, C>: SizedStorage<R, C> + Debug + Sized// + Ownable
 	}
 
 	#[inline]
-	unsafe fn get_ref_unchecked(&self, r: usize, c: usize) -> &T;
+	unsafe fn get_ref_unchecked(&self, r: usize, c: usize) -> &T { self.get_ptr_unchecked(r, c).as_ref().unwrap() }
+
+	// Row Contigious Access Functions
+	#[inline]
+	fn as_row_slice<'b, 'a: 'b>(&'a self, v: usize) -> &'b [T] {
+		unsafe { slice::from_raw_parts(self.as_row_ptr(v), self.col_count() * self.col_stride()) }
+	}
 
 	#[inline]
-	unsafe fn get_ptr_unchecked(&self, r: usize, c: usize) -> *const T {
-		&*self.get_ref_unchecked(r, c)
+	fn as_row_ptr(&self, v: usize) -> *const T {
+		assert!(v < self.row_count(), "Row out of bounds!");
+		unsafe { self.as_row_ptr_unchecked(v) }
 	}
 
-	fn equal_size<TO, RO, RSO, CO, CSO, SO>(&self, other: &SO) -> bool
-		where TO: Scalar, RO: Dim, RSO: Dim, CO: Dim, CSO: Dim, SO: Storage<TO, RO, CO, RStride=RSO, CStride=CSO>
-	{
-		self.row_count() == other.row_count() && self.col_count() == other.col_count()
+	#[inline]
+	unsafe fn as_row_ptr_unchecked(&self, v: usize) -> *const T { self.get_index_ptr_unchecked(self.row_index(v)) }
+
+	// Col Contigious Access Functions
+	#[inline]
+	fn as_col_slice<'b, 'a: 'b>(&'a self, v: usize) -> &'b [T] {
+		unsafe { slice::from_raw_parts(self.as_col_ptr(v), self.row_count() * self.row_stride()) }
 	}
+
+	#[inline]
+	fn as_col_ptr(&self, v: usize) -> *const T {
+		assert!(v < self.col_count(), "Col out of bounds!");
+		unsafe { self.as_col_ptr_unchecked(v) }
+	}
+
+	#[inline]
+	unsafe fn as_col_ptr_unchecked(&self, v: usize) -> *const T { self.get_index_ptr_unchecked(self.col_index(v)) }
 }
-
-pub trait StorageMut<T, R, C>: Storage<T, R, C>
-	where T: Scalar, R: Dim, C: Dim
-{
-	#[inline]
-	fn get_mut(&mut self, r: usize, c: usize) -> &mut T {
-		assert!(r < self.row_count(), "Out of range row!");
-		assert!(c < self.col_count(), "Out of range col!");
-		unsafe { self.get_mut_unchecked(r, c) }
-	}
-
-	#[inline]
-	unsafe fn get_mut_unchecked(&mut self, r: usize, c: usize) -> &mut T;
-
-	#[inline]
-	unsafe fn get_mut_ptr_unchecked(&mut self, r: usize, c: usize) -> *mut T {
-		&mut *self.get_mut_unchecked(r, c)
-	}
-}
-
