@@ -1,8 +1,8 @@
 use crate::format::*;
 use crate::storage::SizedStorage;
+use crate::iterator::*;
 use std::fmt::Debug;
 use std::slice;
-use core::borrow::Borrow;
 
 
 pub trait Storage<T, R, C>: SizedStorage<R, C> + Debug + Sized// + Ownable
@@ -94,4 +94,9 @@ pub trait Storage<T, R, C>: SizedStorage<R, C> + Debug + Sized// + Ownable
 
 	#[inline]
 	unsafe fn as_col_ptr_unchecked(&self, v: usize) -> *const T { self.get_index_ptr_unchecked(self.col_index(v)) }
+
+	// Iterator
+	fn as_row_iter<'a: 'b, 'b>(&'a self) -> RowIterPtr<'b, T, R, C, Self> { RowIterPtr::new(self) }
+
+	fn as_col_iter<'a: 'b, 'b>(&'a self) -> ColIterPtr<'b, T, R, C, Self> { ColIterPtr::new(self) }
 }

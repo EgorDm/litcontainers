@@ -1,5 +1,6 @@
 use crate::format::*;
 use crate::storage::Storage;
+use crate::iterator::*;
 use std::slice;
 
 pub trait StorageMut<T, R, C>: Storage<T, R, C>
@@ -58,4 +59,9 @@ pub trait StorageMut<T, R, C>: Storage<T, R, C>
 	unsafe fn as_col_mut_ptr_unchecked(&mut self, v: usize) -> *mut T {
 		self.get_index_mut_ptr_unchecked(self.col_index(v))
 	}
+
+	// Iterator
+	fn as_row_mut_iter<'a: 'b, 'b>(&'a mut self) -> RowIterMutPtr<'b, T, R, C, Self> { RowIterMutPtr::new(self) }
+
+	fn as_col_mut_iter<'a: 'b, 'b>(&'a mut self) -> ColIterMutPtr<'b, T, R, C, Self> { ColIterMutPtr::new(self) }
 }
