@@ -8,8 +8,8 @@ use std::marker::PhantomData;
 pub struct Container<T, R, C, S>
 	where T: Scalar, R: Dim, C: Dim, S: StorageMut<T, R, C>
 {
-	pub(super) storage: S,
-	pub(super) _phantoms: PhantomData<(T, R, C, S)>
+	pub(crate) storage: S,
+	pub(crate) _phantoms: PhantomData<(T, R, C, S)>
 }
 
 impl<T, R, C, S> SizedStorage<R, C> for Container<T, R, C, S>

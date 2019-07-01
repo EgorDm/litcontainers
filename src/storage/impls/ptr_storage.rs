@@ -17,6 +17,14 @@ macro_rules! ptr_storage (
 			_phantoms: PhantomData<(&'a ())>
 		}
 
+		impl<'a, T, R, RS, C, CS> $Name<'a, T, R, RS, C, CS>
+			where T: Scalar, R: Dim, RS: Dim, C: Dim, CS: Dim
+		{
+			pub unsafe fn new(data: $Ptr, row_dim: R, col_dim: C, row_stride: RS, col_stride: CS) -> Self {
+				Self { data, row_dim, col_dim, row_stride, col_stride, _phantoms: PhantomData }
+			}
+		}
+
 		impl<'a, T, R, RS, C, CS> SizedStorage<R, C> for $Name<'a, T, R, RS, C, CS>
 			where T: Scalar, R: Dim, RS: Dim, C: Dim, CS: Dim
 		{
@@ -40,16 +48,16 @@ macro_rules! ptr_storage (
 	}
 );
 
-ptr_storage!(PtrStorageBase, *const T);
-ptr_storage!(PtrMutStorageBase, *mut T);
+ptr_storage!(PtrStorage, *const T);
+ptr_storage!(PtrMutStorage, *mut T);
 
-impl<'a, T, R, RS, C, CS> StorageMut<T, R, C> for PtrMutStorageBase<'a, T, R, RS, C, CS>
+impl<'a, T, R, RS, C, CS> StorageMut<T, R, C> for PtrMutStorage<'a, T, R, RS, C, CS>
 	where T: Scalar, R: Dim, RS: Dim, C: Dim, CS: Dim
 {
 	unsafe fn get_index_mut_ptr_unchecked(&mut self, i: usize) -> *mut T { self.data.offset(i as isize) }
 }
 
-impl<'a, T, R, RS, C, CS> Ownable<T, R, C> for PtrStorageBase<'a, T, R, RS, C, CS>
+impl<'a, T, R, RS, C, CS> Ownable<T, R, C> for PtrStorage<'a, T, R, RS, C, CS>
 	where T: Scalar, R: Dim, RS: Dim, C: Dim, CS: Dim
 {
 	type OwnedType = VecStorageRM<T, R, C>;
@@ -62,7 +70,7 @@ impl<'a, T, R, RS, C, CS> Ownable<T, R, C> for PtrStorageBase<'a, T, R, RS, C, C
 	}
 }
 
-impl<'a, T, R, RS, C, CS> Ownable<T, R, C> for PtrMutStorageBase<'a, T, R, RS, C, CS>
+impl<'a, T, R, RS, C, CS> Ownable<T, R, C> for PtrMutStorage<'a, T, R, RS, C, CS>
 	where T: Scalar, R: Dim, RS: Dim, C: Dim, CS: Dim
 {
 	type OwnedType = VecStorageRM<T, R, C>;

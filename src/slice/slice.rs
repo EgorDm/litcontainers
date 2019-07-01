@@ -4,16 +4,29 @@ use crate::iterator::*;
 use std::marker::PhantomData;
 use crate::container::Container;
 
-pub type Slice<'a, T, R, RS, C, CS> = PtrStorageBase<'a, T, R, RS, C, CS>;
-pub type SliceMut<'a, T, R, RS, C, CS> = PtrMutStorageBase<'a, T, R, RS, C, CS>;
+pub type Slice<'a, T, R, RS, C, CS> = SliceBase<'a, T, R, C, PtrStorage<'a, T, R, RS, C, CS>>;
+pub type SliceMut<'a, T, R, RS, C, CS> = SliceBase<'a, T, R, C, PtrMutStorage<'a, T, R, RS, C, CS>>;
+
+pub type RowSlice<'a, T, R, C> = Slice<'a, T, R, C, C, U1>;
+pub type RowSliceMut<'a, T, R, C> = SliceMut<'a, T, R, C, C, U1>;
+pub type ColSlice<'a, T, R, C> = Slice<'a, T, R, U1, C, R>;
+pub type ColSliceMut<'a, T, R, C> = SliceMut<'a, T, R, U1, C, R>;
 
 #[repr(C)]
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
 pub struct SliceBase<'a, T, R, C, S>
 	where T: Scalar, R: Dim, C: Dim, S: Storage<T, R, C>
 {
-	pub(super) storage: S,
-	pub(super) _phantoms: PhantomData<(&'a (), T, R, C, S)>
+	pub(crate) storage: S,
+	pub(crate) _phantoms: PhantomData<(&'a (), T, R, C, S)>
+}
+
+impl<'a, T, R, C, S> SliceBase<'a, T, R, C, S>
+	where T: Scalar, R: Dim, C: Dim, S: Storage<T, R, C>
+{
+	pub fn new(storage: S) -> Self {
+		SliceBase { storage, _phantoms: PhantomData }
+	}
 }
 
 impl<'a, T, R, C, S> SizedStorage<R, C> for SliceBase<'a, T, R, C, S>
