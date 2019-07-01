@@ -1,0 +1,50 @@
+use crate::format::*;
+use std::marker::PhantomData;
+use crate::storage::{SizedStorage, Storage, StorageMut};
+
+macro_rules! ptr_storage (
+	($Name: ident, $Ptr: ty) => {
+		#[repr(C)]
+		#[derive(Eq, Debug, Clone, PartialEq)]
+		pub struct $Name<'a, T, R, RS, C, CS>
+			where T: Scalar, R: Dim, RS: Dim, C: Dim, CS: Dim
+		{
+			data: $Ptr,
+			row_dim: R,
+			col_dim: C,
+			row_stride: RS,
+			col_stride: CS,
+			_phantoms: PhantomData<(&'a ())>
+		}
+
+		impl<'a, T, R, RS, C, CS> SizedStorage<R, C> for $Name<'a, T, R, RS, C, CS>
+			where T: Scalar, R: Dim, RS: Dim, C: Dim, CS: Dim
+		{
+			fn row_dim(&self) -> R { self.row_dim }
+
+			fn col_dim(&self) -> C { self.col_dim }
+		}
+
+		impl<'a, T, R, RS, C, CS> Storage<T, R, C> for $Name<'a, T, R, RS, C, CS>
+			where T: Scalar, R: Dim, RS: Dim, C: Dim, CS: Dim
+		{
+			type RStride = RS;
+			type CStride = CS;
+
+			fn row_stride_dim(&self) -> Self::RStride { self.row_stride }
+
+			fn col_stride_dim(&self) -> Self::CStride { self.col_stride }
+
+			unsafe fn get_index_ptr_unchecked(&self, i: usize) -> *const T { self.data.offset(i as isize) }
+		}
+	}
+);
+
+ptr_storage!(PtrStorageBase, *const T);
+ptr_storage!(PtrMutStorageBase, *mut T);
+
+impl<'a, T, R, RS, C, CS> StorageMut<T, R, C> for PtrMutStorageBase<'a, T, R, RS, C, CS>
+	where T: Scalar, R: Dim, RS: Dim, C: Dim, CS: Dim
+{
+	unsafe fn get_index_mut_ptr_unchecked(&mut self, i: usize) -> *mut T { self.data.offset(i as isize) }
+}
