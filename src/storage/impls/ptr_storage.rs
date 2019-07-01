@@ -1,6 +1,6 @@
 use crate::format::*;
 use std::marker::PhantomData;
-use crate::storage::{SizedStorage, Storage, StorageMut};
+use crate::storage::{SizedStorage, Storage, StorageMut, Ownable, VecStorageRM};
 
 macro_rules! ptr_storage (
 	($Name: ident, $Ptr: ty) => {
@@ -48,3 +48,30 @@ impl<'a, T, R, RS, C, CS> StorageMut<T, R, C> for PtrMutStorageBase<'a, T, R, RS
 {
 	unsafe fn get_index_mut_ptr_unchecked(&mut self, i: usize) -> *mut T { self.data.offset(i as isize) }
 }
+
+impl<'a, T, R, RS, C, CS> Ownable<T, R, C> for PtrStorageBase<'a, T, R, RS, C, CS>
+	where T: Scalar, R: Dim, RS: Dim, C: Dim, CS: Dim
+{
+	type OwnedType = VecStorageRM<T, R, C>;
+
+	fn owned(self) -> Self::OwnedType { self.clone_owned() }
+
+	fn clone_owned(&self) -> Self::OwnedType {
+		let data = self.as_slice().to_vec();
+		Self::OwnedType::new(self.row_dim(), self.col_dim(), data)
+	}
+}
+
+impl<'a, T, R, RS, C, CS> Ownable<T, R, C> for PtrMutStorageBase<'a, T, R, RS, C, CS>
+	where T: Scalar, R: Dim, RS: Dim, C: Dim, CS: Dim
+{
+	type OwnedType = VecStorageRM<T, R, C>;
+
+	fn owned(self) -> Self::OwnedType { self.clone_owned() }
+
+	fn clone_owned(&self) -> Self::OwnedType {
+		let data = self.as_slice().to_vec();
+		Self::OwnedType::new(self.row_dim(), self.col_dim(), data)
+	}
+}
+

@@ -1,23 +1,19 @@
 use crate::format::*;
-use crate::storage::{Storage, SizedStorage, StorageMut, DynamicRowStorage, DynamicColStorage, StorageConstructor};
+use crate::storage::{Storage, SizedStorage, StorageMut, DynamicRowStorage, DynamicColStorage, StorageConstructor, Ownable};
 
-
-pub type VecStorageRM<T, R, C> = VecStorageBaseRM<T, R, C, C, U1>;
 
 #[repr(C)]
 #[derive(Eq, Debug, Clone, PartialEq)]
-pub struct VecStorageBaseRM<T, R, RS, C, CS>
-	where T: Scalar, R: Dim, RS: Dim, C: Dim, CS: Dim
+pub struct VecStorageRM<T, R, C>
+	where T: Scalar, R: Dim, C: Dim
 {
 	data: Vec<T>,
 	row_dim: R,
 	col_dim: C,
-	row_stride: RS,
-	col_stride: CS,
 }
 
-impl<T, R, RS, C, CS> VecStorageBaseRM<T, R, RS, C, CS>
-	where T: Scalar, R: Dim, RS: Dim, C: Dim, CS: Dim
+impl<T, R, C> VecStorageRM<T, R, C>
+	where T: Scalar, R: Dim, C: Dim
 {
 	unsafe fn resize_element_count(&mut self, size: usize) {
 		if self.data.len() > size {
@@ -30,29 +26,29 @@ impl<T, R, RS, C, CS> VecStorageBaseRM<T, R, RS, C, CS>
 	}
 }
 
-impl<T, R, RS, C, CS> SizedStorage<R, C> for VecStorageBaseRM<T, R, RS, C, CS>
-	where T: Scalar, R: Dim, RS: Dim, C: Dim, CS: Dim
+impl<T, R, C> SizedStorage<R, C> for VecStorageRM<T, R, C>
+	where T: Scalar, R: Dim, C: Dim
 {
 	fn row_dim(&self) -> R { self.row_dim }
 
 	fn col_dim(&self) -> C { self.col_dim }
 }
 
-impl<T, R, RS, C, CS> Storage<T, R, C> for VecStorageBaseRM<T, R, RS, C, CS>
-	where T: Scalar, R: Dim, RS: Dim, C: Dim, CS: Dim
+impl<T, R, C> Storage<T, R, C> for VecStorageRM<T, R, C>
+	where T: Scalar, R: Dim, C: Dim
 {
-	type RStride = RS;
-	type CStride = CS;
+	type RStride = C;
+	type CStride = U1;
 
-	fn row_stride_dim(&self) -> Self::RStride { self.row_stride }
+	fn row_stride_dim(&self) -> Self::RStride { self.col_dim() }
 
-	fn col_stride_dim(&self) -> Self::CStride { self.col_stride }
+	fn col_stride_dim(&self) -> Self::CStride { U1 }
 
 	unsafe fn get_index_ptr_unchecked(&self, i: usize) -> *const T { self.data.as_ptr().offset(i as isize) }
 }
 
-impl<T, R, RS, C, CS> StorageMut<T, R, C> for VecStorageBaseRM<T, R, RS, C, CS>
-	where T: Scalar, R: Dim, RS: Dim, C: Dim, CS: Dim
+impl<T, R, C> StorageMut<T, R, C> for VecStorageRM<T, R, C>
+	where T: Scalar, R: Dim, C: Dim
 {
 	unsafe fn get_index_mut_ptr_unchecked(&mut self, i: usize) -> *mut T {
 		self.data.as_mut_ptr().offset(i as isize)
@@ -73,7 +69,6 @@ impl<T, R> DynamicColStorage<T, R> for VecStorageRM<T, R, Dynamic>
 {
 	unsafe fn set_col_count(&mut self, count: usize) {
 		self.col_dim = Dynamic::from(count);
-		self.row_stride = Dynamic::from(count);
 		let mut new_data = vec![T::default(); self.row_count() * count];
 
 		for ri in 0..self.row_count() {
@@ -88,12 +83,27 @@ impl<T, R, C> StorageConstructor<T, R, C> for VecStorageRM<T, R, C>
 	where T: Scalar, R: Dim, C: Dim
 {
 	fn from_value(rows: R, cols: C, value: T) -> Self {
-		VecStorageRM {
-			data: vec![value; rows.value() * cols.value()],
-			row_dim: rows,
-			col_dim: cols,
-			row_stride: cols,
-			col_stride: U1
-		}
+		Self::new(rows, cols, vec![value; rows.value() * cols.value()])
+	}
+}
+
+impl<T, R, C> VecStorageRM<T, R, C>
+	where T: Scalar, R: Dim, C: Dim
+{
+	pub fn new(rows: R, cols: C, data: Vec<T>) -> Self {
+		assert_eq!(rows.value() * cols.value(), data.len(), "Data size must match dimensions!");
+		Self { data, row_dim: rows, col_dim: cols, }
+	}
+}
+
+impl<T, R, C> Ownable<T, R, C> for VecStorageRM<T, R, C>
+	where T: Scalar, R: Dim, C: Dim
+{
+	type OwnedType = Self;
+
+	fn owned(self) -> Self::OwnedType { self }
+
+	fn clone_owned(&self) -> Self::OwnedType {
+		Self::new(self.row_dim(), self.col_dim(), self.data.clone())
 	}
 }

@@ -1,11 +1,11 @@
 use crate::format::*;
-use crate::storage::SizedStorage;
+use crate::storage::{SizedStorage, Ownable};
 use crate::iterator::*;
 use std::fmt::Debug;
 use std::slice;
 
 
-pub trait Storage<T, R, C>: SizedStorage<R, C> + Debug + Sized// + Ownable
+pub trait Storage<T, R, C>: SizedStorage<R, C> + Debug + Sized + Ownable<T, R, C>
 	where T: Scalar, R: Dim, C: Dim
 {
 	type RStride: Dim;
@@ -64,6 +64,11 @@ pub trait Storage<T, R, C>: SizedStorage<R, C> + Debug + Sized// + Ownable
 
 	#[inline]
 	unsafe fn get_ref_unchecked(&self, r: usize, c: usize) -> &T { self.get_ptr_unchecked(r, c).as_ref().unwrap() }
+
+	#[inline]
+	fn as_slice<'b, 'a: 'b>(&'a self) -> &'b [T] {
+		unsafe { slice::from_raw_parts(self.get_index_ptr_unchecked(0), self.row_count() * self.col_count()) }
+	}
 
 	// Row Contigious Access Functions
 	#[inline]
