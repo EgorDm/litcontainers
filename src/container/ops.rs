@@ -166,6 +166,7 @@ impl<T, R, C, S> Neg for Container<T, R, C, S>
 		ret
 	}
 }
+
 impl<T, R, C, S> Neg for &Container<T, R, C, S>
 	where
 		T: Scalar + Neg<Output=T>, R: Dim, C: Dim, S: StorageMut<T, R, C>,
