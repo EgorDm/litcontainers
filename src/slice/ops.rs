@@ -1,8 +1,8 @@
 use crate::format::*;
 use crate::storage::*;
 use super::slice::*;
-use std::ops::{Add, AddAssign, Sub, SubAssign, Mul, MulAssign, Div, DivAssign, Neg};
 use crate::container::Container;
+use std::ops::{Add, AddAssign, Sub, SubAssign, Mul, MulAssign, Div, DivAssign, Neg};
 
 macro_rules! impl_binary_dual_op (
 	($OpTrait: ident, $op_fn: ident, $OpAssignTrait: ident, $op_assign_fn: ident) => {
