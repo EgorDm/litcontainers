@@ -67,7 +67,7 @@ pub trait StorageMut<T, R, C>: Storage<T, R, C>
 	fn as_col_mut_iter<'a: 'b, 'b>(&'a mut self) -> ColIterMutPtr<'b, T, R, C, Self> { ColIterMutPtr::new(self) }
 
 	// Slice
-	fn slice_rows<'b: 'c, 'c, RR: SliceRange<R>>(&'b mut self, range: RR) -> SliceMut<'c, T, RR::Size, Self::RStride, C, Self::CStride> {
+	fn slice_rows_mut<'b: 'c, 'c, RR: SliceRange<R>>(&'b mut self, range: RR) -> SliceMut<'c, T, RR::Size, Self::RStride, C, Self::CStride> {
 		assert!(range.end() <= self.row_count(), "Slice is out of bounds!");
 		//TODO: cound check
 		SliceMut::new(unsafe { PtrMutStorage::new(
@@ -79,7 +79,7 @@ pub trait StorageMut<T, R, C>: Storage<T, R, C>
 		)})
 	}
 
-	fn slice_cols<'b: 'c, 'c, CC: SliceRange<C>>(&'b mut self, range: CC) -> SliceMut<'c, T, R, Self::RStride, CC::Size, Self::CStride> {
+	fn slice_cols_mut<'b: 'c, 'c, CC: SliceRange<C>>(&'b mut self, range: CC) -> SliceMut<'c, T, R, Self::RStride, CC::Size, Self::CStride> {
 		assert!(range.end() <= self.col_count(), "Slice is out of bounds!");
 		SliceMut::new(unsafe { PtrMutStorage::new(
 			self.as_col_mut_ptr(range.begin()),

@@ -1,6 +1,5 @@
 use crate::format::*;
 use crate::storage::*;
-use crate::iterator::*;
 use std::marker::PhantomData;
 
 #[repr(C)]
