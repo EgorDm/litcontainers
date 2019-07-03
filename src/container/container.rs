@@ -74,3 +74,19 @@ impl<T, R, C, S> StorageConstructor<T, R, C> for Container<T, R, C, S>
 		}
 	}
 }
+
+impl<T, C, S> DynamicRowStorage<T, C> for Container<T, Dynamic, C, S>
+	where T: Scalar, C: Dim, S: StorageMut<T, Dynamic, C> + DynamicRowStorage<T, C>
+{
+	fn set_row_count(&mut self, count: usize) {
+		self.storage.set_row_count(count)
+	}
+}
+
+impl<T, R, S> DynamicColStorage<T, R> for Container<T, R, Dynamic, S>
+	where T: Scalar, R: Dim, S: StorageMut<T, R, Dynamic> + DynamicColStorage<T, R>
+{
+	fn set_col_count(&mut self, count: usize) {
+		self.storage.set_col_count(count)
+	}
+}

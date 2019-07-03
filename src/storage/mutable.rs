@@ -30,7 +30,8 @@ pub trait StorageMut<T, R, C>: Storage<T, R, C>
 	// Row Contigious Access Functions
 	#[inline]
 	fn as_row_mut_slice<'b, 'a: 'b>(&'a mut self, v: usize) -> &'b mut [T] {
-		unsafe { slice::from_raw_parts_mut(self.as_row_mut_ptr(v), self.col_count() * self.col_stride()) }
+		let size = self.index(v, self.col_count() - 1) - self.index(v, 0) + 1;
+		unsafe { slice::from_raw_parts_mut(self.as_row_mut_ptr(v), size) }
 	}
 
 	#[inline]
@@ -47,7 +48,8 @@ pub trait StorageMut<T, R, C>: Storage<T, R, C>
 	// Col Contigious Access Functions
 	#[inline]
 	fn as_col_mut_slice<'b, 'a: 'b>(&'a mut self, v: usize) -> &'b mut [T] {
-		unsafe { slice::from_raw_parts_mut(self.as_col_mut_ptr(v), self.row_count() * self.row_stride()) }
+		let size = self.index(self.row_count() - 1, v) - self.index(0, v) + 1;
+		unsafe { slice::from_raw_parts_mut(self.as_col_mut_ptr(v), size) }
 	}
 
 	#[inline]

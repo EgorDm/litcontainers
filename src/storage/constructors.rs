@@ -14,6 +14,14 @@ pub trait StorageConstructor<T, R, C>: StorageMut<T, R, C>
 		Self::from_value(rows, cols, T::default())
 	}
 
+	// Crate a container from a vector containing the data. Data must be stored row wise.
+	fn from_vec(rows: R, cols: C, data: Vec<T>) -> Self {
+		assert_eq!(rows.value() * cols.value(), data.len());
+		let mut ret = Self::zeros(rows, cols);
+		for (o, i) in ret.as_iter_mut().zip(data) { *o = i; }
+		ret
+	}
+
 	/// Creates a container with all rows containing regularly spaced values from start to end.
 	fn linspace_rows(rows: R, cols: C, start: T, end: T) -> Self {
 		let interval = (end - start) / T::from_usize(cols.value() - 1);
