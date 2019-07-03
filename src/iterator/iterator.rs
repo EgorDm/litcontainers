@@ -7,7 +7,7 @@ macro_rules! iter_ptr_impl {
 	(
 		struct $Name: ident : $StorageType: ident as $StorageRef: ty {
 			$ptr_fn: ident -> $ElementPtr: ty as $ElementRet: ty,
-			primary: $prim_size_fn: ident,
+			primary: $prim_size_fn: ident, $span_fn: ident,
 			secondary: $scnd_size_fn: ident, $scnd_stride_fn: ident
 		} // TODO: use unsafe $ptr_fn which is safe since we stay within the bounds
 	) => {
@@ -30,8 +30,8 @@ macro_rules! iter_ptr_impl {
 			}
 
 			pub fn from_range(storage: $StorageRef, cursor: usize, cursor_end: usize) -> Self {
-				let ptr = storage.$ptr_fn(0);
-				let ptr_end = unsafe { ptr.offset((storage.row_count() * storage.col_count()) as isize) };
+				let ptr = storage.$ptr_fn(cursor);
+				let ptr_end = unsafe { ptr.offset(storage.$span_fn(cursor) as isize) };
 				Self {
 					storage,
 					ptr,
@@ -59,7 +59,7 @@ macro_rules! iter_ptr_impl {
 				} else if self.cursor < self.cursor_end - 1 {
 					self.cursor += 1;
 					self.ptr = self.storage.$ptr_fn(self.cursor);
-					let size = self.storage.$scnd_size_fn() * self.storage.$scnd_stride_fn();
+					let size = self.storage.$span_fn(self.cursor);
 					self.ptr_end = unsafe { self.ptr.offset(size as isize)};
 					self.next()
 				} else {
@@ -73,7 +73,7 @@ macro_rules! iter_ptr_impl {
 iter_ptr_impl! {
 	struct RowIterPtr : Storage as &'a S {
 		as_row_ptr -> *const T as &'a T,
-		primary: row_count,
+		primary: row_count, row_index_span,
 		secondary: col_count, col_stride
 	}
 }
@@ -81,7 +81,7 @@ iter_ptr_impl! {
 iter_ptr_impl! {
 	struct RowIterMutPtr : StorageMut as &'a mut S {
 		as_row_mut_ptr -> *mut T as &'a mut T,
-		primary: row_count,
+		primary: row_count, row_index_span,
 		secondary: col_count, col_stride
 	}
 }
@@ -89,7 +89,7 @@ iter_ptr_impl! {
 iter_ptr_impl! {
 	struct ColIterPtr : Storage as &'a S {
 		as_col_ptr -> *const T as &'a T,
-		primary: col_count,
+		primary: col_count, col_index_span,
 		secondary: row_count, row_stride
 	}
 }
@@ -97,7 +97,7 @@ iter_ptr_impl! {
 iter_ptr_impl! {
 	struct ColIterMutPtr : StorageMut as &'a mut S {
 		as_col_mut_ptr -> *mut T as &'a mut T,
-		primary: col_count,
+		primary: col_count, col_index_span,
 		secondary: row_count, row_stride
 	}
 }

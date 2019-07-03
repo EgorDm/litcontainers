@@ -73,8 +73,13 @@ pub trait Storage<T, R, C>: SizedStorage<R, C> + Debug + Sized + Ownable<T, R, C
 
 	// Row Contigious Access Functions
 	#[inline]
+	fn row_index_span(&self, row: usize) -> usize {
+		self.index(row, self.col_count() - 1) - self.index(row, 0) + 1
+	}
+
+	#[inline]
 	fn as_row_slice<'b, 'a: 'b>(&'a self, v: usize) -> &'b [T] {
-		let size = self.index(v, self.col_count() - 1) - self.index(v, 0) + 1;
+		let size = self.row_index_span( v);
 		unsafe { slice::from_raw_parts(self.as_row_ptr(v), size) }
 	}
 
@@ -89,8 +94,13 @@ pub trait Storage<T, R, C>: SizedStorage<R, C> + Debug + Sized + Ownable<T, R, C
 
 	// Col Contigious Access Functions
 	#[inline]
+	fn col_index_span(&self, col: usize) -> usize {
+		self.index(self.row_count() - 1, col) - self.index(0, col) + 1
+	}
+
+	#[inline]
 	fn as_col_slice<'b, 'a: 'b>(&'a self, v: usize) -> &'b [T] {
-		let size = self.index(self.row_count() - 1, v) - self.index(0, v) + 1;
+		let size = self.col_index_span(v);
 		unsafe { slice::from_raw_parts(self.as_col_ptr(v), size) }
 	}
 

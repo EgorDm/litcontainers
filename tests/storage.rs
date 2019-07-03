@@ -62,3 +62,14 @@ fn mutable() {
 	*s.get_mut(1, 1) = 1337.;
 	assert_eq!(s.get(1, 1), 1337.);
 }
+
+#[test]
+fn slice() {
+	let s = mock_container();
+	assert_eq!(s.slice_rows(1..3).row_count(), 2);
+	assert_eq!(s.slice_rows(1..3).as_slice(), [3., 4., 5., 6.]);
+	assert_eq!(s.slice_cols(1).col_count(), 1);
+	assert_eq!(s.slice_cols(1).as_iter().cloned().collect::<Vec<_>>(), vec![2., 4., 6.]);
+	assert_eq!(s.slice_rows(1..3).slice_cols(1).as_iter().cloned().collect::<Vec<_>>(), vec![4., 6.]);
+	assert_eq!(s.slice_rows(1..3).slice_cols(1).slice_rows(1).as_iter().cloned().collect::<Vec<_>>(), vec![6.]);
+}

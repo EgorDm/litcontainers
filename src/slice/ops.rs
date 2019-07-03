@@ -7,6 +7,23 @@ use std::ops::{Add, AddAssign, Sub, SubAssign, Mul, MulAssign, Div, DivAssign, N
 macro_rules! impl_binary_dual_op (
 	($OpTrait: ident, $op_fn: ident, $OpAssignTrait: ident, $op_assign_fn: ident) => {
 		// Add conatiner
+		impl<'a, T, R, C, S, TR, RR, CR, SR> $OpTrait<&Container<TR, RR, CR, SR>> for SliceBase<'a, T, R, C, S>
+			where
+				T: Scalar + $OpAssignTrait<TR>, R: Dim, C: Dim, S: Storage<T, R, C>,
+				TR: Scalar, RR: Dim, CR: Dim, SR: StorageMut<TR, RR, CR>
+		{
+			type Output = Container<T, R, C, S::OwnedType>;
+
+			fn $op_fn(self, rhs: &Container<TR, RR, CR, SR>) -> Self::Output {
+				assert!(self.equal_size(rhs), "Rhs must have the same size!");
+				let mut ret = self.owned();
+				for (o, s) in ret.as_row_mut_iter().zip(rhs.as_row_iter()) {
+					o.$op_assign_fn(*s);
+				}
+				ret
+			}
+		}
+
 		impl<'a, T, R, C, S, TR, RR, CR, SR> $OpTrait<&Container<TR, RR, CR, SR>> for &SliceBase<'a, T, R, C, S>
 			where
 				T: Scalar + $OpAssignTrait<TR>, R: Dim, C: Dim, S: Storage<T, R, C>,
@@ -25,6 +42,23 @@ macro_rules! impl_binary_dual_op (
 		}
 
 		// Add slice
+		impl<'a, 'b, T, R, C, S, TR, RR, CR, SR> $OpTrait<&SliceBase<'a, TR, RR, CR, SR>> for SliceBase<'b, T, R, C, S>
+			where
+				T: Scalar + $OpAssignTrait<TR>, R: Dim, C: Dim, S: Storage<T, R, C>,
+				TR: Scalar, RR: Dim, CR: Dim, SR: Storage<TR, RR, CR>
+		{
+			type Output = Container<T, R, C, S::OwnedType>;
+
+			fn $op_fn(self, rhs: &SliceBase<'a, TR, RR, CR, SR>) -> Self::Output {
+				assert!(self.equal_size(rhs), "Rhs must have the same size!");
+				let mut ret = self.owned();
+				for (o, s) in ret.as_row_mut_iter().zip(rhs.as_row_iter()) {
+					o.$op_assign_fn(*s);
+				}
+				ret
+			}
+		}
+
 		impl<'a, 'b, T, R, C, S, TR, RR, CR, SR> $OpTrait<&SliceBase<'a, TR, RR, CR, SR>> for &SliceBase<'b, T, R, C, S>
 			where
 				T: Scalar + $OpAssignTrait<TR>, R: Dim, C: Dim, S: Storage<T, R, C>,
@@ -43,6 +77,20 @@ macro_rules! impl_binary_dual_op (
 		}
 
 		// Add scalar
+		impl<'a, T, R, C, S, TR> $OpTrait<TR> for SliceBase<'a, T, R, C, S>
+			where
+				T: Scalar, R: Dim, C: Dim, S: Storage<T, R, C>,
+				TR: Scalar, T: $OpAssignTrait<TR>
+		{
+			type Output = Container<T, R, C, S::OwnedType>;
+
+			fn $op_fn(self, rhs: TR) -> Self::Output {
+				let mut ret = self.owned();
+				for o in ret.as_row_mut_iter() { o.$op_assign_fn(rhs); }
+				ret
+			}
+		}
+
 		impl<'a, T, R, C, S, TR> $OpTrait<TR> for &SliceBase<'a, T, R, C, S>
 			where
 				T: Scalar, R: Dim, C: Dim, S: Storage<T, R, C>,
