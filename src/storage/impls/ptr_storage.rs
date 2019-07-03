@@ -83,3 +83,30 @@ impl<'a, T, R, RS, C, CS> Ownable<T, R, C> for PtrMutStorage<'a, T, R, RS, C, CS
 	}
 }
 
+impl<'a, T, RS, C, CS> PtrStorage<'a, T, Dynamic, RS, C, CS>
+	where T: Scalar, RS: Dim, C: Dim, CS: Dim
+{
+	pub fn offset_row(&mut self, v: usize) {
+		assert!(v < self.row_count(), "Offset is out of bounds");
+		unsafe { self.offset_row_unchecked(v) };
+	}
+
+	pub unsafe fn offset_row_unchecked(&mut self, v: usize) {
+		self.data = self.data.offset((v * self.row_stride()) as isize);
+		self.row_dim = Dynamic::from(self.row_count() - v);
+	}
+}
+
+impl<'a, T, R, RS, CS> PtrStorage<'a, T, R, RS, Dynamic, CS>
+	where T: Scalar, R: Dim, RS: Dim, CS: Dim
+{
+	pub fn offset_col(&mut self, v: usize) {
+		assert!(v < self.col_count(), "Offset is out of bounds");
+		unsafe { self.offset_col_unchecked(v) };
+	}
+
+	pub unsafe fn offset_col_unchecked(&mut self, v: usize) {
+		self.data = self.data.offset((v * self.col_stride()) as isize);
+		self.col_dim = Dynamic::from(self.col_count() - v);
+	}
+}

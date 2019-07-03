@@ -2,6 +2,9 @@ use crate::format::*;
 use crate::storage::*;
 use std::marker::PhantomData;
 
+pub type ContainerCM<T, R, C> = Container<T, R, C, VecStorageCM<T, R, C>>;
+pub type ContainerRM<T, R, C> = Container<T, R, C, VecStorageRM<T, R, C>>;
+
 #[repr(C)]
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
 pub struct Container<T, R, C, S>
