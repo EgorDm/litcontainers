@@ -102,6 +102,8 @@ pub trait Storage<T, R, C>: SizedStorage<R, C> + Debug + Sized + Ownable<T, R, C
 	unsafe fn as_col_ptr_unchecked(&self, v: usize) -> *const T { self.get_index_ptr_unchecked(self.col_index(v)) }
 
 	// Iterator
+	fn as_iter<'a: 'b, 'b>(&'a self) -> RowIterPtr<'b, T, R, C, Self> { self.as_row_iter() }
+
 	fn as_row_iter<'a: 'b, 'b>(&'a self) -> RowIterPtr<'b, T, R, C, Self> { RowIterPtr::new(self) }
 
 	fn as_row_slice_iter<'a: 'b, 'b, RR: SliceRange<R>>(&'a self, range: RR) -> RowIterPtr<'b, T, R, C, Self> {
@@ -115,6 +117,7 @@ pub trait Storage<T, R, C>: SizedStorage<R, C> + Debug + Sized + Ownable<T, R, C
 	}
 
 	// Slice
+	#[inline]
 	fn slice_rows<'b: 'c, 'c, RR: SliceRange<R>>(&'b self, range: RR) -> Slice<'c, T, RR::Size, Self::RStride, C, Self::CStride> {
 		assert!(range.end() <= self.row_count(), "Slice is out of bounds!");
 		//TODO: cound check
@@ -129,6 +132,7 @@ pub trait Storage<T, R, C>: SizedStorage<R, C> + Debug + Sized + Ownable<T, R, C
 		})
 	}
 
+	#[inline]
 	fn slice_cols<'b: 'c, 'c, CC: SliceRange<C>>(&'b self, range: CC) -> Slice<'c, T, R, Self::RStride, CC::Size, Self::CStride> {
 		assert!(range.end() <= self.col_count(), "Slice is out of bounds!");
 		Slice::new(unsafe {

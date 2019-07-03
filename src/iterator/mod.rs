@@ -1,3 +1,3 @@
 pub mod iterator;
 
-pub use iterator::*;
+#[doc(inline)] pub use iterator::*;

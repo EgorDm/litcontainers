@@ -2,9 +2,12 @@ use crate::format::*;
 use crate::storage::*;
 use std::marker::PhantomData;
 
+/// Container storing scalar values in a col major order
 pub type ContainerCM<T, R, C> = Container<T, R, C, VecStorageCM<T, R, C>>;
+/// Container storing scalar values in a row major order
 pub type ContainerRM<T, R, C> = Container<T, R, C, VecStorageRM<T, R, C>>;
 
+// Container storing scalar values. Container is always the owner of its data.
 #[repr(C)]
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
 pub struct Container<T, R, C, S>

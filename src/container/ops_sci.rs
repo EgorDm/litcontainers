@@ -1,7 +1,7 @@
 use crate::format::*;
 use crate::storage::*;
+use crate::ops::*;
 use super::container::*;
-use super::ops_sci_def::*;
 use num_traits::Float;
 
 macro_rules! impl_unary_float_op (

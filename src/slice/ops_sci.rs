@@ -1,10 +1,9 @@
 use crate::format::*;
 use crate::storage::*;
+use crate::ops::*;
 use super::slice::*;
 use crate::container::Container;
-use crate::container::ops_sci_def::*;
 use num_traits::Float;
-
 
 macro_rules! impl_unary_float_op (
 	($OpTrait: ident, $op_fn: ident, $OpAssignTrait: ident, $op_assign_fn: ident) => {

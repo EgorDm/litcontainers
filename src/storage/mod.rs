@@ -6,10 +6,10 @@ pub mod constructors;
 pub mod impls;
 pub mod ownable;
 
-pub use sized::*;
-pub use storage::*;
-pub use mutable::*;
-pub use dynamic::*;
-pub use constructors::*;
-pub use impls::*;
-pub use ownable::*;
+#[doc(inline)] pub use sized::*;
+#[doc(inline)] pub use storage::*;
+#[doc(inline)] pub use mutable::*;
+#[doc(inline)] pub use dynamic::*;
+#[doc(inline)] pub use constructors::*;
+#[doc(inline)] pub use impls::*;
+#[doc(inline)] pub use ownable::*;

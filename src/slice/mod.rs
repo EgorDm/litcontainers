@@ -3,7 +3,7 @@ pub mod range;
 pub mod ops;
 pub mod ops_sci;
 
-pub use slice::*;
-pub use range::*;
-pub use ops::*;
-pub use ops_sci::*;
+#[doc(inline)] pub use slice::*;
+#[doc(inline)] pub use range::*;
+#[doc(inline)] pub use ops::*;
+#[doc(inline)] pub use ops_sci::*;

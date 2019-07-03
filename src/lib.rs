@@ -3,8 +3,20 @@ pub mod storage;
 pub mod iterator;
 pub mod container;
 pub mod slice;
+pub mod ops;
 
+pub use format::*;
+pub use storage::*;
+pub use iterator::*;
+pub use container::*;
+pub use slice::*;
+pub use ops::*;
 
+// Documentation inlines
+#[doc(inline)] pub use format::{Scalar};
+#[doc(inline)] pub use storage::{Storage, StorageMut, StorageConstructor, Ownable, SizedStorage, DynamicColStorage, DynamicRowStorage};
+#[doc(inline)] pub use container::{Container, ContainerCM, ContainerRM};
+#[doc(inline)] pub use slice::{Slice, SliceMut};
 
 
 #[cfg(test)]

@@ -4,14 +4,17 @@ use crate::format::{Dim, Scalar};
 pub trait StorageConstructor<T, R, C>: StorageMut<T, R, C>
 	where T: Scalar, R: Dim, C: Dim
 {
+	/// Creates a container with all elements set to given value.
 	#[inline]
 	fn from_value(rows: R, cols: C, value: T) -> Self;
 
+	/// Creates a container with all elements set to `0`.
 	#[inline]
 	fn zeros(rows: R, cols: C) -> Self {
 		Self::from_value(rows, cols, T::default())
 	}
 
+	/// Creates a container with all rows containing regularly spaced values from start to end.
 	fn linspace_rows(rows: R, cols: C, start: T, end: T) -> Self {
 		let interval = (end - start) / T::from_usize(cols.value() - 1);
 		let mut ret = Self::zeros(rows, cols);
@@ -26,6 +29,7 @@ pub trait StorageConstructor<T, R, C>: StorageMut<T, R, C>
 		ret
 	}
 
+	/// Creates a container with all cols containing regularly spaced values from start to end.
 	fn linspace_cols(rows: R, cols: C, start: T, end: T) -> Self {
 		let interval = (end - start) / T::from_usize(rows.value() - 1);
 		let mut ret = Self::zeros(rows, cols);
@@ -40,10 +44,12 @@ pub trait StorageConstructor<T, R, C>: StorageMut<T, R, C>
 		ret
 	}
 
+	/// Creates a container with all rows containing regularly spaced values from start to start + col_count.
 	fn regspace_rows(rows: R, cols: C, start: T) -> Self {
 		Self::regspace_step_rows(rows, cols, start, T::from(1).unwrap())
 	}
 
+	/// Creates a container with all rows containing regularly spaced values from start to start + col_count * step.
 	fn regspace_step_rows(rows: R, cols: C, start: T, step: T) -> Self {
 		let mut ret = Self::zeros(rows, cols);
 		for c in 0..rows.value() {
@@ -56,10 +62,12 @@ pub trait StorageConstructor<T, R, C>: StorageMut<T, R, C>
 		ret
 	}
 
+	/// Creates a container with all cols containing regularly spaced values from start to start + row_count.
 	fn regspace_cols(rows: R, cols: C, start: T) -> Self {
 		Self::regspace_step_cols(rows, cols, start, T::from(1).unwrap())
 	}
 
+	/// Creates a container with all cols containing regularly spaced values from start to start + row_count * step.
 	fn regspace_step_cols(rows: R, cols: C, start: T, step: T) -> Self {
 		let mut ret = Self::zeros(rows, cols);
 		for c in 0..cols.value() {

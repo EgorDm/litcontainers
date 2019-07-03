@@ -48,6 +48,7 @@ macro_rules! iter_ptr_impl {
 		{
 			type Item = $ElementRet;
 
+			#[inline]
 			fn next(&mut self) -> Option<Self::Item> {
 				if self.ptr < self.ptr_end {
 					let old = self.ptr;

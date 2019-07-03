@@ -3,7 +3,9 @@ use crate::storage::*;
 use std::marker::PhantomData;
 use crate::container::Container;
 
+/// Slice containing references to scalar values.
 pub type Slice<'a, T, R, RS, C, CS> = SliceBase<'a, T, R, C, PtrStorage<'a, T, R, RS, C, CS>>;
+/// Slice containing mutable references to scalar values.
 pub type SliceMut<'a, T, R, RS, C, CS> = SliceBase<'a, T, R, C, PtrMutStorage<'a, T, R, RS, C, CS>>;
 
 pub type RowSlice<'a, T, R, C> = Slice<'a, T, R, C, C, U1>;
@@ -11,6 +13,7 @@ pub type RowSliceMut<'a, T, R, C> = SliceMut<'a, T, R, C, C, U1>;
 pub type ColSlice<'a, T, R, C> = Slice<'a, T, R, U1, C, R>;
 pub type ColSliceMut<'a, T, R, C> = SliceMut<'a, T, R, U1, C, R>;
 
+/// Container containing references to scalar values.
 #[repr(C)]
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
 pub struct SliceBase<'a, T, R, C, S>
