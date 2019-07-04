@@ -23,7 +23,7 @@ fn iter() {
 
 #[test]
 fn size() {
-	let mut s = mock_container();
+	let s = mock_container();
 	assert_eq!(s.as_row_slice_iter(1).size_hint().0, s.col_count());
 	assert_eq!(s.as_row_slice_iter(0..2).size_hint().0, 2 * s.col_count());
 	assert_eq!(s.as_col_slice_iter(1).size_hint().0, s.row_count());
