@@ -14,6 +14,11 @@ pub struct VecStorageCM<T, R, C>
 impl<T, R, C> VecStorageCM<T, R, C>
 	where T: Scalar, R: Dim, C: Dim
 {
+	pub fn new(rows: R, cols: C, data: Vec<T>) -> Self {
+		assert_eq!(rows.value() * cols.value(), data.len(), "Data size must match dimensions!");
+		Self { data, row_dim: rows, col_dim: cols }
+	}
+
 	unsafe fn resize_element_count(&mut self, size: usize) {
 		if self.data.len() > size {
 			self.data.resize(size, T::default());
@@ -79,20 +84,11 @@ impl<T, C> DynamicRowStorage<T, C> for VecStorageCM<T, Dynamic, C>
 	}
 }
 
-impl<T, R> StorageConstructor<T, R, Dynamic> for VecStorageCM<T, R, Dynamic>
-	where T: Scalar, R: Dim
-{
-	fn from_value(rows: R, cols: Dynamic, value: T) -> Self {
-		Self::new(rows, cols, vec![value; rows.value() * cols.value()])
-	}
-}
-
-impl<T, R, C> VecStorageCM<T, R, C>
+impl<T, R, C> StorageConstructor<T, R, C> for VecStorageCM<T, R, C>
 	where T: Scalar, R: Dim, C: Dim
 {
-	pub fn new(rows: R, cols: C, data: Vec<T>) -> Self {
-		assert_eq!(rows.value() * cols.value(), data.len(), "Data size must match dimensions!");
-		Self { data, row_dim: rows, col_dim: cols }
+	fn from_value(rows: R, cols: C, value: T) -> Self {
+		Self::new(rows, cols, vec![value; rows.value() * cols.value()])
 	}
 }
 

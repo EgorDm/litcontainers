@@ -4,6 +4,7 @@ pub mod iterator;
 pub mod container;
 pub mod slice;
 pub mod ops;
+#[macro_use] pub mod macros;
 
 pub use format::*;
 pub use storage::*;

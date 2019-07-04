@@ -37,11 +37,11 @@ pub trait StorageMut<T, R, C>: Storage<T, R, C>
 	#[inline]
 	fn as_row_mut_ptr(&mut self, v: usize) -> *mut T {
 		assert!(v < self.row_count(), "Row out of bounds!");
-		unsafe { self.as_row_mut_ptr_uch(v) }
+		unsafe { self.as_row_mut_ptr_unchecked(v) }
 	}
 
 	#[inline]
-	unsafe fn as_row_mut_ptr_uch(&mut self, v: usize) -> *mut T {
+	unsafe fn as_row_mut_ptr_unchecked(&mut self, v: usize) -> *mut T {
 		self.get_index_mut_ptr_unchecked(self.row_index(v))
 	}
 

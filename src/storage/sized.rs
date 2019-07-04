@@ -21,5 +21,4 @@ pub trait SizedStorage<R, C>
 	{
 		self.row_count() == other.row_count() && self.col_count() == other.col_count()
 	}
-
 }

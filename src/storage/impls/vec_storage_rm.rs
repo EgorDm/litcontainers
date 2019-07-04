@@ -15,6 +15,11 @@ pub struct VecStorageRM<T, R, C>
 impl<T, R, C> VecStorageRM<T, R, C>
 	where T: Scalar, R: Dim, C: Dim
 {
+	pub fn from_data(rows: R, cols: C, data: Vec<T>) -> Self {
+		assert_eq!(rows.value() * cols.value(), data.len(), "Data size must match dimensions!");
+		Self { data, row_dim: rows, col_dim: cols, }
+	}
+
 	unsafe fn resize_element_count(&mut self, size: usize) {
 		if self.data.len() > size {
 			self.data.resize(size, T::default());
@@ -84,16 +89,7 @@ impl<T, R, C> StorageConstructor<T, R, C> for VecStorageRM<T, R, C>
 	where T: Scalar, R: Dim, C: Dim
 {
 	fn from_value(rows: R, cols: C, value: T) -> Self {
-		Self::new(rows, cols, vec![value; rows.value() * cols.value()])
-	}
-}
-
-impl<T, R, C> VecStorageRM<T, R, C>
-	where T: Scalar, R: Dim, C: Dim
-{
-	pub fn new(rows: R, cols: C, data: Vec<T>) -> Self {
-		assert_eq!(rows.value() * cols.value(), data.len(), "Data size must match dimensions!");
-		Self { data, row_dim: rows, col_dim: cols, }
+		Self::from_data(rows, cols, vec![value; rows.value() * cols.value()])
 	}
 }
 
@@ -105,6 +101,6 @@ impl<T, R, C> Ownable<T, R, C> for VecStorageRM<T, R, C>
 	fn owned(self) -> Self::OwnedType { self }
 
 	fn clone_owned(&self) -> Self::OwnedType {
-		Self::new(self.row_dim(), self.col_dim(), self.data.clone())
+		Self::from_data(self.row_dim(), self.col_dim(), self.data.clone())
 	}
 }

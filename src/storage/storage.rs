@@ -5,7 +5,7 @@ use std::fmt::Debug;
 use std::slice;
 use crate::slice::{SliceRange, Slice};
 
-
+// TODO: implement proper equality?
 pub trait Storage<T, R, C>: SizedStorage<R, C> + Debug + Sized + Ownable<T, R, C>
 	where T: Scalar, R: Dim, C: Dim
 {

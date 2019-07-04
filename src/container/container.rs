@@ -17,6 +17,15 @@ pub struct Container<T, R, C, S>
 	pub(crate) _phantoms: PhantomData<(T, R, C, S)>
 }
 
+impl<T, R, C, S> Container<T, R, C, S> where T: Scalar, R: Dim, C: Dim, S: StorageMut<T, R, C> {
+	pub fn new(storage: S) -> Self {
+		Container {
+			storage,
+			_phantoms: PhantomData
+		}
+	}
+}
+
 impl<T, R, C, S> SizedStorage<R, C> for Container<T, R, C, S>
 	where T: Scalar, R: Dim, C: Dim, S: StorageMut<T, R, C>
 {
@@ -50,17 +59,11 @@ impl<T, R, C, S> Ownable<T, R, C> for Container<T, R, C, S>
 	type OwnedType = Container<T, R, C, S::OwnedType>;
 
 	fn owned(self) -> Self::OwnedType {
-		Container {
-			storage: self.storage.owned(),
-			_phantoms: PhantomData
-		}
+		Self::OwnedType::new(self.storage.owned())
 	}
 
 	fn clone_owned(&self) -> Self::OwnedType {
-		Container {
-			storage: self.storage.clone_owned(),
-			_phantoms: PhantomData
-		}
+		Self::OwnedType::new(self.storage.clone_owned())
 	}
 }
 

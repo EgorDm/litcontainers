@@ -22,6 +22,15 @@ fn iter() {
 }
 
 #[test]
+fn size() {
+	let mut s = mock_container();
+	assert_eq!(s.as_row_slice_iter(1).size_hint().0, s.col_count());
+	assert_eq!(s.as_row_slice_iter(0..2).size_hint().0, 2 * s.col_count());
+	assert_eq!(s.as_col_slice_iter(1).size_hint().0, s.row_count());
+	assert_eq!(s.as_col_slice_iter(0..2).size_hint().0, 2 * s.row_count());
+}
+
+#[test]
 fn ops() {
 	let s = ContainerRM::from_vec(U3, Dynamic::new(2), vec![1., 2., 3., 4., 5., 6.]);
 	let s1 = ContainerCM::from_vec(U3, Dynamic::new(2), vec![1., 2., 3., 4., 5., 6.]);

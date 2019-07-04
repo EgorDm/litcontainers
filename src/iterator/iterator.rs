@@ -66,6 +66,17 @@ macro_rules! iter_ptr_impl {
 					None
 				}
 			}
+
+			#[inline]
+			fn count(self) -> usize {
+				self.size_hint().0
+			}
+
+			#[inline]
+			fn size_hint(&self) -> (usize, Option<usize>) {
+				let size = (self.cursor_end - self.cursor) * self.storage.$scnd_size_fn();
+				(size, Some(size))
+			}
 		}
 	}
 }
