@@ -53,7 +53,7 @@ fn resizing_upsize() {
 }
 
 #[test]
-fn resizing_down() {
+fn resizing_downsize() {
 	let mut s = ContainerRM::from_vec(Dynamic::new(2), Dynamic::new(2), vec![1., 2., 3., 4.]);
 	s.set_col_count(1);
 	assert_eq!(s.col_count(), 1);
