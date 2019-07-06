@@ -1,5 +1,6 @@
 use crate::format::*;
 use crate::storage::{Storage, SizedStorage, StorageMut, DynamicRowStorage, DynamicColStorage, StorageConstructor, Ownable};
+use std::cmp::min;
 
 #[repr(C)]
 #[derive(Eq, Debug, Clone, PartialEq)]
@@ -71,11 +72,13 @@ impl<T, C> DynamicRowStorage<T, C> for VecStorageCM<T, Dynamic, C>
 	where T: Scalar, C: Dim
 {
 	fn set_row_count(&mut self, count: usize) {
-		let mut new_data = vec![T::default(); self.col_count() * count];
+		if count == self.col_count() { return; }
 
+		let mut new_data = vec![T::default(); self.col_count() * count];
+		let copy_size = min(self.col_count(), count);
 		for ci in 0..self.col_count() {
-			let to = &mut new_data[ci * count..ci * count + self.row_count()];
-			let from = &self.data[ci * self.row_count()..ci * self.row_count() + self.row_count()];
+			let to = &mut new_data[ci * count..ci * count + copy_size];
+			let from = &self.data[ci * self.row_count()..ci * self.row_count() + copy_size];
 			to.clone_from_slice(from)
 		}
 
