@@ -2,6 +2,7 @@ use crate::format::*;
 use crate::storage::*;
 use std::marker::PhantomData;
 use crate::container::Container;
+use crate::slice::offset::*;
 
 /// Slice containing references to scalar values.
 pub type Slice<'a, T, R, RS, C, CS> = SliceBase<'a, T, R, C, PtrStorage<'a, T, R, RS, C, CS>>;
@@ -76,4 +77,20 @@ impl<'a, T, R, C, S> StorageMut<T, R, C> for SliceBase<'a, T, R, C, S>
 	where T: Scalar, R: Dim, C: Dim, S: StorageMut<T, R, C>
 {
 	unsafe fn get_index_mut_ptr_unchecked(&mut self, i: usize) -> *mut T { self. storage.get_index_mut_ptr_unchecked(i) }
+}
+
+impl<'a, T, C, S> OffsetableRowSlice<T, C> for SliceBase<'a, T, Dynamic, C, S>
+	where T: Scalar, C: Dim, S: StorageMut<T, Dynamic, C> + OffsetableRowSlice<T, C>
+{
+	unsafe fn offset_row_unchecked(&mut self, v: usize) {
+		self.storage.offset_row_unchecked(v)
+	}
+}
+
+impl<'a, T, R, S> OffsetableColSlice<T, R> for SliceBase<'a, T, R, Dynamic, S>
+	where T: Scalar, R: Dim, S: StorageMut<T, R, Dynamic> + OffsetableColSlice<T, R>
+{
+	unsafe fn offset_col_unchecked(&mut self, v: usize) {
+		self.storage.offset_col_unchecked(v)
+	}
 }

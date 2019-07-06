@@ -14,7 +14,7 @@ pub trait StorageConstructor<T, R, C>: StorageMut<T, R, C>
 		Self::from_value(rows, cols, T::default())
 	}
 
-	// Crate a container from a vector containing the data. Data must be stored row wise.
+	// Crate a container from a vector containing the data. Data must be stored in row wise order.
 	fn from_vec(rows: R, cols: C, data: Vec<T>) -> Self {
 		assert_eq!(rows.value() * cols.value(), data.len());
 		let mut ret = Self::zeros(rows, cols);

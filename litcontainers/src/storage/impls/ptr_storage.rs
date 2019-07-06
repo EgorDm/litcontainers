@@ -1,6 +1,7 @@
 use crate::format::*;
 use std::marker::PhantomData;
-use crate::storage::{SizedStorage, Storage, StorageMut, Ownable, VecStorageRM};
+use crate::slice::offset::*;
+use crate::storage::*;
 
 macro_rules! ptr_storage (
 	($Name: ident, $Ptr: ty) => {
@@ -59,33 +60,21 @@ macro_rules! ptr_storage (
 			}
 		}
 
-		impl<'a, T, RS, C, CS> $Name<'a, T, Dynamic, RS, C, CS>
+		impl<'a, T, RS, C, CS> OffsetableRowSlice<T, C> for $Name<'a, T, Dynamic, RS, C, CS>
 			where T: Scalar, RS: Dim, C: Dim, CS: Dim
 		{
 			#[inline]
-			pub fn offset_row(&mut self, v: usize) {
-				assert!(v < self.row_count(), "Offset is out of bounds");
-				unsafe { self.offset_row_unchecked(v) };
-			}
-
-			#[inline]
-			pub unsafe fn offset_row_unchecked(&mut self, v: usize) {
+			unsafe fn offset_row_unchecked(&mut self, v: usize) {
 				self.data = self.data.offset((v * self.row_stride()) as isize);
 				self.row_dim = Dynamic::from(self.row_count() - v);
 			}
 		}
 
-		impl<'a, T, R, RS, CS> $Name<'a, T, R, RS, Dynamic, CS>
+		impl<'a, T, R, RS, CS> OffsetableColSlice<T, R> for $Name<'a, T, R, RS, Dynamic, CS>
 			where T: Scalar, R: Dim, RS: Dim, CS: Dim
 		{
 			#[inline]
-			pub fn offset_col(&mut self, v: usize) {
-				assert!(v < self.col_count(), "Offset is out of bounds");
-				unsafe { self.offset_col_unchecked(v) };
-			}
-
-			#[inline]
-			pub unsafe fn offset_col_unchecked(&mut self, v: usize) {
+			unsafe fn offset_col_unchecked(&mut self, v: usize) {
 				self.data = self.data.offset((v * self.col_stride()) as isize);
 				self.col_dim = Dynamic::from(self.col_count() - v);
 			}
@@ -100,4 +89,33 @@ impl<'a, T, R, RS, C, CS> StorageMut<T, R, C> for PtrMutStorage<'a, T, R, RS, C,
 	where T: Scalar, R: Dim, RS: Dim, C: Dim, CS: Dim
 {
 	unsafe fn get_index_mut_ptr_unchecked(&mut self, i: usize) -> *mut T { self.data.offset(i as isize) }
+}
+
+
+impl<'a, T, R, RS, CS> PtrStorage<'a, T, R, RS, Dynamic, CS>
+	where T: Scalar, R: Dim, RS: Dim, CS: Dim
+{
+	pub fn shift_col_to<S, RO, CO>(&mut self, storage: &S, col_offset: usize, col_count: usize)
+		where RO: Dim, CO: Dim,
+			S: Storage<T, RO, CO, RStride=<Self as Storage<T, R, Dynamic>>::RStride, CStride=<Self as Storage<T, R, Dynamic>>::CStride>
+	{
+		assert!(col_offset + col_count <= storage.col_count());
+		assert!(self.row_count() == storage.row_count());
+		self.col_dim = Dynamic::new(col_count);
+		self.data = storage.as_col_ptr(col_offset);
+	}
+}
+
+impl<'a, T, R, RS, CS> PtrMutStorage<'a, T, R, RS, Dynamic, CS>
+	where T: Scalar, R: Dim, RS: Dim, CS: Dim
+{
+	pub fn shift_col_to<S, RO, CO>(&mut self, storage: &mut S, col_offset: usize, col_count: usize)
+		where RO: Dim, CO: Dim, S: StorageMut<T, RO, CO>
+		+ Storage<T, RO, CO, RStride=<Self as Storage<T, R, Dynamic>>::RStride, CStride=<Self as Storage<T, R, Dynamic>>::CStride>
+	{
+		assert!(col_offset + col_count <= storage.col_count());
+		assert!(self.row_count() == storage.row_count());
+		self.col_dim = Dynamic::new(col_count);
+		self.data = storage.as_col_mut_ptr(col_offset);
+	}
 }

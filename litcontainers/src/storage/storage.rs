@@ -37,6 +37,9 @@ pub trait Storage<T, R, C>: SizedStorage<R, C> + Debug + Sized + Ownable<T, R, C
 	fn index(&self, r: usize, c: usize) -> usize { r * self.row_stride() + c * self.col_stride() }
 
 	#[inline]
+	fn as_ptr(&self) -> *const T { unsafe { self.get_index_ptr_unchecked(0) } }
+
+	#[inline]
 	unsafe fn get_ptr_unchecked(&self, r: usize, c: usize) -> *const T {
 		self.get_index_ptr_unchecked(self.index(r, c))
 	}
