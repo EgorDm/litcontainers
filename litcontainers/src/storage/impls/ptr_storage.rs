@@ -10,7 +10,7 @@ macro_rules! ptr_storage (
 		pub struct $Name<'a, T, R, RS, C, CS>
 			where T: Scalar, R: Dim, RS: Dim, C: Dim, CS: Dim
 		{
-			data: $Ptr,
+			pub(crate) data: $Ptr,
 			row_dim: R,
 			col_dim: C,
 			row_stride: RS,

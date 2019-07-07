@@ -48,3 +48,22 @@ impl<D: Dim> SliceRange<D> for Range<usize> {
 		Dynamic::new(self.end - self.start)
 	}
 }
+
+pub struct SizedRange<D: Dim> {
+	start: usize,
+	size: D
+}
+
+impl<D: Dim> SizedRange<D> {
+	pub fn new(start: usize, size: D) -> Self { Self {start, size} }
+}
+
+impl<SD: Dim, D: Dim> SliceRange<SD> for SizedRange<D> {
+	type Size = D;
+
+	fn begin(&self) -> usize { self.start }
+
+	fn end(&self) -> usize { self.start + self.size.value() }
+
+	fn size(&self) -> Self::Size { self.size }
+}
