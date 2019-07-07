@@ -2,13 +2,14 @@ use crate::format::*;
 use crate::storage::*;
 use crate::ops::*;
 use super::container::*;
-use num_traits::Float;
+use num_traits::{Float, Signed};
+use num_complex::Complex;
 
 macro_rules! impl_unary_float_op (
-	($OpTrait: ident, $op_fn: ident, $OpAssignTrait: ident, $op_assign_fn: ident) => {
+	($GroupTrait: ident, $OpTrait: ident, $op_fn: ident, $OpAssignTrait: ident, $op_assign_fn: ident) => {
 		impl<T, R, C, S> $OpTrait for Container<T, R, C, S>
 			where
-				T: Scalar + Float, R: Dim, C: Dim, S: StorageMut<T, R, C>
+				T: Scalar + $GroupTrait, R: Dim, C: Dim, S: StorageMut<T, R, C>
 		{
 			type Output = <Self as Ownable<T, R, C>>::OwnedType;
 
@@ -23,7 +24,7 @@ macro_rules! impl_unary_float_op (
 
 		impl<T, R, C, S> $OpTrait for &Container<T, R, C, S>
 			where
-				T: Scalar + Float, R: Dim, C: Dim, S: StorageMut<T, R, C>,
+				T: Scalar + $GroupTrait, R: Dim, C: Dim, S: StorageMut<T, R, C>,
 		{
 			type Output = Container<T, R, C, S::OwnedType>;
 
@@ -38,7 +39,7 @@ macro_rules! impl_unary_float_op (
 
 		impl<T, R, C, S> $OpAssignTrait for Container<T, R, C, S>
 			where
-				T: Scalar + Float, R: Dim, C: Dim, S: StorageMut<T, R, C>
+				T: Scalar + $GroupTrait, R: Dim, C: Dim, S: StorageMut<T, R, C>
 		{
 			fn $op_assign_fn(&mut self) {
 				for o in self.as_row_mut_iter() {
@@ -49,21 +50,21 @@ macro_rules! impl_unary_float_op (
 	}
 );
 
-impl_unary_float_op!(ASin, asin, ASinAssign, asin_assign);
-impl_unary_float_op!(Sin, sin, SinAssign, sin_assign);
-impl_unary_float_op!(ACos, acos, ACosAssign, acos_assign);
-impl_unary_float_op!(Cos, cos, CosAssign, cos_assign);
-impl_unary_float_op!(Tan, tan, TanAssign, tan_assign);
-impl_unary_float_op!(ATan, atan, ATanAssign, atan_assign);
-impl_unary_float_op!(Exp, exp, ExpAssign, exp_assign);
-impl_unary_float_op!(Ceil, ceil, CeilAssign, ceil_assign);
-impl_unary_float_op!(Floor, floor, FloorAssign, floor_assign);
-impl_unary_float_op!(Round, round, RoundAssign, round_assign);
-impl_unary_float_op!(Abs, abs, AbsAssign, abs_assign);
-impl_unary_float_op!(Sqrt, sqrt, SqrtAssign, sqrt_assign);
-impl_unary_float_op!(Log2, log2, Log2Assign, log2_assign);
-impl_unary_float_op!(Log10, log10, Log10Assign, log10_assign);
-impl_unary_float_op!(Ln, ln, LnAssign, ln_assign);
+impl_unary_float_op!(Float, ASin, asin, ASinAssign, asin_assign);
+impl_unary_float_op!(Float, Sin, sin, SinAssign, sin_assign);
+impl_unary_float_op!(Float, ACos, acos, ACosAssign, acos_assign);
+impl_unary_float_op!(Float, Cos, cos, CosAssign, cos_assign);
+impl_unary_float_op!(Float, Tan, tan, TanAssign, tan_assign);
+impl_unary_float_op!(Float, ATan, atan, ATanAssign, atan_assign);
+impl_unary_float_op!(Float, Exp, exp, ExpAssign, exp_assign);
+impl_unary_float_op!(Float, Ceil, ceil, CeilAssign, ceil_assign);
+impl_unary_float_op!(Float, Floor, floor, FloorAssign, floor_assign);
+impl_unary_float_op!(Float, Round, round, RoundAssign, round_assign);
+impl_unary_float_op!(Signed, Abs, abs, AbsAssign, abs_assign);
+impl_unary_float_op!(Float, Sqrt, sqrt, SqrtAssign, sqrt_assign);
+impl_unary_float_op!(Float, Log2, log2, Log2Assign, log2_assign);
+impl_unary_float_op!(Float, Log10, log10, Log10Assign, log10_assign);
+impl_unary_float_op!(Float, Ln, ln, LnAssign, ln_assign);
 
 impl<T, R, C, S, RT> Pow<RT> for Container<T, R, C, S>
 	where
@@ -107,10 +108,10 @@ impl<T, R, C, S, RT> PowAssign<RT> for Container<T, R, C, S>
 }
 
 macro_rules! impl_binary_float_op (
-	($OpTrait: ident, $op_fn: ident, $OpAssignTrait: ident, $op_assign_fn: ident) => {
+	($GroupTrait: ident, $OpTrait: ident, $op_fn: ident, $OpAssignTrait: ident, $op_assign_fn: ident) => {
 		impl<T, R, C, S> $OpTrait<T> for Container<T, R, C, S>
 			where
-				T: Scalar + Float, R: Dim, C: Dim, S: StorageMut<T, R, C>
+				T: Scalar + $GroupTrait, R: Dim, C: Dim, S: StorageMut<T, R, C>
 		{
 			type Output = <Self as Ownable<T, R, C>>::OwnedType;
 
@@ -125,7 +126,7 @@ macro_rules! impl_binary_float_op (
 
 		impl<T, R, C, S> $OpTrait<T> for &Container<T, R, C, S>
 			where
-				T: Scalar + Float, R: Dim, C: Dim, S: StorageMut<T, R, C>,
+				T: Scalar + $GroupTrait, R: Dim, C: Dim, S: StorageMut<T, R, C>,
 		{
 			type Output = Container<T, R, C, S::OwnedType>;
 
@@ -140,7 +141,7 @@ macro_rules! impl_binary_float_op (
 
 		impl<T, R, C, S> $OpAssignTrait<T> for Container<T, R, C, S>
 			where
-				T: Scalar + Float, R: Dim, C: Dim, S: StorageMut<T, R, C>
+				T: Scalar + $GroupTrait, R: Dim, C: Dim, S: StorageMut<T, R, C>
 		{
 			fn $op_assign_fn(&mut self, rhs: T) {
 				for o in self.as_row_mut_iter() {
@@ -151,6 +152,20 @@ macro_rules! impl_binary_float_op (
 	}
 );
 
-impl_binary_float_op!(Log, log, LogAssign, log_assign);
-impl_binary_float_op!(Max, max, MaxAssign, max_assign);
-impl_binary_float_op!(Min, min, MinAssign, min_assign);
+impl_binary_float_op!(Float, Log, log, LogAssign, log_assign);
+impl_binary_float_op!(Float, Max, max, MaxAssign, max_assign);
+impl_binary_float_op!(Float, Min, min, MinAssign, min_assign);
+
+impl<T, R, C, S> Norm for &Container<Complex<T>, R, C, S>
+	where T: ElementaryScalar, R: Dim, C: Dim, S: StorageMut<Complex<T>, R, C>
+{
+	type Output = ContainerCM<T, R, C>;
+
+	fn norm(self) -> Self::Output {
+		let mut ret = ContainerCM::zeros(self.row_dim(), self.col_dim());
+		for (o, s) in ret.as_row_mut_iter().zip(self.as_row_iter()) {
+			*o = s.norm_sqr();
+		}
+		ret
+	}
+}

@@ -4,6 +4,8 @@ use crate::ops::*;
 use super::slice::*;
 use crate::container::Container;
 use num_traits::Float;
+use num_complex::Complex;
+use crate::ContainerCM;
 
 macro_rules! impl_unary_float_op (
 	($OpTrait: ident, $op_fn: ident, $OpAssignTrait: ident, $op_assign_fn: ident) => {
@@ -111,3 +113,17 @@ macro_rules! impl_binary_float_op (
 impl_binary_float_op!(Log, log, LogAssign, log_assign);
 impl_binary_float_op!(Max, max, MaxAssign, max_assign);
 impl_binary_float_op!(Min, min, MinAssign, min_assign);
+
+impl<'a, T, R, C, S> Norm for &SliceBase<'a, Complex<T>, R, C, S>
+	where T: ElementaryScalar, R: Dim, C: Dim, S: Storage<Complex<T>, R, C>
+{
+	type Output = ContainerCM<T, R, C>;
+
+	fn norm(self) -> Self::Output {
+		let mut ret = ContainerCM::zeros(self.row_dim(), self.col_dim());
+		for (o, s) in ret.as_row_mut_iter().zip(self.as_row_iter()) {
+			*o = s.norm_sqr();
+		}
+		ret
+	}
+}

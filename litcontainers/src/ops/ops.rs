@@ -27,6 +27,7 @@ unary_op_trait!(Sqrt, sqrt, SqrtAssign, sqrt_assign);
 unary_op_trait!(Log2, log2, Log2Assign, log2_assign);
 unary_op_trait!(Log10, log10, Log10Assign, log10_assign);
 unary_op_trait!(Ln, ln, LnAssign, ln_assign);
+unary_op_trait!(Norm, norm, NormAssign, norm_assign);
 
 macro_rules! binary_op_trait (
 	($Trait: ident, $method: ident, $TraitAssign: ident, $method_assign: ident) => {
