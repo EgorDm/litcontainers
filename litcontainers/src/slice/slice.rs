@@ -94,3 +94,79 @@ impl<'a, T, R, S> OffsetableColSlice<T, R> for SliceBase<'a, T, R, Dynamic, S>
 		self.storage.offset_col_unchecked(v)
 	}
 }
+
+impl<'a, T, R, RS, C, CS> TransposableInplace<'a, T, R, C> for Slice<'a, T, R, RS, C, CS>
+	where T: Scalar, R: Dim, RS: Dim, C: Dim, CS: Dim
+{
+	fn transmute_dims_inplace<RO, CO, RSO, CSO>(self, row_dim: RO, col_dim: CO, row_stride: RSO, col_stride: CSO)
+		-> Slice<'a, T, RO, RSO, CO, CSO>
+		where RO: Dim, CO: Dim, RSO: Dim, CSO: Dim
+	{
+		let new_size = (row_dim.value() - 1) * row_stride.value() + (col_dim.value() - 1) * col_stride.value();
+		assert!(new_size < self.row_count() * self.col_count(), "Transmute is out of bounds!");
+		Slice::new(unsafe {
+			PtrStorage::new(
+				self.storage.data,
+				row_dim,
+				col_dim,
+				row_stride,
+				col_stride,
+			)
+		})
+	}
+
+	fn transmute_stride_dims_inplace<RSO, CSO>(self, row_stride: RSO, col_stride: CSO)
+		-> Slice<'a, T, R, RSO, C, CSO>
+		where RSO: Dim, CSO: Dim
+	{
+		let new_size = (self.row_count() - 1) * row_stride.value() + (self.col_count() - 1) * col_stride.value();
+		assert!(new_size < self.row_count() * self.col_count(), "Transmute is out of bounds!");
+		Slice::new(unsafe {
+			PtrStorage::new(
+				self.storage.data,
+				self.row_dim(),
+				self.col_dim(),
+				row_stride,
+				col_stride,
+			)
+		})
+	}
+}
+
+impl<'a, T, R, RS, C, CS> TransposableInplaceMut<'a, T, R, C> for SliceMut<'a, T, R, RS, C, CS>
+	where T: Scalar, R: Dim, RS: Dim, C: Dim, CS: Dim
+{
+	fn transmute_dims_inplace<RO, CO, RSO, CSO>(self, row_dim: RO, col_dim: CO, row_stride: RSO, col_stride: CSO)
+		-> SliceMut<'a, T, RO, RSO, CO, CSO>
+		where RO: Dim, CO: Dim, RSO: Dim, CSO: Dim
+	{
+		let new_size = (row_dim.value() - 1) * row_stride.value() + (col_dim.value() - 1) * col_stride.value();
+		assert!(new_size < self.row_count() * self.col_count(), "Transmute is out of bounds!");
+		SliceMut::new(unsafe {
+			PtrMutStorage::new(
+				self.storage.data,
+				row_dim,
+				col_dim,
+				row_stride,
+				col_stride,
+			)
+		})
+	}
+
+	fn transmute_stride_dims_inplace<RSO, CSO>(self, row_stride: RSO, col_stride: CSO)
+		-> SliceMut<'a, T, R, RSO, C, CSO>
+		where RSO: Dim, CSO: Dim
+	{
+		let new_size = (self.row_count() - 1) * row_stride.value() + (self.col_count() - 1) * col_stride.value();
+		assert!(new_size < self.row_count() * self.col_count(), "Transmute is out of bounds!");
+		SliceMut::new(unsafe {
+			PtrMutStorage::new(
+				self.storage.data,
+				self.row_dim(),
+				self.col_dim(),
+				row_stride,
+				col_stride,
+			)
+		})
+	}
+}

@@ -78,9 +78,32 @@ pub trait TransposableMut<T, R, C>: StorageMut<T, R, C>
 	}
 }
 
+pub trait TransposableInplace<'a, T, R, C>: Storage<T, R, C>
+	where T: Scalar, R: Dim, C: Dim
+{
+	fn transmute_dims_inplace<RO, CO, RSO, CSO>(self, row_dim: RO, col_dim: CO, row_stride: RSO, col_stride: CSO)
+		-> Slice<'a, T, RO, RSO, CO, CSO>
+		where RO: Dim, CO: Dim, RSO: Dim, CSO: Dim;
+
+	fn transmute_stride_dims_inplace<RSO, CSO>(self, row_stride: RSO, col_stride: CSO)
+		-> Slice<'a, T, R, RSO, C, CSO>
+		where RSO: Dim, CSO: Dim;
+}
+
+pub trait TransposableInplaceMut<'a, T, R, C>: StorageMut<T, R, C>
+	where T: Scalar, R: Dim, C: Dim
+{
+	fn transmute_dims_inplace<RO, CO, RSO, CSO>(self, row_dim: RO, col_dim: CO, row_stride: RSO, col_stride: CSO)
+		-> SliceMut<'a, T, RO, RSO, CO, CSO>
+		where RO: Dim, CO: Dim, RSO: Dim, CSO: Dim;
+
+	fn transmute_stride_dims_inplace<RSO, CSO>(self, row_stride: RSO, col_stride: CSO)
+		-> SliceMut<'a, T, R, RSO, C, CSO>
+		where RSO: Dim, CSO: Dim;
+}
+
 
 // TODO: if this gives problems -> move into storage?
-
 
 impl<T, R, C, S> Transposable<T, R, C> for S
 	where T: Scalar, R: Dim, C: Dim, S: Storage<T, R, C>

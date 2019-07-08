@@ -106,4 +106,15 @@ pub trait StorageMut<T, R, C>: Storage<T, R, C>
 			)
 		})
 	}
+
+	// Special ops
+	#[inline]
+	fn copy_from<RO, CO, SO>(&mut self, from: &SO)
+		where RO: Dim, CO: Dim, SO: Storage<T, RO, CO>
+	{
+		assert!(self.equal_size(from), "Slice is out of bounds!");
+		for (t, f) in self.as_row_mut_iter().zip(from.as_row_iter()) {
+			*t = *f;
+		}
+	}
 }
