@@ -8,10 +8,21 @@ pub trait StorageMut<T, R, C>: Storage<T, R, C>
 	where T: Scalar, R: Dim, C: Dim
 {
 	#[inline]
+	fn as_mut_slice<'b, 'a: 'b>(&'a mut self) -> &'b mut [T] {
+		unsafe { slice::from_raw_parts_mut(self.get_index_mut_ptr_unchecked(0), self.row_count() * self.col_count()) }
+	}
+
+	#[inline]
 	fn get_mut(&mut self, r: usize, c: usize) -> &mut T {
 		assert!(r < self.row_count(), "Out of range row!");
 		assert!(c < self.col_count(), "Out of range col!");
 		unsafe { self.get_mut_unchecked(r, c) }
+	}
+
+	#[inline]
+	fn get_mut_at(&mut self, i: usize) -> &mut T {
+		assert!(i < self.size(), "Index out of bounds!");
+		unsafe { self.get_index_mut_ptr_unchecked(i).as_mut().unwrap() }
 	}
 
 	#[inline]
