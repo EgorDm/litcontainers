@@ -5,7 +5,7 @@
 
 use std::any::{Any, TypeId};
 use std::cmp;
-use std::fmt::Debug;
+use std::fmt::{Debug, Formatter, Error, Display};
 use std::ops::{Add, Div, Mul, Sub};
 use typenum::{
 	self, Bit, Diff, Max, Maximum, Min, Minimum, Prod, Quot, Sum, UInt, UTerm, Unsigned, B1,
@@ -73,6 +73,8 @@ pub trait Dim: Any + Debug + Copy + PartialEq + Send + Sync {
 	/// Builds an instance of `Self` from a run-time value. Panics if `Self` is a type-level
 	/// integer and `dim != Self::try_to_usize().unwrap()`.
 	fn from_usize(dim: usize) -> Self;
+
+	fn pfmt(&self, f: &mut Formatter) -> Result<(), Error>;
 }
 
 impl Dim for Dynamic {
@@ -90,6 +92,8 @@ impl Dim for Dynamic {
 	fn from_usize(dim: usize) -> Self {
 		Self::new(dim)
 	}
+
+	fn pfmt(&self, f: &mut Formatter) -> Result<(), Error> { write!(f, "D{}", self.value()) }
 }
 
 impl Add<usize> for Dynamic {
@@ -229,6 +233,14 @@ impl Dim for U1 {
 	fn value(&self) -> usize {
 		1
 	}
+
+	fn pfmt(&self, f: &mut Formatter) -> Result<(), Error> { write!(f, "U{}", self.value()) }
+}
+
+impl Display for U1 {
+	fn fmt(&self, f: &mut Formatter) -> Result<(), Error> {
+		write!(f, "U{}", self.value())
+	}
 }
 
 impl DimName for U1 {
@@ -267,6 +279,8 @@ macro_rules! named_dimension (
             fn value(&self) -> usize {
                 typenum::$D::to_usize()
             }
+
+            fn pfmt(&self, f: &mut Formatter) -> Result<(), Error> { write!(f, "U{}", self.value()) }
         }
 
         impl DimName for $D {
@@ -283,6 +297,12 @@ macro_rules! named_dimension (
         }
 
         impl IsNotStaticOne for $D { }
+
+        impl Display for $D {
+			fn fmt(&self, f: &mut Formatter) -> Result<(), Error> {
+				write!(f, "U{}", self.value())
+			}
+		}
     )*}
 );
 
@@ -337,6 +357,8 @@ impl<
 	fn value(&self) -> usize {
 		Self::to_usize()
 	}
+
+	fn pfmt(&self, f: &mut Formatter) -> Result<(), Error> { write!(f, "U{}", self.value()) }
 }
 
 impl<
@@ -374,7 +396,6 @@ for UInt<U, B>
 {
 	type Name = UInt<U, B>;
 }
-
 impl<U: Unsigned + DimName, B: Bit + Any + Debug + Copy + PartialEq + Send + Sync> Dim
 for UInt<U, B>
 {
@@ -384,15 +405,17 @@ for UInt<U, B>
 	}
 
 	#[inline]
+	fn value(&self) -> usize {
+		Self::to_usize()
+	}
+
+	#[inline]
 	fn from_usize(dim: usize) -> Self {
 		assert!(dim == Self::to_usize(), "Mismatched dimension.");
 		Self::new()
 	}
 
-	#[inline]
-	fn value(&self) -> usize {
-		Self::to_usize()
-	}
+	fn pfmt(&self, f: &mut Formatter) -> Result<(), Error> { write!(f, "U{}", self.value()) }
 }
 
 impl<U: Unsigned + DimName, B: Bit + Any + Debug + Copy + PartialEq + Send + Sync> DimName

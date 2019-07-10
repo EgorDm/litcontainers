@@ -6,6 +6,7 @@ pub mod constructors;
 pub mod impls;
 pub mod ownable;
 pub mod transpose;
+pub mod printing;
 
 #[doc(inline)] pub use sized::*;
 #[doc(inline)] pub use storage::*;
@@ -15,3 +16,4 @@ pub mod transpose;
 #[doc(inline)] pub use impls::*;
 #[doc(inline)] pub use ownable::*;
 #[doc(inline)] pub use transpose::*;
+#[doc(inline)] pub use printing::*;
