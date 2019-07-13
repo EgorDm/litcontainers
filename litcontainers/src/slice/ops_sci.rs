@@ -115,15 +115,37 @@ impl_binary_float_op!(Max, max, MaxAssign, max_assign);
 impl_binary_float_op!(Min, min, MinAssign, min_assign);
 
 impl<'a, T, R, C, S> Norm for &SliceBase<'a, Complex<T>, R, C, S>
-	where T: ElementaryScalar, R: Dim, C: Dim, S: Storage<Complex<T>, R, C>
+	where T: ElementaryScalar + Float, R: Dim, C: Dim, S: Storage<Complex<T>, R, C>
 {
 	type Output = ContainerCM<T, R, C>;
 
 	fn norm(self) -> Self::Output {
 		let mut ret = ContainerCM::zeros(self.row_dim(), self.col_dim());
 		for (o, s) in ret.as_row_mut_iter().zip(self.as_row_iter()) {
-			*o = s.norm_sqr();
+			*o = s.norm();
 		}
 		ret
+	}
+}
+
+impl<'a, T, R, C, S> Sum for SliceBase<'a, T, R, C, S>
+	where T: Scalar, R: Dim, C: Dim, S: Storage<T, R, C>
+{
+	type Output = T;
+
+	fn sum(&self) -> Self::Output {
+		let mut ret = T::default();
+		for v in self.as_row_iter() { ret += *v }
+		ret
+	}
+}
+
+impl<'a, T, R, C, S> Mean for SliceBase<'a, T, R, C, S>
+	where T: Scalar, R: Dim, C: Dim, S: Storage<T, R, C>
+{
+	type Output = T;
+
+	fn mean(&self) -> Self::Output {
+		self.sum() / num_traits::cast(self.size()).unwrap()
 	}
 }

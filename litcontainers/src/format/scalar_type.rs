@@ -1,7 +1,7 @@
-use std::fmt::{Debug, Display};
+use std::fmt::{Debug, Formatter, Error};
 use std::mem::size_of;
 use std::ops::{Add, AddAssign, Sub, SubAssign, Mul, MulAssign, Div, DivAssign, Rem, RemAssign};
-use num_traits::{NumCast, Num};
+use num_traits::{NumCast, Num, cast::cast, Float};
 use num_complex::Complex;
 
 #[allow(non_camel_case_types)]
@@ -11,146 +11,230 @@ pub type c64 = Complex<f64>;
 
 #[derive(Debug, Clone, Copy, Eq, PartialEq)]
 pub enum ScalarElementaryType {
-    Float,
-    Double,
-    UInt8,
-    Int16,
-    Int32,
-    Int64,
+	Float,
+	Double,
+	UInt8,
+	Int16,
+	Int32,
+	Int64,
 }
 
 impl Into<ScalarType> for ScalarElementaryType {
-    fn into(self) -> ScalarType {
-        match self {
-            ScalarElementaryType::Float => ScalarType::Float,
-            ScalarElementaryType::Double => ScalarType::Double,
-            ScalarElementaryType::UInt8 => ScalarType::UInt8,
-            ScalarElementaryType::Int16 => ScalarType::Int16,
-            ScalarElementaryType::Int32 => ScalarType::Int32,
-            ScalarElementaryType::Int64 => ScalarType::Int64,
-        }
-    }
+	fn into(self) -> ScalarType {
+		match self {
+			ScalarElementaryType::Float => ScalarType::Float,
+			ScalarElementaryType::Double => ScalarType::Double,
+			ScalarElementaryType::UInt8 => ScalarType::UInt8,
+			ScalarElementaryType::Int16 => ScalarType::Int16,
+			ScalarElementaryType::Int32 => ScalarType::Int32,
+			ScalarElementaryType::Int64 => ScalarType::Int64,
+		}
+	}
 }
 
+// TODO: Refector Scalar -> Element and ElementaryType -> Scalar
 
 #[derive(Debug, Clone, Copy, Eq, PartialEq)]
 pub enum ScalarType {
-    Float,
-    Double,
-    UInt8,
-    Int16,
-    Int32,
-    Int64,
-    Complex(ScalarElementaryType),
+	Float,
+	Double,
+	UInt8,
+	Int16,
+	Int32,
+	Int64,
+	Complex(ScalarElementaryType),
 }
 
-pub trait ElementaryScalar: Scalar
+pub trait ElementaryScalar: Scalar + PartialOrd
 {
-    fn get_elementary_scalar_type() -> ScalarElementaryType;
+	fn get_elementary_scalar_type() -> ScalarElementaryType;
 }
 
 pub trait Scalar:
-    Copy + Clone + Debug + Sized + Default +
-    Add<Output=Self> + AddAssign<Self> +
-    Sub<Output=Self> + SubAssign<Self> +
-    Mul<Output=Self> + MulAssign<Self> +
-    Div<Output=Self> + DivAssign<Self> +
-    Rem<Output=Self> + RemAssign<Self> +
+	Copy + Clone + Debug + Sized + Default +
+	Add<Output=Self> + AddAssign<Self> +
+	Sub<Output=Self> + SubAssign<Self> +
+	Mul<Output=Self> + MulAssign<Self> +
+	Div<Output=Self> + DivAssign<Self> +
+	Rem<Output=Self> + RemAssign<Self> +
 	Num + NumCast
 {
-    fn get_scalar_type() -> ScalarType;
+	fn get_scalar_type() -> ScalarType;
 
-    fn get_scalar_size() -> usize {
-        size_of::<Self>()
-    }
+	fn get_scalar_size() -> usize {
+		size_of::<Self>()
+	}
 
-    fn from_usize(v: usize) -> Self { Self::from(v).unwrap() }
+	fn from_usize(v: usize) -> Self { Self::from(v).unwrap() }
+
+	fn fmt_num(&self, f: &mut Formatter, precision: usize, sci: bool) -> Result<(), Error>;
+
+	fn is_float() -> bool { false }
+
+	fn is_complex() -> bool { false }
+
+	type ElementaryType: ElementaryScalar;
+
+	fn to_elementary(&self) -> Self::ElementaryType;
 }
 
 impl ElementaryScalar for f32 {
-    fn get_elementary_scalar_type() -> ScalarElementaryType {
-        ScalarElementaryType::Float
-    }
+	fn get_elementary_scalar_type() -> ScalarElementaryType {
+		ScalarElementaryType::Float
+	}
 }
 
 impl Scalar for f32 {
-    fn get_scalar_type() -> ScalarType {
-        ScalarType::Float
-    }
+	fn get_scalar_type() -> ScalarType {
+		ScalarType::Float
+	}
+
+	fn fmt_num(&self, f: &mut Formatter, precision: usize, sci: bool) -> Result<(), Error> {
+		if sci {
+			write!(f, "{:+.*e}", precision, self)
+		} else {
+			write!(f, "{:.*}", precision, self)
+		}
+	}
+
+	fn is_float() -> bool { true }
+
+	type ElementaryType = f32;
+
+	fn to_elementary(&self) -> Self::ElementaryType { *self }
 }
 
 impl ElementaryScalar for f64 {
-    fn get_elementary_scalar_type() -> ScalarElementaryType {
-        ScalarElementaryType::Double
-    }
+	fn get_elementary_scalar_type() -> ScalarElementaryType {
+		ScalarElementaryType::Double
+	}
 }
 
 impl Scalar for f64 {
-    fn get_scalar_type() -> ScalarType {
-        ScalarType::Double
-    }
+	fn get_scalar_type() -> ScalarType {
+		ScalarType::Double
+	}
+
+	fn fmt_num(&self, f: &mut Formatter, precision: usize, sci: bool) -> Result<(), Error> {
+		if sci {
+			write!(f, "{:+.*e}", precision, self)
+		} else {
+			write!(f, "{:.*}", precision, self)
+		}
+	}
+
+	fn is_float() -> bool { true }
+
+	type ElementaryType = f64;
+
+	fn to_elementary(&self) -> Self::ElementaryType { *self }
 }
 
 impl ElementaryScalar for i32 {
-    fn get_elementary_scalar_type() -> ScalarElementaryType {
-        ScalarElementaryType::Int32
-    }
+	fn get_elementary_scalar_type() -> ScalarElementaryType {
+		ScalarElementaryType::Int32
+	}
 }
 
 impl Scalar for i32 {
-    fn get_scalar_type() -> ScalarType {
-        ScalarType::Int32
-    }
+	fn get_scalar_type() -> ScalarType {
+		ScalarType::Int32
+	}
+
+	fn fmt_num(&self, f: &mut Formatter, precision: usize, sci: bool) -> Result<(), Error> {
+		if sci {
+			write!(f, "{:+.*e}", precision, *self as f32)
+		} else {
+			write!(f, "{:.*}", precision, *self as f32)
+		}
+	}
+
+	type ElementaryType = i32;
+
+	fn to_elementary(&self) -> Self::ElementaryType { *self }
 }
 
 impl ElementaryScalar for i64 {
-    fn get_elementary_scalar_type() -> ScalarElementaryType {
-        ScalarElementaryType::Int64
-    }
+	fn get_elementary_scalar_type() -> ScalarElementaryType {
+		ScalarElementaryType::Int64
+	}
 }
 
 impl Scalar for i64 {
-    fn get_scalar_type() -> ScalarType { ScalarType::Int64 }
+	fn get_scalar_type() -> ScalarType { ScalarType::Int64 }
+
+	fn fmt_num(&self, f: &mut Formatter, precision: usize, sci: bool) -> Result<(), Error> {
+		if sci {
+			write!(f, "{:+.*e}", precision, *self as f64)
+		} else {
+			write!(f, "{:.*}", precision, *self as f64)
+		}
+	}
+
+	type ElementaryType = i64;
+
+	fn to_elementary(&self) -> Self::ElementaryType { *self }
 }
 
 impl ElementaryScalar for i16 {
-    fn get_elementary_scalar_type() -> ScalarElementaryType {
-        ScalarElementaryType::Int16
-    }
+	fn get_elementary_scalar_type() -> ScalarElementaryType {
+		ScalarElementaryType::Int16
+	}
 }
 
 impl Scalar for i16 {
-    fn get_scalar_type() -> ScalarType {
-        ScalarType::Int16
-    }
+	fn get_scalar_type() -> ScalarType {
+		ScalarType::Int16
+	}
+
+	fn fmt_num(&self, f: &mut Formatter, precision: usize, sci: bool) -> Result<(), Error> {
+		if sci {
+			write!(f, "{:+.*e}", precision, *self as f32)
+		} else {
+			write!(f, "{:.*}", precision, *self as f32)
+		}
+	}
+
+	type ElementaryType = i16;
+
+	fn to_elementary(&self) -> Self::ElementaryType { *self }
 }
 
 impl ElementaryScalar for u8 {
-    fn get_elementary_scalar_type() -> ScalarElementaryType {
-        ScalarElementaryType::UInt8
-    }
+	fn get_elementary_scalar_type() -> ScalarElementaryType {
+		ScalarElementaryType::UInt8
+	}
 }
 
 impl Scalar for u8 {
-    fn get_scalar_type() -> ScalarType {
-        ScalarType::UInt8
-    }
+	fn get_scalar_type() -> ScalarType {
+		ScalarType::UInt8
+	}
+
+	fn fmt_num(&self, f: &mut Formatter, _precision: usize, _sci: bool) -> Result<(), Error> {
+		write!(f, "{}", self)
+	}
+
+	type ElementaryType = u8;
+
+	fn to_elementary(&self) -> Self::ElementaryType { *self }
 }
 
-/*impl Scalar for c32 {
-    fn get_scalar_type() -> ScalarType {
-        ScalarType::Complex(ScalarType::Float)
-    }
-}
+impl<T: ElementaryScalar + Float> Scalar for Complex<T> {
+	fn get_scalar_type() -> ScalarType {
+		ScalarType::Complex(T::get_elementary_scalar_type())
+	}
 
-impl Scalar for c64 {
-    fn get_scalar_type() -> ScalarType {
-        ScalarType::Complex(ScalarType::Double)
-    }
-}*/
+	fn fmt_num(&self, f: &mut Formatter, precision: usize, _sci: bool) -> Result<(), Error> {
+		let re: f64 = cast(self.re).unwrap();
+		let im: f64 = cast(self.im).unwrap();
 
-impl<T: ElementaryScalar> Scalar for Complex<T> {
-    fn get_scalar_type() -> ScalarType {
-        ScalarType::Complex(T::get_elementary_scalar_type())
-    }
+		write!(f, "({: >11},{: >11})", format!("{:+.*e}", precision, re), format!("{:+.*e}", precision, im))
+	}
+
+	fn is_complex() -> bool { true }
+
+	type ElementaryType = T;
+
+	fn to_elementary(&self) -> Self::ElementaryType { self.norm() }
 }

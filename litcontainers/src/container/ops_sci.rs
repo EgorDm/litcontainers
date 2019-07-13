@@ -157,15 +157,35 @@ impl_binary_float_op!(Float, Max, max, MaxAssign, max_assign);
 impl_binary_float_op!(Float, Min, min, MinAssign, min_assign);
 
 impl<T, R, C, S> Norm for &Container<Complex<T>, R, C, S>
-	where T: ElementaryScalar, R: Dim, C: Dim, S: StorageMut<Complex<T>, R, C>
+	where T: ElementaryScalar + Float, R: Dim, C: Dim, S: StorageMut<Complex<T>, R, C>
 {
 	type Output = ContainerCM<T, R, C>;
 
 	fn norm(self) -> Self::Output {
 		let mut ret = ContainerCM::zeros(self.row_dim(), self.col_dim());
-		for (o, s) in ret.as_row_mut_iter().zip(self.as_row_iter()) {
-			*o = s.norm_sqr();
-		}
+		for (o, s) in ret.as_row_mut_iter().zip(self.as_row_iter()) { *o = s.norm(); }
 		ret
+	}
+}
+
+impl<T, R, C, S> Sum for Container<T, R, C, S>
+	where T: Scalar, R: Dim, C: Dim, S: StorageMut<T, R, C>
+{
+	type Output = T;
+
+	fn sum(&self) -> Self::Output {
+		let mut ret = T::default();
+		for v in self.as_row_iter() { ret += *v }
+		ret
+	}
+}
+
+impl<T, R, C, S> Mean for Container<T, R, C, S>
+	where T: Scalar, R: Dim, C: Dim, S: StorageMut<T, R, C>
+{
+	type Output = T;
+
+	fn mean(&self) -> Self::Output {
+		self.sum() / num_traits::cast(self.size()).unwrap()
 	}
 }

@@ -47,3 +47,24 @@ binary_op_trait!(Pow, pow, PowAssign, pow_assign);
 binary_op_trait!(Log, log, LogAssign, log_assign);
 binary_op_trait!(Max, max, MaxAssign, max_assign);
 binary_op_trait!(Min, min, MinAssign, min_assign);
+
+macro_rules! unary_simple_op_trait (
+	($Trait: ident, $method: ident) => {
+		pub trait $Trait {
+			type Output;
+
+			fn $method(&self) -> Self::Output;
+		}
+	}
+);
+
+unary_simple_op_trait!(Sum, sum);
+unary_simple_op_trait!(RowSum, row_sum);
+unary_simple_op_trait!(ColSum, col_sum);
+unary_simple_op_trait!(Mean, mean);
+unary_simple_op_trait!(RowMean, row_mean);
+unary_simple_op_trait!(ColMean, col_mean);
+unary_simple_op_trait!(RowMax, row_max);
+unary_simple_op_trait!(ColMax, col_max);
+unary_simple_op_trait!(RowMin, row_min);
+unary_simple_op_trait!(ColMin, col_min);
