@@ -1,6 +1,7 @@
 use crate::format::*;
 use crate::storage::*;
 use std::marker::PhantomData;
+use std::fmt::{Display, Formatter, Error};
 
 /// Container storing scalar values in a col major order
 pub type ContainerCM<T, R, C> = Container<T, R, C, VecStorageCM<T, R, C>>;
@@ -9,7 +10,7 @@ pub type ContainerRM<T, R, C> = Container<T, R, C, VecStorageRM<T, R, C>>;
 
 // Container storing scalar values. Container is always the owner of its data.
 #[repr(C)]
-#[derive(Clone, Copy, Debug, Eq, PartialEq)]
+#[derive(Clone, Debug, Eq, PartialEq)]
 pub struct Container<T, R, C, S>
 	where T: Scalar, R: Dim, C: Dim, S: StorageMut<T, R, C>
 {
@@ -91,5 +92,13 @@ impl<T, R, S> DynamicColStorage<T, R> for Container<T, R, Dynamic, S>
 {
 	fn set_col_count(&mut self, count: usize) {
 		self.storage.set_col_count(count)
+	}
+}
+
+impl<T, R, C, S> Display for Container<T, R, C, S>
+	where T: Scalar, R: Dim, C: Dim, S: StorageMut<T, R, C> + StorageConstructor<T, R, C>
+{
+	fn fmt(&self, f: &mut Formatter) -> Result<(), Error> {
+		write!(f, "{}", Fmt(|f| print_storage(self, f)))
 	}
 }

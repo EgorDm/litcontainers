@@ -3,6 +3,8 @@ use crate::storage::*;
 use std::marker::PhantomData;
 use crate::container::Container;
 use crate::slice::offset::*;
+use std::fmt::{Display, Formatter, Error};
+
 
 /// Slice containing references to scalar values.
 pub type Slice<'a, T, R, RS, C, CS> = SliceBase<'a, T, R, C, PtrStorage<'a, T, R, RS, C, CS>>;
@@ -16,7 +18,7 @@ pub type ColSliceMut<'a, T, R, C> = SliceMut<'a, T, R, U1, C, R>;
 
 /// Container containing references to scalar values.
 #[repr(C)]
-#[derive(Clone, Copy, Debug, Eq, PartialEq)]
+#[derive(Debug, Eq, PartialEq)]
 pub struct SliceBase<'a, T, R, C, S>
 	where T: Scalar, R: Dim, C: Dim, S: Storage<T, R, C>
 {
@@ -168,5 +170,13 @@ impl<'a, T, R, RS, C, CS> TransposableInplaceMut<'a, T, R, C> for SliceMut<'a, T
 				col_stride,
 			)
 		})
+	}
+}
+
+impl<'a, T, R, C, S> Display for SliceBase<'a, T, R, C, S>
+	where T: Scalar, R: Dim, C: Dim, S: Storage<T, R, C>
+{
+	fn fmt(&self, f: &mut Formatter) -> Result<(), Error> {
+		write!(f, "{}", Fmt(|f| print_storage(self, f)))
 	}
 }
