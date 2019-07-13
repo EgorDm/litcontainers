@@ -118,6 +118,22 @@ pub trait StorageMut<T, R, C>: Storage<T, R, C>
 		})
 	}
 
+	#[inline]
+	fn slice_mut<'b: 'c, 'c, RR: SliceRange<R>, CR: SliceRange<C>>(&'b mut self, range_rows: RR, range_cols: CR)
+		-> SliceMut<'c, T, RR::Size, Self::RStride, CR::Size, Self::CStride>
+	{
+		assert!(range_cols.end() <= self.col_count() && range_rows.end() <= self.row_count(), "Slice is out of bounds!");
+		SliceMut::new(unsafe {
+			PtrMutStorage::new(
+				self.get_index_mut_ptr_unchecked(self.index(range_rows.begin(), range_cols.begin())),
+				range_rows.size(),
+				range_cols.size(),
+				self.row_stride_dim(),
+				self.col_stride_dim(),
+			)
+		})
+	}
+
 	// Special ops
 	#[inline]
 	fn copy_from<RO, CO, SO>(&mut self, from: &SO)
