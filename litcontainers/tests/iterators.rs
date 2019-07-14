@@ -1,4 +1,5 @@
 use litcontainers::*;
+use rayon::prelude::*;
 
 fn mock_container() -> ContainerRM<f64, U3, Dynamic> {
 	ContainerRM::from_vec(U3, Dynamic::new(2), vec![1., 2., 3., 4., 5., 6.])
@@ -7,27 +8,27 @@ fn mock_container() -> ContainerRM<f64, U3, Dynamic> {
 #[test]
 fn iter() {
 	let mut s = mock_container();
-	assert_eq!(s.as_row_slice_iter(1).cloned().collect::<Vec<_>>(), vec![3., 4.]);
-	assert_eq!(s.as_row_slice_mut_iter(1).map(|x| *x).collect::<Vec<_>>(), vec![3., 4.]);
-	assert_eq!(s.slice_rows(1..3).as_row_slice_iter(0).cloned().collect::<Vec<_>>(), vec![3., 4.]);
-	assert_eq!(s.slice_cols(1).as_row_slice_iter(1).cloned().collect::<Vec<_>>(), vec![4.]);
+	assert_eq!(s.slice_as_row_iter(1).cloned().collect::<Vec<_>>(), vec![3., 4.]);
+	assert_eq!(s.slice_as_row_mut_iter(1).map(|x| *x).collect::<Vec<_>>(), vec![3., 4.]);
+	assert_eq!(s.slice_rows(1..3).slice_as_row_iter(0).cloned().collect::<Vec<_>>(), vec![3., 4.]);
+	assert_eq!(s.slice_cols(1).slice_as_row_iter(1).cloned().collect::<Vec<_>>(), vec![4.]);
 
-	assert_eq!(s.as_col_slice_iter(1).cloned().collect::<Vec<_>>(), vec![2., 4., 6.]);
-	assert_eq!(s.as_col_slice_mut_iter(1).map(|x| *x).collect::<Vec<_>>(), vec![2., 4., 6.]);
-	assert_eq!(s.slice_rows(1..3).as_col_slice_iter(1).cloned().collect::<Vec<_>>(), vec![4., 6.]);
-	assert_eq!(s.slice_cols(1).as_col_slice_iter(0).cloned().collect::<Vec<_>>(), vec![2., 4., 6.]);
+	assert_eq!(s.slice_as_col_iter(1).cloned().collect::<Vec<_>>(), vec![2., 4., 6.]);
+	assert_eq!(s.slice_as_col_mut_iter(1).map(|x| *x).collect::<Vec<_>>(), vec![2., 4., 6.]);
+	assert_eq!(s.slice_rows(1..3).slice_as_col_iter(1).cloned().collect::<Vec<_>>(), vec![4., 6.]);
+	assert_eq!(s.slice_cols(1).slice_as_col_iter(0).cloned().collect::<Vec<_>>(), vec![2., 4., 6.]);
 
-	assert_eq!(s.as_row_slice_iter(2).cloned().collect::<Vec<_>>(), vec![5., 6.]);
+	assert_eq!(s.slice_as_row_iter(2).cloned().collect::<Vec<_>>(), vec![5., 6.]);
 	assert_eq!(s.as_iter().cloned().collect::<Vec<_>>(), vec![1., 2., 3., 4., 5., 6.]);
 }
 
 #[test]
 fn size() {
 	let s = mock_container();
-	assert_eq!(s.as_row_slice_iter(1).size_hint().0, s.col_count());
-	assert_eq!(s.as_row_slice_iter(0..2).size_hint().0, 2 * s.col_count());
-	assert_eq!(s.as_col_slice_iter(1).size_hint().0, s.row_count());
-	assert_eq!(s.as_col_slice_iter(0..2).size_hint().0, 2 * s.row_count());
+	assert_eq!(s.slice_as_row_iter(1).size_hint().0, s.col_count());
+	assert_eq!(s.slice_as_row_iter(0..2).size_hint().0, 2 * s.col_count());
+	assert_eq!(s.slice_as_col_iter(1).size_hint().0, s.row_count());
+	assert_eq!(s.slice_as_col_iter(0..2).size_hint().0, 2 * s.row_count());
 }
 
 #[test]

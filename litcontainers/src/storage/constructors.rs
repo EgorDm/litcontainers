@@ -29,7 +29,7 @@ pub trait StorageConstructor<T, R, C>: StorageMut<T, R, C>
 
 		for r in 0..rows.value() {
 			let mut agg = start;
-			for s in ret.as_row_slice_mut_iter(r) {
+			for s in ret.slice_as_row_mut_iter(r) {
 				*s = agg;
 				agg += interval;
 			}
@@ -44,7 +44,7 @@ pub trait StorageConstructor<T, R, C>: StorageMut<T, R, C>
 
 		for r in 0..cols.value() {
 			let mut agg = start;
-			for s in ret.as_col_slice_mut_iter(r) {
+			for s in ret.slice_as_col_mut_iter(r) {
 				*s = agg;
 				agg += interval;
 			}
@@ -62,7 +62,7 @@ pub trait StorageConstructor<T, R, C>: StorageMut<T, R, C>
 		let mut ret = Self::zeros(rows, cols);
 		for c in 0..rows.value() {
 			let mut agg = start;
-			for s in ret.as_row_slice_mut_iter(c) {
+			for s in ret.slice_as_row_mut_iter(c) {
 				*s = agg;
 				agg += step;
 			}
@@ -80,7 +80,7 @@ pub trait StorageConstructor<T, R, C>: StorageMut<T, R, C>
 		let mut ret = Self::zeros(rows, cols);
 		for c in 0..cols.value() {
 			let mut agg = start;
-			for s in ret.as_col_slice_mut_iter(c) {
+			for s in ret.slice_as_col_mut_iter(c) {
 				*s = agg;
 				agg += step;
 			}
