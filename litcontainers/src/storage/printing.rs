@@ -39,7 +39,7 @@ pub fn print_storage<T, R, C, S>(s: &S, f: &mut Formatter) -> Result<(), Error>
 		Fmt(|f| s.col_stride_dim().pfmt(f)),
 	)?;
 	for i in 0..s.row_count() {
-		for e in s.as_row_slice_iter(i) {
+		for e in s.slice_as_row_iter(i) {
 			write!(f, "{:>pad$}", format!("{}", Fmt(|f| e.fmt_num(f, 4, use_sci_fmt))), pad = padding)?;
 		}
 		write!(f, "\n")?;

@@ -62,3 +62,38 @@ fn ops_sci() {
 	assert_eq!((&s).max(2.).as_slice(), [2., 2., 3., 4., 5., 6.]);
 	assert_eq!((&s).pow(2).as_slice(), [1., 4., 9., 16., 25., 36.]);
 }
+
+
+
+#[test]
+fn splittable_iter() {
+	let mut s = ContainerRM::from_vec(U3, Dynamic::new(2), vec![1., 2., 3., 4., 5., 6.]);
+	let slice = s.slice_rows_mut(0..s.row_count());
+	let iter = RowSliceIterSplitMut::new(slice);
+
+	let (i1, i2) = iter.split_at(1);
+
+	for part in i1 {
+		println!("{}", part);
+	}
+
+	println!("Split");
+
+	for part in i2 {
+		println!("{}", part);
+	}
+}
+
+
+#[test]
+fn parallel_slice() {
+	let mut s = ContainerRM::from_vec(U3, Dynamic::new(2), vec![1., 2., 3., 4., 5., 6.]);
+	let slice = s.slice_rows_mut(0..s.row_count());
+	let iter = RowSliceIterSplitMut::new(slice);
+
+	let res: f64 = iter.into_par_iter()
+		.map(|col| col.sum())
+		.sum();
+
+	dbg!(res);
+}

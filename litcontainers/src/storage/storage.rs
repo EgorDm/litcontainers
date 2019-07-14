@@ -1,12 +1,13 @@
 use crate::format::*;
-use crate::storage::{SizedStorage, Ownable, PtrStorage};
+use crate::storage::{SizedStorage, Ownable};
 use crate::iterator::*;
 use std::fmt::Debug;
 use std::slice;
-use crate::slice::{SliceRange, Slice};
+use crate::slice::{SliceRange};
+use crate::Sliceable;
 
 // TODO: implement proper equality?
-pub trait Storage<T, R, C>: SizedStorage<R, C> + Debug + Sized + Ownable<T, R, C>
+pub trait Storage<T, R, C>: SizedStorage<R, C> + Debug + Sized + Ownable<T, R, C> + Send + Sync
 	where T: Scalar, R: Dim, C: Dim
 {
 	type RStride: Dim;
@@ -85,7 +86,7 @@ pub trait Storage<T, R, C>: SizedStorage<R, C> + Debug + Sized + Ownable<T, R, C
 
 	#[inline]
 	fn as_row_slice<'b, 'a: 'b>(&'a self, v: usize) -> &'b [T] {
-		let size = self.row_index_span( v);
+		let size = self.row_index_span(v);
 		unsafe { slice::from_raw_parts(self.as_row_ptr(v), size) }
 	}
 
@@ -128,56 +129,22 @@ pub trait Storage<T, R, C>: SizedStorage<R, C> + Debug + Sized + Ownable<T, R, C
 		RowIterPtr::from_range(self, range.begin(), range.end())
 	}
 
+	fn as_row_slice_iter<'a: 'b, 'b>(&'a self) -> RowSliceIter<'b, T, R, C, Self> { RowSliceIter::new(self) }
+
+	fn as_row_slice_par_iter<'a: 'b, 'b>(&'a self) -> ParRowSliceIterSplit<'b, T, C, Self::RStride, Self::CStride> {
+		ParRowSliceIterSplit::from_storage(self)
+	}
+
 	fn as_col_iter<'a: 'b, 'b>(&'a self) -> ColIterPtr<'b, T, R, C, Self> { ColIterPtr::new(self) }
 
 	fn slice_as_col_iter<'a: 'b, 'b, CC: SliceRange<C>>(&'a self, range: CC) -> ColIterPtr<'b, T, R, C, Self> {
 		ColIterPtr::from_range(self, range.begin(), range.end())
 	}
 
-	// Slice
-	#[inline]
-	fn slice_rows<'b: 'c, 'c, RR: SliceRange<R>>(&'b self, range: RR) -> Slice<'c, T, RR::Size, Self::RStride, C, Self::CStride> {
-		assert!(range.end() <= self.row_count(), "Slice is out of bounds!");
-		//TODO: cound check
-		Slice::new(unsafe {
-			PtrStorage::new(
-				self.as_row_ptr(range.begin()),
-				range.size(),
-				self.col_dim(),
-				self.row_stride_dim(),
-				self.col_stride_dim(),
-			)
-		})
-	}
+	fn as_col_slice_iter<'a: 'b, 'b>(&'a self) -> ColSliceIter<'b, T, R, C, Self> { ColSliceIter::new(self) }
 
-	#[inline]
-	fn slice_cols<'b: 'c, 'c, CR: SliceRange<C>>(&'b self, range: CR) -> Slice<'c, T, R, Self::RStride, CR::Size, Self::CStride> {
-		assert!(range.end() <= self.col_count(), "Slice is out of bounds!");
-		Slice::new(unsafe {
-			PtrStorage::new(
-				self.as_col_ptr(range.begin()),
-				self.row_dim(),
-				range.size(),
-				self.row_stride_dim(),
-				self.col_stride_dim(),
-			)
-		})
-	}
-
-	#[inline]
-	fn slice<'b: 'c, 'c, RR: SliceRange<R>, CR: SliceRange<C>>(&'b self, range_rows: RR, range_cols: CR)
-		-> Slice<'c, T, RR::Size, Self::RStride, CR::Size, Self::CStride>
-	{
-		assert!(range_cols.end() <= self.col_count() && range_rows.end() <= self.row_count(), "Slice is out of bounds!");
-		Slice::new(unsafe {
-			PtrStorage::new(
-				self.get_index_ptr_unchecked(self.index(range_rows.begin(), range_cols.begin())),
-				range_rows.size(),
-				range_cols.size(),
-				self.row_stride_dim(),
-				self.col_stride_dim(),
-			)
-		})
+	fn as_col_slice_par_iter<'a: 'b, 'b>(&'a self) -> ParColSliceIterSplit<'b, T, R, Self::RStride, Self::CStride> {
+		ParColSliceIterSplit::from_storage(self)
 	}
 }
 

@@ -85,6 +85,19 @@ macro_rules! ptr_storage (
 ptr_storage!(PtrStorage, *const T);
 ptr_storage!(PtrMutStorage, *mut T);
 
+// TODO: any suggestions?
+unsafe impl<'a, T, R, RS, C, CS> Send for PtrStorage<'a, T, R, RS, C, CS>
+	where T: Scalar, R: Dim, RS: Dim, C: Dim, CS: Dim {}
+
+unsafe impl<'a, T, R, RS, C, CS> Send for PtrMutStorage<'a, T, R, RS, C, CS>
+	where T: Scalar, R: Dim, RS: Dim, C: Dim, CS: Dim {}
+
+unsafe impl<'a, T, R, RS, C, CS> Sync for PtrStorage<'a, T, R, RS, C, CS>
+	where T: Scalar, R: Dim, RS: Dim, C: Dim, CS: Dim {}
+
+unsafe impl<'a, T, R, RS, C, CS> Sync for PtrMutStorage<'a, T, R, RS, C, CS>
+	where T: Scalar, R: Dim, RS: Dim, C: Dim, CS: Dim {}
+
 impl<'a, T, R, RS, C, CS> StorageMut<T, R, C> for PtrMutStorage<'a, T, R, RS, C, CS>
 	where T: Scalar, R: Dim, RS: Dim, C: Dim, CS: Dim
 {

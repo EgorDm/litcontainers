@@ -51,7 +51,7 @@ pub trait ElementaryScalar: Scalar + PartialOrd
 }
 
 pub trait Scalar:
-	Copy + Clone + Debug + Sized + Default +
+	Copy + Clone + Debug + Sized + Default + Send + Sync +
 	Add<Output=Self> + AddAssign<Self> +
 	Sub<Output=Self> + SubAssign<Self> +
 	Mul<Output=Self> + MulAssign<Self> +
