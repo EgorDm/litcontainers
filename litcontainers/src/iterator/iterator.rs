@@ -74,10 +74,15 @@ macro_rules! iter_ptr_impl {
 
 			#[inline]
 			fn size_hint(&self) -> (usize, Option<usize>) {
-				let size = (self.cursor_end - self.cursor) * self.storage.$scnd_size_fn();
+				let line_pos = (((self.ptr_end as usize - self.ptr as usize) / std::mem::size_of::<T>()) as f32 / self.storage.$scnd_stride_fn() as f32).ceil() as usize;
+				let size = (self.cursor_end - self.cursor) * self.storage.$scnd_size_fn() - (self.storage.$scnd_size_fn() - line_pos);
 				(size, Some(size))
 			}
 		}
+
+		impl<'a, T, R, C, S> ExactSizeIterator for $Name<'a, T, R, C, S>
+			where T: Scalar + 'a, R: Dim, C: Dim, S: $StorageType<T, R, C>
+		{}
 	}
 }
 

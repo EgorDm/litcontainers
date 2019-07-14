@@ -25,10 +25,10 @@ fn iter() {
 #[test]
 fn size() {
 	let s = mock_container();
-	assert_eq!(s.slice_as_row_iter(1).size_hint().0, s.col_count());
-	assert_eq!(s.slice_as_row_iter(0..2).size_hint().0, 2 * s.col_count());
-	assert_eq!(s.slice_as_col_iter(1).size_hint().0, s.row_count());
-	assert_eq!(s.slice_as_col_iter(0..2).size_hint().0, 2 * s.row_count());
+	assert_eq!(s.slice_as_row_iter(1).len(), s.col_count());
+	assert_eq!(s.slice_as_row_iter(0..2).len(), 2 * s.col_count());
+	assert_eq!(s.slice_as_col_iter(1).len(), s.row_count());
+	assert_eq!(s.slice_as_col_iter(0..2).len(), 2 * s.row_count());
 }
 
 #[test]
@@ -95,5 +95,5 @@ fn parallel_slice() {
 		.map(|col| col.sum())
 		.sum();
 
-	dbg!(res);
+	assert_eq!(res, 21.);
 }
