@@ -145,3 +145,6 @@ pub trait StorageMut<T, R, C>: Storage<T, R, C>
 		}
 	}
 }
+
+impl<T, R, C, S> SliceableMut<T, R, C> for S
+	where T: Scalar, R: Dim, C: Dim, S: StorageMut<T, R, C> {}

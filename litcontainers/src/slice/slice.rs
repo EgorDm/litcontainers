@@ -180,3 +180,43 @@ impl<'a, T, R, C, S> Display for SliceBase<'a, T, R, C, S>
 		write!(f, "{}", Fmt(|f| print_storage(self, f)))
 	}
 }
+
+impl<'a, T, R, RS, C, CS> Slice<'a, T, R, RS, C, CS>
+	where T: Scalar, R: Dim, RS: Dim, C: Dim, CS: Dim
+{
+	pub fn split_at_row<P: Dim>(self, pos: P)
+		-> (Slice<'a, T, P, RS, C, CS>, Slice<'a, T, <R as DimSub<P>>::Output, RS, C, CS>)
+		where P: Dim, R: DimSub<P>
+	{
+		let (l, r) = self.storage.split_at_row(pos);
+		(Slice::new(l), Slice::new(r))
+	}
+
+	pub fn split_at_col<P: Dim>(self, pos: P)
+		-> (Slice<'a, T, R, RS, P, CS>, Slice<'a, T, R, RS, <C as DimSub<P>>::Output, CS>)
+		where P: Dim, C: DimSub<P>
+	{
+		let (l, r) = self.storage.split_at_col(pos);
+		(Slice::new(l), Slice::new(r))
+	}
+}
+
+impl<'a, T, R, RS, C, CS> SliceMut<'a, T, R, RS, C, CS>
+	where T: Scalar, R: Dim, RS: Dim, C: Dim, CS: Dim
+{
+	pub fn split_at_row_mut<P: Dim>(self, pos: P)
+		-> (SliceMut<'a, T, P, RS, C, CS>, SliceMut<'a, T, <R as DimSub<P>>::Output, RS, C, CS>)
+		where P: Dim, R: DimSub<P>
+	{
+		let (l, r) = self.storage.split_at_row_mut(pos);
+		(SliceMut::new(l), SliceMut::new(r))
+	}
+
+	pub fn split_at_col_mut<P: Dim>(self, pos: P)
+		-> (SliceMut<'a, T, R, RS, P, CS>, SliceMut<'a, T, R, RS, <C as DimSub<P>>::Output, CS>)
+		where P: Dim, C: DimSub<P>
+	{
+		let (l, r) = self.storage.split_at_col_mut(pos);
+		(SliceMut::new(l), SliceMut::new(r))
+	}
+}

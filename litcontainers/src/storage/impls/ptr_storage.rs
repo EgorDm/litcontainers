@@ -97,7 +97,7 @@ impl<'a, T, R, RS, CS> PtrStorage<'a, T, R, RS, Dynamic, CS>
 {
 	pub fn shift_col_to<S, RO, CO>(&mut self, storage: &S, col_offset: usize, col_count: usize)
 		where RO: Dim, CO: Dim,
-			S: Storage<T, RO, CO, RStride=<Self as Storage<T, R, Dynamic>>::RStride, CStride=<Self as Storage<T, R, Dynamic>>::CStride>
+		      S: Storage<T, RO, CO, RStride=<Self as Storage<T, R, Dynamic>>::RStride, CStride=<Self as Storage<T, R, Dynamic>>::CStride>
 	{
 		assert!(col_offset + col_count <= storage.col_count());
 		assert!(self.row_count() == storage.row_count());
@@ -117,5 +117,115 @@ impl<'a, T, R, RS, CS> PtrMutStorage<'a, T, R, RS, Dynamic, CS>
 		assert!(self.row_count() == storage.row_count());
 		self.col_dim = Dynamic::new(col_count);
 		self.data = storage.as_col_mut_ptr(col_offset);
+	}
+}
+
+impl<'a, T, R, RS, C, CS> PtrStorage<'a, T, R, RS, C, CS>
+	where T: Scalar, R: Dim, RS: Dim, C: Dim, CS: Dim
+{
+	pub fn split_at_row<P: Dim>(self, pos: P)
+		-> (PtrStorage<'a, T, P, RS, C, CS>, PtrStorage<'a, T, <R as DimSub<P>>::Output, RS, C, CS>)
+		where P: Dim, R: DimSub<P>
+	{
+		assert!(pos.value() < self.row_count(), "Slice split is out of bounds or contains empty fragment!");
+		unsafe {
+			(
+				PtrStorage::new(
+					self.as_row_ptr(0),
+					pos.clone(),
+					self.col_dim(),
+					self.row_stride_dim(),
+					self.col_stride_dim(),
+				),
+				PtrStorage::new(
+					self.as_row_ptr(pos.value()),
+					R::sub(self.row_dim(), pos),
+					self.col_dim(),
+					self.row_stride_dim(),
+					self.col_stride_dim(),
+				)
+			)
+		}
+	}
+
+	pub fn split_at_col<P: Dim>(self, pos: P)
+		-> (PtrStorage<'a, T, R, RS, P, CS>, PtrStorage<'a, T, R, RS, <C as DimSub<P>>::Output, CS>)
+		where P: Dim, C: DimSub<P>
+	{
+		assert!(pos.value() < self.col_count(), "Slice split is out of bounds or contains empty fragment!");
+		unsafe {
+			(
+				PtrStorage::new(
+					self.as_row_ptr(0),
+					self.row_dim(),
+					pos.clone(),
+					self.row_stride_dim(),
+					self.col_stride_dim(),
+				),
+				PtrStorage::new(
+					self.as_row_ptr(pos.value()),
+					self.row_dim(),
+					C::sub(self.col_dim(), pos),
+					self.row_stride_dim(),
+					self.col_stride_dim(),
+				)
+			)
+		}
+	}
+}
+
+impl<'a, T, R, RS, C, CS> PtrMutStorage<'a, T, R, RS, C, CS>
+	where T: Scalar, R: Dim, RS: Dim, C: Dim, CS: Dim
+{
+	pub fn split_at_row_mut<P: Dim>(self, pos: P)
+		-> (PtrMutStorage<'a, T, P, RS, C, CS>, PtrMutStorage<'a, T, <R as DimSub<P>>::Output, RS, C, CS>)
+		where P: Dim, R: DimSub<P>
+	{
+		assert!(pos.value() < self.row_count(), "Slice split is out of bounds or contains empty fragment!");
+		let mut self_mut = self;
+		unsafe {
+			(
+				PtrMutStorage::new(
+					self_mut.as_row_mut_ptr(0),
+					pos.clone(),
+					self_mut.col_dim(),
+					self_mut.row_stride_dim(),
+					self_mut.col_stride_dim(),
+				),
+				PtrMutStorage::new(
+					self_mut.as_row_mut_ptr(pos.value()),
+					R::sub(self_mut.row_dim(), pos),
+					self_mut.col_dim(),
+					self_mut.row_stride_dim(),
+					self_mut.col_stride_dim(),
+				)
+			)
+		}
+	}
+
+	pub fn split_at_col_mut<P: Dim>(self, pos: P)
+		-> (PtrMutStorage<'a, T, R, RS, P, CS>, PtrMutStorage<'a, T, R, RS, <C as DimSub<P>>::Output, CS>)
+		where P: Dim, C: DimSub<P>
+	{
+		assert!(pos.value() < self.col_count(), "Slice split is out of bounds or contains empty fragment!");
+		let mut self_mut = self;
+		unsafe {
+			(
+				PtrMutStorage::new(
+					self_mut.as_row_mut_ptr(0),
+					self_mut.row_dim(),
+					pos.clone(),
+					self_mut.row_stride_dim(),
+					self_mut.col_stride_dim(),
+				),
+				PtrMutStorage::new(
+					self_mut.as_row_mut_ptr(pos.value()),
+					self_mut.row_dim(),
+					C::sub(self_mut.col_dim(), pos),
+					self_mut.row_stride_dim(),
+					self_mut.col_stride_dim(),
+				)
+			)
+		}
 	}
 }
