@@ -79,7 +79,7 @@ pub trait StorageMut<T, R, C>: Storage<T, R, C>
 
 	fn as_row_mut_iter<'a: 'b, 'b>(&'a mut self) -> RowIterMutPtr<'b, T, R, C, Self> { RowIterMutPtr::new(self) }
 
-	fn slice_as_row_mut_iter<'a: 'b, 'b, RR: SliceRange<R>>(&'a mut self, range: RR) -> RowIterMutPtr<'b, T, R, C, Self> {
+	fn slice_rows_as_mut_iter<'a: 'b, 'b, RR: SliceRange<R>>(&'a mut self, range: RR) -> RowIterMutPtr<'b, T, R, C, Self> {
 		RowIterMutPtr::from_range(self, range.begin(), range.end())
 	}
 
@@ -91,7 +91,7 @@ pub trait StorageMut<T, R, C>: Storage<T, R, C>
 
 	fn as_col_mut_iter<'a: 'b, 'b>(&'a mut self) -> ColIterMutPtr<'b, T, R, C, Self> { ColIterMutPtr::new(self) }
 
-	fn slice_as_col_mut_iter<'a: 'b, 'b, CC: SliceRange<C>>(&'a mut self, range: CC) -> ColIterMutPtr<'b, T, R, C, Self> {
+	fn slice_cols_as_mut_iter<'a: 'b, 'b, CC: SliceRange<C>>(&'a mut self, range: CC) -> ColIterMutPtr<'b, T, R, C, Self> {
 		ColIterMutPtr::from_range(self, range.begin(), range.end())
 	}
 

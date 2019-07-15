@@ -8,27 +8,27 @@ fn mock_container() -> ContainerRM<f64, U3, Dynamic> {
 #[test]
 fn iter() {
 	let mut s = mock_container();
-	assert_eq!(s.slice_as_row_iter(1).cloned().collect::<Vec<_>>(), vec![3., 4.]);
-	assert_eq!(s.slice_as_row_mut_iter(1).map(|x| *x).collect::<Vec<_>>(), vec![3., 4.]);
-	assert_eq!(s.slice_rows(1..3).slice_as_row_iter(0).cloned().collect::<Vec<_>>(), vec![3., 4.]);
-	assert_eq!(s.slice_cols(1).slice_as_row_iter(1).cloned().collect::<Vec<_>>(), vec![4.]);
+	assert_eq!(s.slice_rows_as_iter(1).cloned().collect::<Vec<_>>(), vec![3., 4.]);
+	assert_eq!(s.slice_rows_as_mut_iter(1).map(|x| *x).collect::<Vec<_>>(), vec![3., 4.]);
+	assert_eq!(s.slice_rows(1..3).slice_rows_as_iter(0).cloned().collect::<Vec<_>>(), vec![3., 4.]);
+	assert_eq!(s.slice_cols(1).slice_rows_as_iter(1).cloned().collect::<Vec<_>>(), vec![4.]);
 
-	assert_eq!(s.slice_as_col_iter(1).cloned().collect::<Vec<_>>(), vec![2., 4., 6.]);
-	assert_eq!(s.slice_as_col_mut_iter(1).map(|x| *x).collect::<Vec<_>>(), vec![2., 4., 6.]);
-	assert_eq!(s.slice_rows(1..3).slice_as_col_iter(1).cloned().collect::<Vec<_>>(), vec![4., 6.]);
-	assert_eq!(s.slice_cols(1).slice_as_col_iter(0).cloned().collect::<Vec<_>>(), vec![2., 4., 6.]);
+	assert_eq!(s.slice_cols_as_iter(1).cloned().collect::<Vec<_>>(), vec![2., 4., 6.]);
+	assert_eq!(s.slice_cols_as_mut_iter(1).map(|x| *x).collect::<Vec<_>>(), vec![2., 4., 6.]);
+	assert_eq!(s.slice_rows(1..3).slice_cols_as_iter(1).cloned().collect::<Vec<_>>(), vec![4., 6.]);
+	assert_eq!(s.slice_cols(1).slice_cols_as_iter(0).cloned().collect::<Vec<_>>(), vec![2., 4., 6.]);
 
-	assert_eq!(s.slice_as_row_iter(2).cloned().collect::<Vec<_>>(), vec![5., 6.]);
+	assert_eq!(s.slice_rows_as_iter(2).cloned().collect::<Vec<_>>(), vec![5., 6.]);
 	assert_eq!(s.as_iter().cloned().collect::<Vec<_>>(), vec![1., 2., 3., 4., 5., 6.]);
 }
 
 #[test]
 fn size() {
 	let s = mock_container();
-	assert_eq!(s.slice_as_row_iter(1).len(), s.col_count());
-	assert_eq!(s.slice_as_row_iter(0..2).len(), 2 * s.col_count());
-	assert_eq!(s.slice_as_col_iter(1).len(), s.row_count());
-	assert_eq!(s.slice_as_col_iter(0..2).len(), 2 * s.row_count());
+	assert_eq!(s.slice_rows_as_iter(1).len(), s.col_count());
+	assert_eq!(s.slice_rows_as_iter(0..2).len(), 2 * s.col_count());
+	assert_eq!(s.slice_cols_as_iter(1).len(), s.row_count());
+	assert_eq!(s.slice_cols_as_iter(0..2).len(), 2 * s.row_count());
 }
 
 #[test]
