@@ -63,8 +63,6 @@ fn ops_sci() {
 	assert_eq!((&s).pow(2).as_slice(), [1., 4., 9., 16., 25., 36.]);
 }
 
-
-
 #[test]
 fn splittable_iter() {
 	let mut s = ContainerRM::from_vec(U3, Dynamic::new(2), vec![1., 2., 3., 4., 5., 6.]);
@@ -72,18 +70,9 @@ fn splittable_iter() {
 	let iter = RowSliceIterSplitMut::new(slice);
 
 	let (i1, i2) = iter.split_at(1);
-
-	for part in i1 {
-		println!("{}", part);
-	}
-
-	println!("Split");
-
-	for part in i2 {
-		println!("{}", part);
-	}
+	assert_eq!(i1.map(|sl| sl.iter()).flatten().collect::<Vec<_>>(), vec![1., 2.]);
+	assert_eq!(i2.map(|sl| sl.iter()).flatten().collect::<Vec<_>>(), vec![3., 4., 5., 6.]);
 }
-
 
 #[test]
 fn parallel_slice() {

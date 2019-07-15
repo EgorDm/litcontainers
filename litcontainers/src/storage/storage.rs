@@ -121,7 +121,11 @@ pub trait Storage<T, R, C>: SizedStorage<R, C> + Debug + Sized + Ownable<T, R, C
 	unsafe fn as_col_ptr_unchecked(&self, v: usize) -> *const T { self.get_index_ptr_unchecked(self.col_index(v)) }
 
 	// Iterator
+	fn iter<'a>(self) -> RowIterPtrOwned<'a, T, R, C, Self> { self.row_iter() }
+
 	fn as_iter<'a: 'b, 'b>(&'a self) -> RowIterPtr<'b, T, R, C, Self> { self.as_row_iter() }
+
+	fn row_iter<'a>(self) -> RowIterPtrOwned<'a, T, R, C, Self> { RowIterPtrOwned::new(self) }
 
 	fn as_row_iter<'a: 'b, 'b>(&'a self) -> RowIterPtr<'b, T, R, C, Self> { RowIterPtr::new(self) }
 
@@ -134,6 +138,8 @@ pub trait Storage<T, R, C>: SizedStorage<R, C> + Debug + Sized + Ownable<T, R, C
 	fn as_row_slice_par_iter<'a: 'b, 'b>(&'a self) -> ParRowSliceIterSplit<'b, T, C, Self::RStride, Self::CStride> {
 		ParRowSliceIterSplit::from_storage(self)
 	}
+
+	fn col_iter<'a>(self) -> ColIterPtrOwned<'a, T, R, C, Self> { ColIterPtrOwned::new(self) }
 
 	fn as_col_iter<'a: 'b, 'b>(&'a self) -> ColIterPtr<'b, T, R, C, Self> { ColIterPtr::new(self) }
 
