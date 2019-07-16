@@ -2,6 +2,7 @@ use crate::format::*;
 use crate::storage::*;
 use std::marker::PhantomData;
 use std::fmt::{Display, Formatter, Error};
+use std::ops::{Index, IndexMut};
 
 /// Container storing scalar values in a col major order
 pub type ContainerCM<T, R, C> = Container<T, R, C, VecStorageCM<T, R, C>>;
@@ -106,3 +107,25 @@ impl<T, R, C, S> Display for Container<T, R, C, S>
 		write!(f, "{}", Fmt(|f| print_storage(self, f)))
 	}
 }
+
+impl<T, R, C, S> Index<usize> for Container<T, R, C, S>
+	where T: Scalar, R: Dim, C: Dim, S: StorageMut<T, R, C> + StorageConstructor<T, R, C>
+{
+	type Output = T;
+
+	fn index(&self, index: usize) -> &Self::Output {
+		assert!(index < self.size());
+		unsafe { &*self.get_index_ptr_unchecked(index) }
+	}
+}
+
+impl<T, R, C, S> IndexMut<usize> for Container<T, R, C, S>
+	where T: Scalar, R: Dim, C: Dim, S: StorageMut<T, R, C> + StorageConstructor<T, R, C>
+{
+	fn index_mut(&mut self, index: usize) -> &mut Self::Output {
+		assert!(index < self.size());
+		unsafe { &mut *self.get_index_mut_ptr_unchecked(index) }
+	}
+}
+
+

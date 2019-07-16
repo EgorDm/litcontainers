@@ -4,6 +4,7 @@ use std::marker::PhantomData;
 use crate::container::Container;
 use crate::slice::offset::*;
 use std::fmt::{Display, Formatter, Error};
+use std::ops::{Index, IndexMut};
 
 
 /// Slice containing references to scalar values.
@@ -78,7 +79,7 @@ impl<'a, T, R, C, S> Ownable<T, R, C> for SliceBase<'a, T, R, C, S>
 impl<'a, T, R, C, S> StorageMut<T, R, C> for SliceBase<'a, T, R, C, S>
 	where T: Scalar, R: Dim, C: Dim, S: StorageMut<T, R, C>
 {
-	unsafe fn get_index_mut_ptr_unchecked(&mut self, i: usize) -> *mut T { self. storage.get_index_mut_ptr_unchecked(i) }
+	unsafe fn get_index_mut_ptr_unchecked(&mut self, i: usize) -> *mut T { self.storage.get_index_mut_ptr_unchecked(i) }
 }
 
 impl<'a, T, C, S> OffsetableRowSlice<T, C> for SliceBase<'a, T, Dynamic, C, S>
@@ -181,6 +182,26 @@ impl<'a, T, R, C, S> Display for SliceBase<'a, T, R, C, S>
 	}
 }
 
+impl<'a, T, R, C, S> Index<usize> for SliceBase<'a, T, R, C, S>
+	where T: Scalar, R: Dim, C: Dim, S: Storage<T, R, C>
+{
+	type Output = T;
+
+	fn index(&self, index: usize) -> &Self::Output {
+		assert!(index < self.size());
+		unsafe { &*self.get_index_ptr_unchecked(index) }
+	}
+}
+
+impl<'a, T, R, C, S> IndexMut<usize> for SliceBase<'a, T, R, C, S>
+	where T: Scalar, R: Dim, C: Dim, S: StorageMut<T, R, C>
+{
+	fn index_mut(&mut self, index: usize) -> &mut Self::Output {
+		assert!(index < self.size());
+		unsafe { &mut *self.get_index_mut_ptr_unchecked(index) }
+	}
+}
+
 impl<'a, T, R, RS, C, CS> Slice<'a, T, R, RS, C, CS>
 	where T: Scalar, R: Dim, RS: Dim, C: Dim, CS: Dim
 {
@@ -220,3 +241,4 @@ impl<'a, T, R, RS, C, CS> SliceMut<'a, T, R, RS, C, CS>
 		(SliceMut::new(l), SliceMut::new(r))
 	}
 }
+
