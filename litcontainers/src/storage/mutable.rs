@@ -112,6 +112,48 @@ pub trait StorageMut<T, R, C>: Storage<T, R, C> + IndexMut<usize>
 			*t = *f;
 		}
 	}
+
+	fn join_cols<SL, CL, SR, CR>(self, l: &SL, r: &SR) -> Self
+		where SL: Storage<T, R, CL>, SR: Storage<T, R, CR>, CL: Dim + DimAdd<CR, Output=C>, CR: Dim
+	{
+		unsafe { self.join_cols_unchecked(l, r) }
+	}
+
+	unsafe fn join_cols_unchecked<SL, CL, SR, CR>(self, l: &SL, r: &SR) -> Self
+		where SL: Storage<T, R, CL>, SR: Storage<T, R, CR>, CL: Dim, CR: Dim
+	{
+		assert_eq!(l.col_count() + r.col_count(), self.col_count(), "Columns must add up");
+		let mut self_mut = self;
+		for (mut out_row, (l_row, r_row)) in self_mut.as_row_slice_mut_iter()
+			.zip(l.as_row_slice_iter().zip(r.as_row_slice_iter())) {
+
+			for (out_col, in_col) in out_row.as_iter_mut().zip(l_row.iter().chain(r_row.iter())) {
+				*out_col = in_col;
+			}
+		}
+		self_mut
+	}
+
+	fn join_rows<SL, RL, SR, RR>(self, l: &SL, r: &SR) -> Self
+		where SL: Storage<T, RL, C>, SR: Storage<T, RR, C>, RL: Dim + DimAdd<RR, Output=R>, RR: Dim
+	{
+		unsafe { self.join_rows_unchecked(l, r) }
+	}
+
+	unsafe fn join_rows_unchecked<SL, RL, SR, RR>(self, l: &SL, r: &SR) -> Self
+		where SL: Storage<T, RL, C>, SR: Storage<T, RR, C>, RL: Dim + DimAdd<RR, Output=R>, RR: Dim
+	{
+		assert_eq!(l.row_count() + r.row_count(), self.row_count(), "Columns must add up");
+		let mut self_mut = self;
+		for (mut out_col, (l_col, r_col)) in self_mut.as_col_slice_mut_iter()
+			.zip(l.as_col_slice_iter().zip(r.as_col_slice_iter())) {
+
+			for (out_row, in_row) in out_col.as_iter_mut().zip(l_col.iter().chain(r_col.iter())) {
+				*out_row = in_row;
+			}
+		}
+		self_mut
+	}
 }
 
 impl<T, R, C, S> SliceableMut<T, R, C> for S

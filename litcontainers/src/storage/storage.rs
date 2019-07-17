@@ -153,6 +153,34 @@ pub trait Storage<T, R, C>: SizedStorage<R, C> + Debug + Sized + Ownable<T, R, C
 	fn as_col_slice_par_iter<'a: 'b, 'b>(&'a self) -> ParColSliceIterSplit<'b, T, R, Self::RStride, Self::CStride> {
 		ParColSliceIterSplit::from_storage(self)
 	}
+
+	fn flip(&self) -> Self::OwnedType {
+		let mut ret = self.clone_owned();
+		for (i, out_elem) in ret.as_iter_mut().enumerate() {
+			*out_elem = self[self.size() - 1 - i]
+		}
+		ret
+	}
+
+	fn flip_rows(&self) -> Self::OwnedType {
+		let mut ret = self.clone_owned();
+		for (mut out_row, row) in ret.as_row_slice_mut_iter().zip(self.as_row_slice_iter()) {
+			for (i, out_col) in out_row.as_iter_mut().enumerate() {
+				*out_col = row.get(0, self.col_count() - 1 - i);
+			}
+		}
+		ret
+	}
+
+	fn flip_cols(&self) -> Self::OwnedType {
+		let mut ret = self.clone_owned();
+		for (mut out_col, col) in ret.as_col_slice_mut_iter().zip(self.as_col_slice_iter()) {
+			for (i, out_row) in out_col.as_iter_mut().enumerate() {
+				*out_row = col.get(self.row_count() - 1 - i, 0);
+			}
+		}
+		ret
+	}
 }
 
 impl<T, R, C, S> Sliceable<T, R, C> for S
