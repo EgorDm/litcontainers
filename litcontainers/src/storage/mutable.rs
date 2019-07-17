@@ -3,8 +3,9 @@ use crate::storage::{Storage};
 use crate::iterator::*;
 use std::slice;
 use crate::slice::{SliceRange, SliceableMut};
+use std::ops::IndexMut;
 
-pub trait StorageMut<T, R, C>: Storage<T, R, C>
+pub trait StorageMut<T, R, C>: Storage<T, R, C> + IndexMut<usize>
 	where T: Scalar, R: Dim, C: Dim
 {
 	#[inline]
@@ -27,7 +28,7 @@ pub trait StorageMut<T, R, C>: Storage<T, R, C>
 
 	#[inline]
 	unsafe fn get_mut_ptr_unchecked(&mut self, r: usize, c: usize) -> *mut T {
-		self.get_index_mut_ptr_unchecked(self.index(r, c))
+		self.get_index_mut_ptr_unchecked(self.calc_index(r, c))
 	}
 
 	#[inline]
@@ -35,13 +36,13 @@ pub trait StorageMut<T, R, C>: Storage<T, R, C>
 
 	#[inline]
 	unsafe fn get_mut_unchecked(&mut self, r: usize, c: usize) -> &mut T {
-		self.get_index_mut_ptr_unchecked(self.index(r, c)).as_mut().unwrap()
+		self.get_index_mut_ptr_unchecked(self.calc_index(r, c)).as_mut().unwrap()
 	}
 
 	// Row Contigious Access Functions
 	#[inline]
 	fn as_row_mut_slice<'b, 'a: 'b>(&'a mut self, v: usize) -> &'b mut [T] {
-		let size = self.index(v, self.col_count() - 1) - self.index(v, 0) + 1;
+		let size = self.calc_index(v, self.col_count() - 1) - self.calc_index(v, 0) + 1;
 		unsafe { slice::from_raw_parts_mut(self.as_row_mut_ptr(v), size) }
 	}
 
@@ -59,7 +60,7 @@ pub trait StorageMut<T, R, C>: Storage<T, R, C>
 	// Col Contigious Access Functions
 	#[inline]
 	fn as_col_mut_slice<'b, 'a: 'b>(&'a mut self, v: usize) -> &'b mut [T] {
-		let size = self.index(self.row_count() - 1, v) - self.index(0, v) + 1;
+		let size = self.calc_index(self.row_count() - 1, v) - self.calc_index(0, v) + 1;
 		unsafe { slice::from_raw_parts_mut(self.as_col_mut_ptr(v), size) }
 	}
 

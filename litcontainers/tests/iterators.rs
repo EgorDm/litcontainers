@@ -86,3 +86,22 @@ fn parallel_slice() {
 
 	assert_eq!(res, 21.);
 }
+
+#[test]
+fn flip() {
+	let s = mock_container();
+	assert_eq!(s.flip_rows().as_slice(), [2., 1., 4., 3., 6., 5.]);
+	assert_eq!(s.flip_cols().as_slice(), [5., 6., 3., 4., 1., 2.]);
+}
+
+#[test]
+fn join() {
+	let s1 = ContainerRM::from_vec(U2, Dynamic::new(2), vec![1., 2., 3., 4.]);
+	let s2 = ContainerRM::from_vec(U2, Dynamic::new(2), vec![1., 2., 3., 4.]);
+
+	let j1 = ContainerRM::zeros(s1.row_dim(), DimAdd::add(s1.col_dim(), s2.col_dim()));
+	assert_eq!(j1.join_cols(&s1, &s2).as_slice(), [1., 2., 1., 2., 3., 4., 3., 4.]);
+
+	let j2 = ContainerRM::zeros(DimAdd::add(s1.row_dim(), s2.row_dim()), s1.col_dim());
+	assert_eq!(j2.join_rows(&s1, &s2).as_slice(), [1., 2., 3., 4., 1., 2., 3., 4.]);
+}

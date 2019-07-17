@@ -3,6 +3,8 @@ use crate::storage::*;
 use std::marker::PhantomData;
 use std::mem;
 
+// TODO: implement double ended iterator?
+
 macro_rules! iter_ptr_impl {
 	(
 		struct $Name: ident : $StorageType: ident as $StorageRef: ty {

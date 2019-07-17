@@ -101,7 +101,7 @@ impl<T, R, S> DynamicColStorage<T, R> for Container<T, R, Dynamic, S>
 }
 
 impl<T, R, C, S> Display for Container<T, R, C, S>
-	where T: Scalar, R: Dim, C: Dim, S: StorageMut<T, R, C> + StorageConstructor<T, R, C>
+	where T: Scalar, R: Dim, C: Dim, S: StorageMut<T, R, C>
 {
 	fn fmt(&self, f: &mut Formatter) -> Result<(), Error> {
 		write!(f, "{}", Fmt(|f| print_storage(self, f)))
@@ -109,7 +109,7 @@ impl<T, R, C, S> Display for Container<T, R, C, S>
 }
 
 impl<T, R, C, S> Index<usize> for Container<T, R, C, S>
-	where T: Scalar, R: Dim, C: Dim, S: StorageMut<T, R, C> + StorageConstructor<T, R, C>
+	where T: Scalar, R: Dim, C: Dim, S: StorageMut<T, R, C>
 {
 	type Output = T;
 
@@ -120,7 +120,7 @@ impl<T, R, C, S> Index<usize> for Container<T, R, C, S>
 }
 
 impl<T, R, C, S> IndexMut<usize> for Container<T, R, C, S>
-	where T: Scalar, R: Dim, C: Dim, S: StorageMut<T, R, C> + StorageConstructor<T, R, C>
+	where T: Scalar, R: Dim, C: Dim, S: StorageMut<T, R, C>
 {
 	fn index_mut(&mut self, index: usize) -> &mut Self::Output {
 		assert!(index < self.size());

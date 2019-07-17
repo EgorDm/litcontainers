@@ -1,6 +1,7 @@
 use crate::format::*;
 use crate::storage::{Storage, SizedStorage, StorageMut, DynamicRowStorage, DynamicColStorage, StorageConstructor, Ownable};
 use std::cmp::min;
+use std::ops::{IndexMut, Index};
 
 
 #[repr(C)]
@@ -105,5 +106,25 @@ impl<T, R, C> Ownable<T, R, C> for VecStorageRM<T, R, C>
 
 	fn clone_owned(&self) -> Self::OwnedType {
 		Self::from_data(self.row_dim(), self.col_dim(), self.data.clone())
+	}
+}
+
+impl<T, R, C> Index<usize> for VecStorageRM<T, R, C>
+	where T: Scalar, R: Dim, C: Dim
+{
+	type Output = T;
+
+	fn index(&self, index: usize) -> &Self::Output {
+		assert!(index < self.size());
+		unsafe { &*self.get_index_ptr_unchecked(index) }
+	}
+}
+
+impl<T, R, C> IndexMut<usize> for VecStorageRM<T, R, C>
+	where T: Scalar, R: Dim, C: Dim
+{
+	fn index_mut(&mut self, index: usize) -> &mut Self::Output {
+		assert!(index < self.size());
+		unsafe { &mut *self.get_index_mut_ptr_unchecked(index) }
 	}
 }

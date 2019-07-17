@@ -1,13 +1,14 @@
 use crate::format::*;
-use crate::storage::{SizedStorage, Ownable};
+use crate::storage::{SizedStorage, Ownable, StorageMut};
 use crate::iterator::*;
 use std::fmt::Debug;
 use std::slice;
 use crate::slice::{SliceRange};
-use crate::Sliceable;
+use crate::{Sliceable, Container};
+use std::ops::Index;
 
 // TODO: implement proper equality?
-pub trait Storage<T, R, C>: SizedStorage<R, C> + Debug + Sized + Ownable<T, R, C> + Send + Sync
+pub trait Storage<T, R, C>: SizedStorage<R, C> + Debug + Sized + Ownable<T, R, C> + Send + Sync + Index<usize, Output=T>
 	where T: Scalar, R: Dim, C: Dim
 {
 	type RStride: Dim;
@@ -35,7 +36,7 @@ pub trait Storage<T, R, C>: SizedStorage<R, C> + Debug + Sized + Ownable<T, R, C
 	fn col_index(&self, p: usize) -> usize { p * self.col_stride() }
 
 	#[inline]
-	fn index(&self, r: usize, c: usize) -> usize { r * self.row_stride() + c * self.col_stride() }
+	fn calc_index(&self, r: usize, c: usize) -> usize { r * self.row_stride() + c * self.col_stride() }
 
 	#[inline]
 	fn size(&self) -> usize { self.row_count() * self.col_count() }
@@ -45,7 +46,7 @@ pub trait Storage<T, R, C>: SizedStorage<R, C> + Debug + Sized + Ownable<T, R, C
 
 	#[inline]
 	unsafe fn get_ptr_unchecked(&self, r: usize, c: usize) -> *const T {
-		self.get_index_ptr_unchecked(self.index(r, c))
+		self.get_index_ptr_unchecked(self.calc_index(r, c))
 	}
 
 	#[inline]
@@ -81,7 +82,7 @@ pub trait Storage<T, R, C>: SizedStorage<R, C> + Debug + Sized + Ownable<T, R, C
 	// Row Contigious Access Functions
 	#[inline]
 	fn row_index_span(&self, row: usize) -> usize {
-		self.index(row, self.col_count() - 1) - self.index(row, 0) + 1
+		self.calc_index(row, self.col_count() - 1) - self.calc_index(row, 0) + 1
 	}
 
 	#[inline]
@@ -102,7 +103,7 @@ pub trait Storage<T, R, C>: SizedStorage<R, C> + Debug + Sized + Ownable<T, R, C
 	// Col Contigious Access Functions
 	#[inline]
 	fn col_index_span(&self, col: usize) -> usize {
-		self.index(self.row_count() - 1, col) - self.index(0, col) + 1
+		self.calc_index(self.row_count() - 1, col) - self.calc_index(0, col) + 1
 	}
 
 	#[inline]

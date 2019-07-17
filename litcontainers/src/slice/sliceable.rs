@@ -41,7 +41,7 @@ pub trait Sliceable<T, R, C>: Storage<T, R, C>
 		assert!(range_cols.end() <= self.col_count() && range_rows.end() <= self.row_count(), "Slice is out of bounds!");
 		Slice::new(unsafe {
 			PtrStorage::new(
-				self.get_index_ptr_unchecked(self.index(range_rows.begin(), range_cols.begin())),
+				self.get_index_ptr_unchecked(self.calc_index(range_rows.begin(), range_cols.begin())),
 				range_rows.size(),
 				range_cols.size(),
 				self.row_stride_dim(),
@@ -90,7 +90,7 @@ pub trait SliceableMut<T, R, C>: StorageMut<T, R, C>
 		assert!(range_cols.end() <= self.col_count() && range_rows.end() <= self.row_count(), "Slice is out of bounds!");
 		SliceMut::new(unsafe {
 			PtrMutStorage::new(
-				self.get_index_mut_ptr_unchecked(self.index(range_rows.begin(), range_cols.begin())),
+				self.get_index_mut_ptr_unchecked(self.calc_index(range_rows.begin(), range_cols.begin())),
 				range_rows.size(),
 				range_cols.size(),
 				self.row_stride_dim(),

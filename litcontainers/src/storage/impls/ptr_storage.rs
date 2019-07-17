@@ -2,6 +2,7 @@ use crate::format::*;
 use std::marker::PhantomData;
 use crate::slice::offset::*;
 use crate::storage::*;
+use std::ops::{Index, IndexMut};
 
 macro_rules! ptr_storage (
 	($Name: ident, $Ptr: ty) => {
@@ -77,6 +78,17 @@ macro_rules! ptr_storage (
 			unsafe fn offset_col_unchecked(&mut self, v: usize) {
 				self.data = self.data.offset((v * self.col_stride()) as isize);
 				self.col_dim = Dynamic::from(self.col_count() - v);
+			}
+		}
+
+		impl<'a, T, R, RS, C, CS> Index<usize> for $Name<'a, T, R, RS, C, CS>
+			where T: Scalar, R: Dim, RS: Dim, C: Dim, CS: Dim
+		{
+			type Output = T;
+
+			fn index(&self, index: usize) -> &Self::Output {
+				assert!(index < self.size());
+				unsafe { &*self.get_index_ptr_unchecked(index) }
 			}
 		}
 	}
@@ -240,5 +252,14 @@ impl<'a, T, R, RS, C, CS> PtrMutStorage<'a, T, R, RS, C, CS>
 				)
 			)
 		}
+	}
+}
+
+impl<'a, T, R, RS, C, CS> IndexMut<usize> for PtrMutStorage<'a, T, R, RS, C, CS>
+	where T: Scalar, R: Dim, RS: Dim, C: Dim, CS: Dim
+{
+	fn index_mut(&mut self, index: usize) -> &mut Self::Output {
+		assert!(index < self.size());
+		unsafe { &mut *self.get_index_mut_ptr_unchecked(index) }
 	}
 }

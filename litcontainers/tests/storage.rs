@@ -20,7 +20,7 @@ fn sized() {
 fn indexing() {
 	let s = mock_container();
 
-	assert_eq!(s.index(1, 1), 3);
+	assert_eq!(s.calc_index(1, 1), 3);
 	assert_eq!(s.row_index(2), 4);
 	assert_eq!(s.col_index(2), 2);
 	assert_eq!(s.get(1, 1), 4.);
