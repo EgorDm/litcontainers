@@ -15,10 +15,10 @@ pub trait StorageConstructor<T, R, C>: StorageMut<T, R, C>
 	}
 
 	// Crate a container from a vector containing the data. Data must be stored in row wise order.
-	fn from_vec(rows: R, cols: C, data: Vec<T>) -> Self {
+	fn from_vec(rows: R, cols: C, data: &[T]) -> Self {
 		assert_eq!(rows.value() * cols.value(), data.len());
 		let mut ret = Self::zeros(rows, cols);
-		for (o, i) in ret.as_iter_mut().zip(data) { *o = i; }
+		for (o, i) in ret.as_iter_mut().zip(data) { *o = *i; }
 		ret
 	}
 

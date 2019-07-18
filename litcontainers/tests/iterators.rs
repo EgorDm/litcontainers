@@ -2,7 +2,7 @@ use litcontainers::*;
 use rayon::prelude::*;
 
 fn mock_container() -> ContainerRM<f64, U3, Dynamic> {
-	ContainerRM::from_vec(U3, Dynamic::new(2), vec![1., 2., 3., 4., 5., 6.])
+	ContainerRM::from_vec(U3, Dynamic::new(2), &[1., 2., 3., 4., 5., 6.])
 }
 
 #[test]
@@ -33,8 +33,8 @@ fn size() {
 
 #[test]
 fn ops() {
-	let s = ContainerRM::from_vec(U3, Dynamic::new(2), vec![1., 2., 3., 4., 5., 6.]);
-	let s1 = ContainerCM::from_vec(U3, Dynamic::new(2), vec![1., 2., 3., 4., 5., 6.]);
+	let s = ContainerRM::from_vec(U3, Dynamic::new(2), &[1., 2., 3., 4., 5., 6.]);
+	let s1 = ContainerCM::from_vec(U3, Dynamic::new(2), &[1., 2., 3., 4., 5., 6.]);
 
 	assert_eq!((&s + &s1).as_slice(), [2., 4., 6., 8., 10., 12.]);
 	assert_eq!((&s * &s1).as_slice(), [1., 4., 9., 16., 25., 36.]);
@@ -55,7 +55,7 @@ fn ops() {
 
 #[test]
 fn ops_sci() {
-	let s = ContainerRM::from_vec(U3, Dynamic::new(2), vec![1., 2., 3., 4., 5., 6.]);
+	let s = ContainerRM::from_vec(U3, Dynamic::new(2), &[1., 2., 3., 4., 5., 6.]);
 
 	assert_eq!((&s - 0.1).ceil().as_slice(), [1., 2., 3., 4., 5., 6.]);
 	assert_eq!((&s - 0.1).floor().as_slice(), [0., 1., 2., 3., 4., 5.]);
@@ -65,18 +65,18 @@ fn ops_sci() {
 
 #[test]
 fn splittable_iter() {
-	let mut s = ContainerRM::from_vec(U3, Dynamic::new(2), vec![1., 2., 3., 4., 5., 6.]);
+	let mut s = ContainerRM::from_vec(U3, Dynamic::new(2), &[1., 2., 3., 4., 5., 6.]);
 	let slice = s.slice_rows_mut(0..s.row_count());
 	let iter = RowSliceIterSplitMut::new(slice);
 
 	let (i1, i2) = iter.split_at(1);
-	assert_eq!(i1.map(|sl| sl.iter()).flatten().collect::<Vec<_>>(), vec![1., 2.]);
-	assert_eq!(i2.map(|sl| sl.iter()).flatten().collect::<Vec<_>>(), vec![3., 4., 5., 6.]);
+	assert_eq!(i1.map(|sl| sl.iter()).flatten().collect::<Vec<_>>(), &[1., 2.]);
+	assert_eq!(i2.map(|sl| sl.iter()).flatten().collect::<Vec<_>>(), &[3., 4., 5., 6.]);
 }
 
 #[test]
 fn parallel_slice() {
-	let mut s = ContainerRM::from_vec(U3, Dynamic::new(2), vec![1., 2., 3., 4., 5., 6.]);
+	let mut s = ContainerRM::from_vec(U3, Dynamic::new(2), &[1., 2., 3., 4., 5., 6.]);
 	let slice = s.slice_rows_mut(0..s.row_count());
 	let iter = RowSliceIterSplitMut::new(slice);
 
@@ -96,8 +96,8 @@ fn flip() {
 
 #[test]
 fn join() {
-	let s1 = ContainerRM::from_vec(U2, Dynamic::new(2), vec![1., 2., 3., 4.]);
-	let s2 = ContainerRM::from_vec(U2, Dynamic::new(2), vec![1., 2., 3., 4.]);
+	let s1 = ContainerRM::from_vec(U2, Dynamic::new(2), &[1., 2., 3., 4.]);
+	let s2 = ContainerRM::from_vec(U2, Dynamic::new(2), &[1., 2., 3., 4.]);
 
 	let j1 = ContainerRM::zeros(s1.row_dim(), DimAdd::add(s1.col_dim(), s2.col_dim()));
 	assert_eq!(j1.join_cols(&s1, &s2).as_slice(), [1., 2., 1., 2., 3., 4., 3., 4.]);

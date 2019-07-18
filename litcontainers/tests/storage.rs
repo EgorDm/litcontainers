@@ -1,7 +1,7 @@
 use litcontainers::*;
 
 fn mock_container() -> ContainerRM<f64, U3, Dynamic> {
-	ContainerRM::from_vec(U3, Dynamic::new(2), vec![1., 2., 3., 4., 5., 6.])
+	ContainerRM::from_vec(U3, Dynamic::new(2), &[1., 2., 3., 4., 5., 6.])
 }
 
 #[test]
@@ -31,22 +31,22 @@ fn indexing() {
 
 #[test]
 fn resizing_upsize() {
-	let mut s = ContainerRM::from_vec(Dynamic::new(2), Dynamic::new(2), vec![1., 2., 3., 4.]);
+	let mut s = ContainerRM::from_vec(Dynamic::new(2), Dynamic::new(2), &[1., 2., 3., 4.]);
 	s.set_col_count(3);
 	assert_eq!(s.col_count(), 3);
 	assert_eq!(s.as_slice(), [1., 2., 0., 3., 4., 0.]);
 
-	let mut s = ContainerRM::from_vec(Dynamic::new(2), Dynamic::new(2), vec![1., 2., 3., 4.]);
+	let mut s = ContainerRM::from_vec(Dynamic::new(2), Dynamic::new(2), &[1., 2., 3., 4.]);
 	s.set_row_count(3);
 	assert_eq!(s.row_count(), 3);
 	assert_eq!(s.as_slice(), [1., 2., 3., 4., 0., 0.]);
 
-	let mut s = ContainerCM::from_vec(Dynamic::new(2), Dynamic::new(2), vec![1., 2., 3., 4.]);
+	let mut s = ContainerCM::from_vec(Dynamic::new(2), Dynamic::new(2), &[1., 2., 3., 4.]);
 	s.set_col_count(3);
 	assert_eq!(s.col_count(), 3);
 	assert_eq!(s.as_slice(), [1., 3., 2., 4., 0., 0.]);
 
-	let mut s = ContainerCM::from_vec(Dynamic::new(2), Dynamic::new(2), vec![1., 2., 3., 4.]);
+	let mut s = ContainerCM::from_vec(Dynamic::new(2), Dynamic::new(2), &[1., 2., 3., 4.]);
 	s.set_row_count(3);
 	assert_eq!(s.row_count(), 3);
 	assert_eq!(s.as_slice(), [1., 3., 0., 2., 4., 0.]);
@@ -54,22 +54,22 @@ fn resizing_upsize() {
 
 #[test]
 fn resizing_downsize() {
-	let mut s = ContainerRM::from_vec(Dynamic::new(2), Dynamic::new(2), vec![1., 2., 3., 4.]);
+	let mut s = ContainerRM::from_vec(Dynamic::new(2), Dynamic::new(2), &[1., 2., 3., 4.]);
 	s.set_col_count(1);
 	assert_eq!(s.col_count(), 1);
 	assert_eq!(s.as_slice(), [1., 3.]);
 
-	let mut s = ContainerRM::from_vec(Dynamic::new(2), Dynamic::new(2), vec![1., 2., 3., 4.]);
+	let mut s = ContainerRM::from_vec(Dynamic::new(2), Dynamic::new(2), &[1., 2., 3., 4.]);
 	s.set_row_count(1);
 	assert_eq!(s.row_count(), 1);
 	assert_eq!(s.as_slice(), [1., 2.]);
 
-	let mut s = ContainerCM::from_vec(Dynamic::new(2), Dynamic::new(2), vec![1., 2., 3., 4.]);
+	let mut s = ContainerCM::from_vec(Dynamic::new(2), Dynamic::new(2), &[1., 2., 3., 4.]);
 	s.set_col_count(1);
 	assert_eq!(s.col_count(), 1);
 	assert_eq!(s.as_slice(), [1., 3.]);
 
-	let mut s = ContainerCM::from_vec(Dynamic::new(2), Dynamic::new(2), vec![1., 2., 3., 4.]);
+	let mut s = ContainerCM::from_vec(Dynamic::new(2), Dynamic::new(2), &[1., 2., 3., 4.]);
 	s.set_row_count(1);
 	assert_eq!(s.row_count(), 1);
 	assert_eq!(s.as_slice(), [1., 2.]);
