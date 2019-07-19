@@ -1,3 +1,6 @@
+#[macro_use]
+extern crate itertools;
+
 pub mod format;
 pub mod storage;
 pub mod iterator;
