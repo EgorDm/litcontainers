@@ -3,6 +3,7 @@ use std::mem::size_of;
 use std::ops::{Add, AddAssign, Sub, SubAssign, Mul, MulAssign, Div, DivAssign, Rem, RemAssign};
 use num_traits::{NumCast, Num, cast::cast, Float};
 use num_complex::Complex;
+use std::iter::Sum;
 
 #[allow(non_camel_case_types)]
 pub type c32 = Complex<f32>;
@@ -61,7 +62,7 @@ pub trait Scalar:
 	Mul<Output=Self> + MulAssign<Self> +
 	Div<Output=Self> + DivAssign<Self> +
 	Rem<Output=Self> + RemAssign<Self> +
-	Num + NumCast
+	Num + NumCast + Sum
 {
 	fn get_scalar_type() -> ScalarType;
 

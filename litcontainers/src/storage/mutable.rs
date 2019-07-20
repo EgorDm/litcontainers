@@ -113,6 +113,13 @@ pub trait StorageMut<T, R, C>: Storage<T, R, C> + IndexMut<usize>
 		}
 	}
 
+	#[inline]
+	fn fill(&mut self, value: T)
+	{
+		for o in self.as_iter_mut() { *o = value; }
+	}
+
+	// TODO: remove these joins. Use macro instead
 	fn join_cols<SL, CL, SR, CR>(self, l: &SL, r: &SR) -> Self
 		where SL: Storage<T, R, CL>, SR: Storage<T, R, CR>, CL: Dim + DimAdd<CR, Output=C>, CR: Dim
 	{
