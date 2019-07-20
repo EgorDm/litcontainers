@@ -13,10 +13,6 @@ fn construct() {
 	assert_eq!(cvec!(U3, &[1., 2., 3.]; f64).as_slice(), &[1., 2., 3.]);
 }
 
-fn mock_container() -> ContainerRM<f64, U3, Dynamic> {
-	ContainerRM::from_vec(U3, Dynamic::new(2), &[1., 2., 3., 4., 5., 6.])
-}
-
 #[test]
 fn join() {
 	let a = ContainerRM::from_vec(U2, Dynamic::new(2), &[1., 2., 3., 4.]);

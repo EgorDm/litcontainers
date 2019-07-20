@@ -1,4 +1,3 @@
-use crate::Dynamic;
 #[macro_export]
 macro_rules! rvec_zeros {
 	($d: expr) => { RowVec::zeros(U1, $d) };
@@ -22,6 +21,7 @@ macro_rules! cvec_zeros {
 macro_rules! cvec {
 	($d: expr, $v: expr) => { ColVec::from_vec($d, U1, $v) };
 	($d: expr, $v: expr; $T: ty) => { <ColVec<$T, _>>::from_vec($d, U1, $v) };
+	($v: expr) => { cvec!(Dynamic::new($v.len()), $v) };
 	($v: expr) => { cvec!(Dynamic::new($v.len()), $v) };
 }
 

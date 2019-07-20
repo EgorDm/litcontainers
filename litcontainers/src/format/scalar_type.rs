@@ -48,6 +48,10 @@ pub enum ScalarType {
 pub trait ElementaryScalar: Scalar + PartialOrd
 {
 	fn get_elementary_scalar_type() -> ScalarElementaryType;
+
+	fn max_val() -> Self;
+
+	fn min_val() -> Self;
 }
 
 pub trait Scalar:
@@ -82,6 +86,10 @@ impl ElementaryScalar for f32 {
 	fn get_elementary_scalar_type() -> ScalarElementaryType {
 		ScalarElementaryType::Float
 	}
+
+	fn max_val() -> Self { Self::max_value() }
+
+	fn min_val() -> Self { Self::min_value ()}
 }
 
 impl Scalar for f32 {
@@ -108,6 +116,10 @@ impl ElementaryScalar for f64 {
 	fn get_elementary_scalar_type() -> ScalarElementaryType {
 		ScalarElementaryType::Double
 	}
+
+	fn max_val() -> Self { Self::max_value() }
+
+	fn min_val() -> Self { Self::min_value ()}
 }
 
 impl Scalar for f64 {
@@ -134,6 +146,10 @@ impl ElementaryScalar for i32 {
 	fn get_elementary_scalar_type() -> ScalarElementaryType {
 		ScalarElementaryType::Int32
 	}
+
+	fn max_val() -> Self { Self::max_value() }
+
+	fn min_val() -> Self { Self::min_value ()}
 }
 
 impl Scalar for i32 {
@@ -158,6 +174,10 @@ impl ElementaryScalar for i64 {
 	fn get_elementary_scalar_type() -> ScalarElementaryType {
 		ScalarElementaryType::Int64
 	}
+
+	fn max_val() -> Self { Self::max_value() }
+
+	fn min_val() -> Self { Self::min_value ()}
 }
 
 impl Scalar for i64 {
@@ -180,6 +200,10 @@ impl ElementaryScalar for i16 {
 	fn get_elementary_scalar_type() -> ScalarElementaryType {
 		ScalarElementaryType::Int16
 	}
+
+	fn max_val() -> Self { Self::max_value() }
+
+	fn min_val() -> Self { Self::min_value ()}
 }
 
 impl Scalar for i16 {
@@ -204,6 +228,10 @@ impl ElementaryScalar for u8 {
 	fn get_elementary_scalar_type() -> ScalarElementaryType {
 		ScalarElementaryType::UInt8
 	}
+
+	fn max_val() -> Self { Self::max_value() }
+
+	fn min_val() -> Self { Self::min_value ()}
 }
 
 impl Scalar for u8 {

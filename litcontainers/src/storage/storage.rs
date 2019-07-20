@@ -3,8 +3,7 @@ use crate::storage::{SizedStorage, Ownable, StorageMut};
 use crate::iterator::*;
 use std::fmt::Debug;
 use std::slice;
-use crate::slice::{SliceRange};
-use crate::{Sliceable, Container};
+use crate::slice::{SliceRange, Sliceable};
 use std::ops::Index;
 
 // TODO: implement proper equality?
