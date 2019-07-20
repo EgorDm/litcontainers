@@ -7,6 +7,7 @@ pub mod impls;
 pub mod ownable;
 pub mod transpose;
 pub mod printing;
+pub mod simple_types;
 
 #[doc(inline)] pub use sized::*;
 #[doc(inline)] pub use storage::*;
@@ -17,3 +18,4 @@ pub mod printing;
 #[doc(inline)] pub use ownable::*;
 #[doc(inline)] pub use transpose::*;
 #[doc(inline)] pub use printing::*;
+#[doc(inline)] pub use simple_types::*;
