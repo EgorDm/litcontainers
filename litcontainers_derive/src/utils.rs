@@ -1,5 +1,4 @@
-use syn::{Meta, NestedMeta, Ident};
-use syn::export::Span;
+use syn::{Meta, NestedMeta};
 
 pub type AttrTypeHolder = Vec<syn::Ident>;
 

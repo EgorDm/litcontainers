@@ -1,5 +1,6 @@
 use crate::storage::*;
 use crate::format::{Dim, Scalar};
+use rand::Rng;
 
 pub trait StorageConstructor<T, R, C>: StorageMut<T, R, C>
 	where T: Scalar, R: Dim, C: Dim
@@ -12,6 +13,28 @@ pub trait StorageConstructor<T, R, C>: StorageMut<T, R, C>
 	#[inline]
 	fn zeros(rows: R, cols: C) -> Self {
 		Self::from_value(rows, cols, T::default())
+	}
+
+	/// Creates a container with all elements set to a random value
+	#[inline]
+	fn rand(rows: R, cols: C) -> Self
+		where rand::distributions::Standard: rand::distributions::Distribution<T>
+	{
+		let mut ret = Self::zeros(rows, cols);
+		let mut rng = rand::thread_rng();
+		for v in ret.as_iter_mut() { *v = rng.gen() }
+		ret
+	}
+
+	/// Creates a container with all elements set to a random value
+	#[inline]
+	fn rand_range(rows: R, cols: C, from: T, to: T) -> Self
+		where T: rand::distributions::uniform::SampleUniform
+	{
+		let mut ret = Self::zeros(rows, cols);
+		let mut rng = rand::thread_rng();
+		for v in ret.as_iter_mut() { *v = rng.gen_range(from, to) }
+		ret
 	}
 
 	// Crate a container from a vector containing the data. Data must be stored in row wise order.

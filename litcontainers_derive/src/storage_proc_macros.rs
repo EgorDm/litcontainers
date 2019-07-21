@@ -1,11 +1,11 @@
 use proc_macro::TokenStream;
-use syn::{parse_macro_input, parse_quote, DeriveInput, WhereClause, WherePredicate};
+use syn::{parse_macro_input, DeriveInput};
 use super::storage_meta_info::*;
 use crate::utils::*;
 
 
 pub fn sized_storage_derive(input: TokenStream) -> TokenStream {
-	storage_based_derive!(input, ast, name, impl_generics, ty_generics, where_clause, storage_field, storage_type, storage);
+	storage_based_derive!(input, ast, name, impl_generics, ty_generics, where_clause, storage_field, _storage_type, storage);
 
 	let StorageMetaInfo { row_dim_type, col_dim_type, .. } = storage;
 
@@ -48,7 +48,7 @@ pub fn storage_derive(input: TokenStream) -> TokenStream {
 }
 
 pub fn storage_mut_derive(input: TokenStream) -> TokenStream {
-	storage_based_derive!(input, ast, name, impl_generics, ty_generics, where_clause, storage_field, storage_type, storage);
+	storage_based_derive!(input, ast, name, impl_generics, ty_generics, where_clause, storage_field, _storage_type, storage);
 
 	let StorageMetaInfo { element_type, row_dim_type, col_dim_type, .. } = storage;
 

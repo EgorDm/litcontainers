@@ -10,11 +10,7 @@ mod utils;
 #[macro_use] mod storage_meta_info;
 mod storage_proc_macros;
 
-use quote::quote;
-use syn::{parse_macro_input, DeriveInput};
 use proc_macro::{TokenStream};
-
-use utils::*;
 
 
 #[proc_macro_derive(SizedStorage, attributes(storage_field, dimension_fields))]
