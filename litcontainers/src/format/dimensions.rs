@@ -74,6 +74,14 @@ pub trait Dim: Any + Debug + Copy + PartialEq + Send + Sync {
 	/// integer and `dim != Self::try_to_usize().unwrap()`.
 	fn from_usize(dim: usize) -> Self;
 
+	fn try_from_usize(dim: usize) -> Option<Self> {
+		match Self::try_to_usize() {
+			Some(v) if v == dim => Some(Self::from_usize(dim)),
+			None => Some(Self::from_usize(dim)),
+			_ => None
+		}
+	}
+
 	fn pfmt(&self, f: &mut Formatter) -> Result<(), Error>;
 }
 

@@ -33,6 +33,20 @@ impl Into<ScalarType> for ScalarElementaryType {
 	}
 }
 
+impl Into<Option<ScalarElementaryType>> for ScalarType {
+	fn into(self) -> Option<ScalarElementaryType> {
+		match self {
+			ScalarType::Float => Some(ScalarElementaryType::Float),
+			ScalarType::Double => Some(ScalarElementaryType::Double),
+			ScalarType::UInt8 => Some(ScalarElementaryType::UInt8),
+			ScalarType::Int16 => Some(ScalarElementaryType::Int16),
+			ScalarType::Int32 => Some(ScalarElementaryType::Int32),
+			ScalarType::Int64 => Some(ScalarElementaryType::Int64),
+			_ => None
+		}
+	}
+}
+
 // TODO: Refector Scalar -> Element and ElementaryType -> Scalar
 
 #[derive(Debug, Clone, Copy, Eq, PartialEq)]
