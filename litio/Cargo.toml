@@ -1,0 +1,12 @@
+[package]
+name = "litio"
+version = "0.1.0"
+authors = ["Egor Dmitriev <egordmitriev2@gmail.com>"]
+edition = "2018"
+
+[dependencies]
+litcontainers = {path = "../litcontainers/litcontainers"}
+num-traits = "0.2"
+serde_derive = "1.0.34"
+bincode = "1.0.0"
+serde = "1.0.34"
