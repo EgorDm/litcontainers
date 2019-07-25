@@ -5,7 +5,7 @@ authors = ["Egor Dmitriev <egordmitriev2@gmail.com>"]
 edition = "2018"
 
 [dependencies]
-litcontainers = {path = "../litcontainers/litcontainers"}
+litcontainers = {path = "../litcontainers"}
 num-traits = "0.2"
 serde_derive = "1.0.34"
 bincode = "1.0.0"
