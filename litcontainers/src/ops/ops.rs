@@ -1,3 +1,4 @@
+use crate::{Scalar, ElementaryScalar};
 macro_rules! unary_op_trait (
 	($Trait: ident, $method: ident, $TraitAssign: ident, $method_assign: ident) => {
 		pub trait $Trait {
@@ -68,10 +69,20 @@ pub trait ClampAssign<R> {
 	fn clamp_assign(&mut self, min: R, max: R);
 }
 
+pub fn clamp<T: ElementaryScalar>(x: T, min: T, max: T) -> T {
+	if x < min { min }
+	else if x > max { max }
+	else { x }
+}
+
 unary_simple_op_trait!(Sum, sum);
 unary_simple_op_trait!(RowSum, row_sum);
 unary_simple_op_trait!(ColSum, col_sum);
 unary_simple_op_trait!(Mean, mean);
+
+unary_simple_op_trait!(Maximum, maximum);
+unary_simple_op_trait!(Minimum, minimum);
+
 unary_simple_op_trait!(RowMean, row_mean);
 unary_simple_op_trait!(ColMean, col_mean);
 unary_simple_op_trait!(RowMax, row_max);

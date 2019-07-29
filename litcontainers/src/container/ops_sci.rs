@@ -171,3 +171,77 @@ impl<T, R, C, S> Mean for Container<T, R, C, S>
 		self.sum() / num_traits::cast(self.size()).unwrap()
 	}
 }
+
+impl<T, R, C, S> Maximum for Container<T, R, C, S>
+	where T: ElementaryScalar, R: Dim, C: Dim, S: StorageMut<T, R, C>
+{
+	type Output = T;
+
+	fn maximum(&self) -> Self::Output {
+		let mut ret = T::min_val();
+		for v in self.as_iter() {
+			if ret < *v { ret = *v; }
+		}
+		ret
+	}
+}
+
+impl<T, R, C, S> Minimum for Container<T, R, C, S>
+	where T: ElementaryScalar, R: Dim, C: Dim, S: StorageMut<T, R, C>
+{
+	type Output = T;
+
+	fn minimum(&self) -> Self::Output {
+		let mut ret = T::max_val();
+		for v in self.as_iter() {
+			if ret > *v { ret = *v; }
+		}
+		ret
+	}
+}
+
+// Clamp
+impl<T, R, C, S> Clamp<T> for Container<T, R, C, S>
+	where
+		T: Scalar + Float, R: Dim, C: Dim, S: StorageMut<T, R, C>
+{
+	type Output = <Self as Ownable<T, R, C>>::OwnedType;
+
+	fn clamp(self, min: T, max: T) -> Self::Output {
+		let mut ret = self.owned();
+		ret.mapv_inplace(move |x| {
+			if x < min { min }
+			else if x > max { max }
+			else { x }
+		});
+		ret
+	}
+}
+impl<T, R, C, S> Clamp<T> for &Container<T, R, C, S>
+	where
+		T: Scalar + Float, R: Dim, C: Dim, S: StorageMut<T, R, C>,
+{
+	type Output = Container<T, R, C, S::OwnedType>;
+
+	fn clamp(self, min: T, max: T) -> Self::Output {
+		let mut ret = self.clone_owned();
+		ret.mapv_inplace(move |x| {
+			if x < min { min }
+			else if x > max { max }
+			else { x }
+		});
+		ret
+	}
+}
+impl<T, R, C, S> ClampAssign<T> for Container<T, R, C, S>
+	where
+		T: Scalar + Float, R: Dim, C: Dim, S: StorageMut<T, R, C>
+{
+	fn clamp_assign(&mut self, min: T, max: T) {
+		self.mapv_inplace(move |x| {
+			if x < min { min }
+			else if x > max { max }
+			else { x }
+		});
+	}
+}
