@@ -59,6 +59,16 @@ impl<T, R, C> StorageMut<T, R, C> for VecStorageRM<T, R, C>
 	unsafe fn get_index_mut_ptr_unchecked(&mut self, i: usize) -> *mut T {
 		self.data.as_mut_ptr().offset(i as isize)
 	}
+
+	fn map_inplace<F: FnMut(&mut T)>(&mut self, mut f: F) {
+		unsafe {
+			let mut base = self.get_index_mut_ptr_unchecked(0);
+			for _ in 0..self.size() {
+				base = base.offset(1);
+				f(&mut *base);
+			}
+		}
+	}
 }
 
 impl<T, C> DynamicRowStorage<T, C> for VecStorageRM<T, Dynamic, C>

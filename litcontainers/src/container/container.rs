@@ -57,6 +57,8 @@ impl<T, R, C, S> StorageMut<T, R, C> for Container<T, R, C, S>
 	where T: Scalar, R: Dim, C: Dim, S: StorageMut<T, R, C>
 {
 	unsafe fn get_index_mut_ptr_unchecked(&mut self, i: usize) -> *mut T { self. storage.get_index_mut_ptr_unchecked(i) }
+
+	fn map_inplace<F: FnMut(&mut T)>(&mut self, f: F) { self.storage.map_inplace(f) }
 }
 
 impl<T, R, C, S> Ownable<T, R, C> for Container<T, R, C, S>

@@ -58,6 +58,16 @@ macro_rules! unary_simple_op_trait (
 	}
 );
 
+pub trait Clamp<R> {
+	type Output;
+
+	fn clamp(self, min: R, max: R) -> Self::Output;
+}
+
+pub trait ClampAssign<R> {
+	fn clamp_assign(&mut self, min: R, max: R);
+}
+
 unary_simple_op_trait!(Sum, sum);
 unary_simple_op_trait!(RowSum, row_sum);
 unary_simple_op_trait!(ColSum, col_sum);

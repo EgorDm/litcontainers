@@ -59,6 +59,8 @@ pub fn storage_mut_derive(input: TokenStream) -> TokenStream {
 			unsafe fn get_index_mut_ptr_unchecked(&mut self, i: usize) -> *mut #element_type {
 				self.#storage_field.get_index_mut_ptr_unchecked(i)
 			}
+
+			fn map_inplace<F: FnMut(&mut #element_type)>(&mut self, f: F) { self.#storage_field.map_inplace(f) }
 		}
 	})
 }

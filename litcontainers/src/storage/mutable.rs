@@ -76,6 +76,12 @@ pub trait StorageMut<T, R, C>: Storage<T, R, C> + IndexMut<usize>
 	}
 
 	// Iterator
+	fn map_inplace<F: FnMut(&mut T)>(&mut self, f: F);
+
+	fn mapv_inplace<F: FnMut(T) -> T>(&mut self, mut f: F) {
+		self.map_inplace(|v| *v = f(*v))
+	}
+
 	fn as_iter_mut<'a: 'b, 'b>(&'a mut self) -> RowIterMutPtr<'b, T, R, C, Self> { self.as_row_mut_iter() }
 
 	fn as_row_mut_iter<'a: 'b, 'b>(&'a mut self) -> RowIterMutPtr<'b, T, R, C, Self> { RowIterMutPtr::new(self) }
