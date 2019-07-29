@@ -117,12 +117,24 @@ impl<'a, T, R, RS, C, CS> StorageMut<T, R, C> for PtrMutStorage<'a, T, R, RS, C,
 
 	fn map_inplace<F: FnMut(&mut T)>(&mut self, mut f: F) {
 		// TODO: use one with smallest stride in inner loop?
-		for row in 0..self.row_count() {
-			let mut row_ptr = self.as_row_mut_ptr(row);
-			for _ in 0..self.col_count() {
-				unsafe {
-					f(&mut *row_ptr);
-					row_ptr = row_ptr.offset(self.col_stride() as isize);
+		if self.row_count() <= self.col_count() {
+			for row in 0..self.row_count() {
+				let mut row_ptr = self.as_row_mut_ptr(row);
+				for _ in 0..self.col_count() {
+					unsafe {
+						f(&mut *row_ptr);
+						row_ptr = row_ptr.offset(self.col_stride() as isize);
+					}
+				}
+			}
+		} else {
+			for col in 0..self.col_count() {
+				let mut col_ptr = self.as_col_mut_ptr(col);
+				for _ in 0..self.row_count() {
+					unsafe {
+						f(&mut *col_ptr);
+						col_ptr = col_ptr.offset(self.row_stride() as isize);
+					}
 				}
 			}
 		}

@@ -15,9 +15,7 @@ macro_rules! impl_unary_float_op (
 
 			fn $op_fn(self) -> Self::Output {
 				let mut ret = self.owned();
-				for o in ret.as_row_mut_iter() {
-					*o = o.$op_fn();
-				}
+				ret.mapv_inplace(move |v| v.$op_fn());
 				ret
 			}
 		}
@@ -30,9 +28,7 @@ macro_rules! impl_unary_float_op (
 
 			fn $op_fn(self) -> Self::Output {
 				let mut ret = self.clone_owned();
-				for o in ret.as_row_mut_iter() {
-					*o = o.$op_fn();
-				}
+				ret.mapv_inplace(move |v| v.$op_fn());
 				ret
 			}
 		}
@@ -42,9 +38,7 @@ macro_rules! impl_unary_float_op (
 				T: Scalar + $GroupTrait, R: Dim, C: Dim, S: StorageMut<T, R, C>
 		{
 			fn $op_assign_fn(&mut self) {
-				for o in self.as_row_mut_iter() {
-					*o = o.$op_fn();
-				}
+				self.mapv_inplace(move |v| v.$op_fn());
 			}
 		}
 	}
@@ -74,9 +68,7 @@ impl<T, R, C, S, RT> Pow<RT> for Container<T, R, C, S>
 
 	fn pow(self, rhs: RT) -> Self::Output {
 		let mut ret = self.owned();
-		for o in ret.as_row_mut_iter() {
-			*o = num_traits::Pow::pow(*o, rhs);
-		}
+		ret.mapv_inplace(move |v| num_traits::Pow::pow(v, rhs));
 		ret
 	}
 }
@@ -89,9 +81,7 @@ impl<T, R, C, S, RT> Pow<RT> for &Container<T, R, C, S>
 
 	fn pow(self, rhs: RT) -> Self::Output {
 		let mut ret = self.clone_owned();
-		for o in ret.as_row_mut_iter() {
-			*o = num_traits::Pow::pow(*o, rhs);
-		}
+		ret.mapv_inplace(move |v| num_traits::Pow::pow(v, rhs));
 		ret
 	}
 }
@@ -101,9 +91,7 @@ impl<T, R, C, S, RT> PowAssign<RT> for Container<T, R, C, S>
 		T: Scalar + num_traits::Pow<RT, Output=T>, R: Dim, C: Dim, S: StorageMut<T, R, C>, RT: Scalar
 {
 	fn pow_assign(&mut self, rhs: RT) {
-		for o in self.as_row_mut_iter() {
-			*o = num_traits::Pow::pow(*o, rhs);
-		}
+		self.mapv_inplace(move |v| num_traits::Pow::pow(v, rhs));
 	}
 }
 
@@ -117,9 +105,7 @@ macro_rules! impl_binary_float_op (
 
 			fn $op_fn(self, rhs: T) -> Self::Output {
 				let mut ret = self.owned();
-				for o in ret.as_row_mut_iter() {
-					*o = o.$op_fn(rhs);
-				}
+				ret.mapv_inplace(move |v| v.$op_fn(rhs));
 				ret
 			}
 		}
@@ -132,9 +118,7 @@ macro_rules! impl_binary_float_op (
 
 			fn $op_fn(self, rhs: T) -> Self::Output {
 				let mut ret = self.clone_owned();
-				for o in ret.as_row_mut_iter() {
-					*o = o.$op_fn(rhs);
-				}
+				ret.mapv_inplace(move |v| v.$op_fn(rhs));
 				ret
 			}
 		}
@@ -144,9 +128,7 @@ macro_rules! impl_binary_float_op (
 				T: Scalar + $GroupTrait, R: Dim, C: Dim, S: StorageMut<T, R, C>
 		{
 			fn $op_assign_fn(&mut self, rhs: T) {
-				for o in self.as_row_mut_iter() {
-					*o = o.$op_fn(rhs);
-				}
+				self.mapv_inplace(move |v| v.$op_fn(rhs));
 			}
 		}
 	}

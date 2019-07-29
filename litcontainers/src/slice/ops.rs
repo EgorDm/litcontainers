@@ -86,7 +86,7 @@ macro_rules! impl_binary_dual_op (
 
 			fn $op_fn(self, rhs: TR) -> Self::Output {
 				let mut ret = self.owned();
-				for o in ret.as_row_mut_iter() { o.$op_assign_fn(rhs); }
+				ret.map_inplace(move |v| v.$op_assign_fn(rhs));
 				ret
 			}
 		}
@@ -100,7 +100,7 @@ macro_rules! impl_binary_dual_op (
 
 			fn $op_fn(self, rhs: TR) -> Self::Output {
 				let mut ret = self.clone_owned();
-				for o in ret.as_row_mut_iter() { o.$op_assign_fn(rhs); }
+				ret.map_inplace(move |v| v.$op_assign_fn(rhs));
 				ret
 			}
 		}
@@ -136,9 +136,7 @@ macro_rules! impl_binary_dual_op (
 				TR: Scalar, T: $OpAssignTrait<TR>
 		{
 			fn $op_assign_fn(&mut self, rhs: TR) {
-				for o in self.as_row_mut_iter() {
-					o.$op_assign_fn(rhs);
-				}
+				self.map_inplace(|v| v.$op_assign_fn(rhs));
 			}
 		}
 	}
@@ -157,9 +155,7 @@ impl<'a, T, R, C, S> Neg for &SliceBase<'a, T, R, C, S>
 
 	fn neg(self) -> Self::Output {
 		let mut ret = self.clone_owned();
-		for o in ret.as_row_mut_iter() {
-			*o = o.neg();
-		}
+		ret.mapv_inplace(|v| v.neg());
 		ret
 	}
 }

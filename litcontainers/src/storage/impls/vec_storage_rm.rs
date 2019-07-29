@@ -64,8 +64,8 @@ impl<T, R, C> StorageMut<T, R, C> for VecStorageRM<T, R, C>
 		unsafe {
 			let mut base = self.get_index_mut_ptr_unchecked(0);
 			for _ in 0..self.size() {
-				base = base.offset(1);
 				f(&mut *base);
+				base = base.offset(1);
 			}
 		}
 	}
