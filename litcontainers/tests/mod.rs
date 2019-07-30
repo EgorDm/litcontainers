@@ -6,3 +6,4 @@ mod iterators;
 mod ops;
 mod printing;
 mod macros;
+mod functions;
