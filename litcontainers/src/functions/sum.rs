@@ -32,8 +32,8 @@ pub fn sum_rows<T, R, C, S>(s: &S) -> ColVec<T, R>
 	where T: ElementaryScalar, R: Dim, C: Dim, S: Storage<T, R, C>
 {
 	let mut ret = cvec_zeros![s.row_dim()];
-	for (row_in, mut out) in s.as_row_slice_iter().zip(ret.as_row_mut_iter()) {
-		for (v_in) in row_in.as_row_iter() {
+	for (row_in, out) in s.as_row_slice_iter().zip(ret.as_row_mut_iter()) {
+		for v_in in row_in.as_row_iter() {
 			*out += *v_in;
 		}
 	}
@@ -44,8 +44,8 @@ pub fn sum_cols<T, R, C, S>(s: &S) -> RowVec<T, C>
 	where T: ElementaryScalar, R: Dim, C: Dim, S: Storage<T, R, C>
 {
 	let mut ret = rvec_zeros![s.col_dim()];
-	for (col_in, mut out) in s.as_col_slice_iter().zip(ret.as_col_mut_iter()) {
-		for (v_in) in col_in.as_col_iter() {
+	for (col_in, out) in s.as_col_slice_iter().zip(ret.as_col_mut_iter()) {
+		for v_in in col_in.as_col_iter() {
 			*out += *v_in;
 		}
 	}
@@ -59,8 +59,8 @@ pub fn mean_rows<T, R, C, S>(s: &S) -> ColVec<T, R>
 {
 	let mut ret = cvec_zeros![s.row_dim()];
 	let elem_count = num_traits::cast(s.col_count()).unwrap();
-	for (row_in, mut out) in s.as_row_slice_iter().zip(ret.as_row_mut_iter()) {
-		for (v_in) in row_in.as_row_iter() {
+	for (row_in, out) in s.as_row_slice_iter().zip(ret.as_row_mut_iter()) {
+		for v_in in row_in.as_row_iter() {
 			*out += *v_in;
 		}
 		*out /= elem_count;
@@ -73,8 +73,8 @@ pub fn mean_cols<T, R, C, S>(s: &S) -> RowVec<T, C>
 {
 	let mut ret = rvec_zeros![s.col_dim()];
 	let elem_count = num_traits::cast(s.row_count()).unwrap();
-	for (col_in, mut out) in s.as_col_slice_iter().zip(ret.as_col_mut_iter()) {
-		for (v_in) in col_in.as_col_iter() {
+	for (col_in, out) in s.as_col_slice_iter().zip(ret.as_col_mut_iter()) {
+		for v_in in col_in.as_col_iter() {
 			*out += *v_in;
 		}
 		*out /= elem_count;
