@@ -101,6 +101,6 @@ fn slice() {
 #[test]
 fn transpose() {
 	let s = RowVec::regspace_rows(U1, U4, 0.);
-	let st = s.t();
-	assert_eq!(s.t().iter().collect::<Vec<_>>(), [0., 1., 2., 3.])
+	assert_eq!(s.t().iter().collect::<Vec<_>>(), [0., 1., 2., 3.]);
+	assert_eq!(s.t().iter().len(), 4)
 }
