@@ -21,6 +21,7 @@ unary_op_trait!(Cos, cos, CosAssign, cos_assign);
 unary_op_trait!(Tan, tan, TanAssign, tan_assign);
 unary_op_trait!(ATan, atan, ATanAssign, atan_assign);
 unary_op_trait!(Exp, exp, ExpAssign, exp_assign);
+unary_op_trait!(Exp2, exp2, Exp2Assign, exp2_assign);
 unary_op_trait!(Ceil, ceil, CeilAssign, ceil_assign);
 unary_op_trait!(Floor, floor, FloorAssign, floor_assign);
 unary_op_trait!(Round, round, RoundAssign, round_assign);

@@ -29,13 +29,13 @@ pub struct BinarySerializer<T, R, C, S>
 }
 
 impl<T, R, C, S> StorageSerializerLossy<T, R, C, S> for BinarySerializer<T, R, C, S>
-	where T: Scalar + Serialize, R: Dim, C: Dim, S: Storage<T, R, C> + StorageConstructor<T, R, C>,
+	where T: Scalar + Serialize, R: Dim, C: Dim, S: Storage<T, R, C>
 {}
 
 /// Responsible for serializing storage into a binary format
 /// Output looks like this:
 impl<T, R, C, S> GeneralSerializer<S> for BinarySerializer<T, R, C, S>
-	where T: Scalar + Serialize, R: Dim, C: Dim, S: Storage<T, R, C> + StorageConstructor<T, R, C>,
+	where T: Scalar + Serialize, R: Dim, C: Dim, S: Storage<T, R, C>
 {
 	/// Serializes storage to binary format into a writer
 	fn write<W: std::io::Write>(writer: &mut W, storage: &S) -> IOResult<()> {
@@ -99,7 +99,7 @@ impl<T, R, C, S> GeneralDeserializer<S> for BinaryDeserializer<T, R, C, S>
 }
 
 pub fn write_binary<T, R, C, S, W>(writer: &mut W, data: &S) -> IOResult<()>
-	where T: Scalar + Serialize, R: Dim, C: Dim, S: Storage<T, R, C> + StorageConstructor<T, R, C>, W: std::io::Write
+	where T: Scalar + Serialize, R: Dim, C: Dim, S: Storage<T, R, C>, W: std::io::Write
 {
 	BinarySerializer::write(writer, data)
 }
@@ -112,7 +112,7 @@ pub fn read_binary<T, R, C, S, RD>(reader: RD) -> IOResult<S>
 }
 
 pub fn write_binary_file<T, R, C, S>(path: &Path, data: &S) -> IOResult<()>
-	where T: Scalar + Serialize, R: Dim, C: Dim, S: Storage<T, R, C> + StorageConstructor<T, R, C>,
+	where T: Scalar + Serialize, R: Dim, C: Dim, S: Storage<T, R, C>,
 {
 	crate::file::write::<BinarySerializer<_, _, _, _>, _>(path, data)
 }

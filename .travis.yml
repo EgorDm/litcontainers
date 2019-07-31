@@ -2,8 +2,8 @@ language: rust
 
 rust:
   - stable
-  - beta
-  - nightly
+#  - beta
+#  - nightly
 
 matrix:
   allow_failures:
@@ -16,9 +16,9 @@ before_cache:
 
 script:
   - cd litcontainers
-  - cargo build --verbose --all
-  - cargo test --verbose --all
+  - cargo build --all
+  - cargo test --all
   - cd ..
   - cd litio
-  - cargo build --verbose --all
-  - cargo test --verbose --all
+  - cargo build --all
+  - cargo test --all

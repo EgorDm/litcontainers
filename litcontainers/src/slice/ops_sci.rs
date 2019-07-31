@@ -40,6 +40,7 @@ impl_unary_float_op!(Cos, cos, CosAssign, cos_assign);
 impl_unary_float_op!(Tan, tan, TanAssign, tan_assign);
 impl_unary_float_op!(ATan, atan, ATanAssign, atan_assign);
 impl_unary_float_op!(Exp, exp, ExpAssign, exp_assign);
+impl_unary_float_op!(Exp2, exp2, Exp2Assign, exp2_assign);
 impl_unary_float_op!(Ceil, ceil, CeilAssign, ceil_assign);
 impl_unary_float_op!(Floor, floor, FloorAssign, floor_assign);
 impl_unary_float_op!(Round, round, RoundAssign, round_assign);

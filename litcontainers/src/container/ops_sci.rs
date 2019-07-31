@@ -51,6 +51,7 @@ impl_unary_float_op!(Float, Cos, cos, CosAssign, cos_assign);
 impl_unary_float_op!(Float, Tan, tan, TanAssign, tan_assign);
 impl_unary_float_op!(Float, ATan, atan, ATanAssign, atan_assign);
 impl_unary_float_op!(Float, Exp, exp, ExpAssign, exp_assign);
+impl_unary_float_op!(Float, Exp2, exp2, Exp2Assign, exp2_assign);
 impl_unary_float_op!(Float, Ceil, ceil, CeilAssign, ceil_assign);
 impl_unary_float_op!(Float, Floor, floor, FloorAssign, floor_assign);
 impl_unary_float_op!(Float, Round, round, RoundAssign, round_assign);
