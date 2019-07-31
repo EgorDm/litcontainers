@@ -96,3 +96,11 @@ fn slice() {
 	assert_eq!(s.slice_rows(1..3).slice_cols(1).as_iter().cloned().collect::<Vec<_>>(), vec![4., 6.]);
 	assert_eq!(s.slice_rows(1..3).slice_cols(1).slice_rows(1).as_iter().cloned().collect::<Vec<_>>(), vec![6.]);
 }
+
+
+#[test]
+fn transpose() {
+	let s = RowVec::regspace_rows(U1, U4, 0.);
+	let st = s.t();
+	assert_eq!(s.t().iter().collect::<Vec<_>>(), [0., 1., 2., 3.])
+}

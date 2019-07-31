@@ -5,6 +5,18 @@ use crate::{Slice, SliceMut};
 pub trait Transposable<T, R, C>: Storage<T, R, C>
 	where T: Scalar, R: Dim, C: Dim
 {
+	fn t(&self) -> Slice<T, C, Self::CStride, R, Self::RStride> {
+		Slice::new(unsafe {
+			PtrStorage::new(
+				self.get_index_ptr_unchecked(0),
+				self.col_dim(),
+				self.row_dim(),
+				self.col_stride_dim(),
+				self.row_stride_dim(),
+			)
+		})
+	}
+
 	fn transmute_dims<RO, CO, RSO, CSO>(&self, row_dim: RO, col_dim: CO, row_stride: RSO, col_stride: CSO)
 		-> Slice<T, RO, RSO, CO, CSO>
 		where RO: Dim, CO: Dim, RSO: Dim, CSO: Dim
@@ -43,6 +55,18 @@ pub trait Transposable<T, R, C>: Storage<T, R, C>
 pub trait TransposableMut<T, R, C>: StorageMut<T, R, C>
 	where T: Scalar, R: Dim, C: Dim
 {
+	fn t_mut(&mut self) -> SliceMut<T, C, Self::CStride, R, Self::RStride> {
+		SliceMut::new(unsafe {
+			PtrMutStorage::new(
+				self.get_index_mut_ptr_unchecked(0),
+				self.col_dim(),
+				self.row_dim(),
+				self.col_stride_dim(),
+				self.row_stride_dim(),
+			)
+		})
+	}
+
 	fn transmute_dims_mut<RO, CO, RSO, CSO>(&mut self, row_dim: RO, col_dim: CO, row_stride: RSO, col_stride: CSO)
 		-> SliceMut<T, RO, RSO, CO, CSO>
 		where RO: Dim, CO: Dim, RSO: Dim, CSO: Dim
