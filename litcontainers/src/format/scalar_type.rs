@@ -281,3 +281,15 @@ impl<T: ElementaryScalar + Float> Scalar for Complex<T> {
 
 	fn to_elementary(&self) -> Self::ElementaryType { self.norm() }
 }
+
+impl<T: ElementaryScalar + Float> crate::Sqrt for Complex<T> {
+	type Output = Self;
+
+	fn sqrt(self) -> Self::Output { Complex::sqrt(&self) }
+}
+
+impl<T: ElementaryScalar + Float> crate::Sqrt for T {
+	type Output = Self;
+
+	fn sqrt(self) -> Self::Output { <T as Float>::sqrt(self) }
+}

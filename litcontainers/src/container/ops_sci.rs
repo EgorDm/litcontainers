@@ -157,9 +157,7 @@ impl<T, R, C, S> Sum for Container<T, R, C, S>
 	type Output = T;
 
 	fn sum(&self) -> Self::Output {
-		let mut ret = T::default();
-		for v in self.as_row_iter() { ret += *v }
-		ret
+		self.as_slice().iter().fold(T::default(), |acc, x| acc + *x)
 	}
 }
 
