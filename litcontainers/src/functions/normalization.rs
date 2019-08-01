@@ -2,7 +2,6 @@ use crate::*;
 use num_traits::pow::Pow;
 use num_traits::{Float, Signed};
 use num_complex::Complex;
-use num_traits::real::Real;
 
 pub fn norm_p1<T, R, C, S>(s: &S) -> T
 	where T: Scalar + Signed, R: Dim, C: Dim, S: Storage<T, R, C>
