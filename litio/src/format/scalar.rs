@@ -18,6 +18,7 @@ pub fn elementary_scalar_to_bitmask(t: ScalarElementaryType) -> u8 {
 		ScalarElementaryType::Int16 => 16,
 		ScalarElementaryType::Int32 => 32,
 		ScalarElementaryType::Int64 => 64,
+		ScalarElementaryType::UInt32 => 128,
 	}
 }
 
@@ -36,6 +37,7 @@ pub fn bitmask_to_elementary_scalar(m: u8) -> Option<ScalarElementaryType> {
 		16 => Some(ScalarElementaryType::Int16),
 		32 => Some(ScalarElementaryType::Int32),
 		64 => Some(ScalarElementaryType::Int64),
+		128 => Some(ScalarElementaryType::UInt32),
 		_ => None
 	}
 }

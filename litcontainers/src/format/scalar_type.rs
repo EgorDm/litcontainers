@@ -18,6 +18,7 @@ pub enum ScalarElementaryType {
 	Int16,
 	Int32,
 	Int64,
+	UInt32
 }
 
 impl Into<ScalarType> for ScalarElementaryType {
@@ -29,6 +30,7 @@ impl Into<ScalarType> for ScalarElementaryType {
 			ScalarElementaryType::Int16 => ScalarType::Int16,
 			ScalarElementaryType::Int32 => ScalarType::Int32,
 			ScalarElementaryType::Int64 => ScalarType::Int64,
+			ScalarElementaryType::UInt32 => ScalarType::UInt32,
 		}
 	}
 }
@@ -42,6 +44,7 @@ impl Into<Option<ScalarElementaryType>> for ScalarType {
 			ScalarType::Int16 => Some(ScalarElementaryType::Int16),
 			ScalarType::Int32 => Some(ScalarElementaryType::Int32),
 			ScalarType::Int64 => Some(ScalarElementaryType::Int64),
+			ScalarType::UInt32 => Some(ScalarElementaryType::UInt32),
 			_ => None
 		}
 	}
@@ -57,6 +60,7 @@ pub enum ScalarType {
 	Int16,
 	Int32,
 	Int64,
+	UInt32,
 	Complex(ScalarElementaryType),
 }
 
@@ -248,6 +252,31 @@ impl ElementaryScalar for u8 {
 
 	fn min_val() -> Self { Self::min_value ()}
 }
+
+impl ElementaryScalar for u32 {
+	fn get_elementary_scalar_type() -> ScalarElementaryType {
+		ScalarElementaryType::UInt32
+	}
+
+	fn max_val() -> Self { Self::max_value() }
+
+	fn min_val() -> Self { Self::min_value ()}
+}
+
+impl Scalar for u32 {
+	fn get_scalar_type() -> ScalarType {
+		ScalarType::UInt32
+	}
+
+	fn fmt_num(&self, f: &mut Formatter, _precision: usize, _sci: bool) -> Result<(), Error> {
+		write!(f, "{}", self)
+	}
+
+	type ElementaryType = u32;
+
+	fn to_elementary(&self) -> Self::ElementaryType { *self }
+}
+
 
 impl Scalar for u8 {
 	fn get_scalar_type() -> ScalarType {
