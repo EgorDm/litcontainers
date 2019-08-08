@@ -1,4 +1,4 @@
-use crate::{Scalar, ElementaryScalar};
+use crate::{ElementaryScalar};
 
 macro_rules! unary_op_trait (
 	($Trait: ident, $method: ident, $TraitAssign: ident, $method_assign: ident) => {

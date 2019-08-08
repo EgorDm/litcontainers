@@ -1,4 +1,4 @@
-use crate::{format::*, storage::*, RowVec};
+use crate::{format::*, storage::*};
 use num_traits::Signed;
 
 pub fn find_nearest<T, R, C, S>(s: &S, v: T) -> usize

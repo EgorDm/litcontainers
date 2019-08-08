@@ -2,7 +2,6 @@ use litcontainers::{Scalar, ElementaryScalar};
 use num_complex::Complex;
 use num_traits::Float;
 use serde::{Serializer, Serialize, Deserialize, Deserializer};
-use serde::export::PhantomData;
 
 pub trait SerializableScalar: Scalar {
 	fn serialize_scalar<S: Serializer>(&self, serializer: S) -> Result<S::Ok, S::Error>;
