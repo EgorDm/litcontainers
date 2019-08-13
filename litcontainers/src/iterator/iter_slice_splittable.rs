@@ -154,8 +154,8 @@ iter_dim_impl! {
 	}
 }
 
-pub type ParRowSliceIterSplit<'a, T, C, RS, CS> = RowSliceIterSplit<'a, T, C, RS, CS>;
-pub type ParRowSliceIterSplitMut<'a, T, C, RS, CS> = RowSliceIterSplitMut<'a, T, C, RS, CS>;
-pub type ParColSliceIterSplit<'a, T, C, RS, CS> = ColSliceIterSplit<'a, T, C, RS, CS>;
-pub type ParColSliceIterSplitMut<'a, T, C, RS, CS> = ColSliceIterSplitMut<'a, T, C, RS, CS>;
+pub type ParRowSliceIterSplit<'a, T, C, RS, CS> = Parallel<RowSliceIterSplit<'a, T, C, RS, CS>>;
+pub type ParRowSliceIterSplitMut<'a, T, C, RS, CS> = Parallel<RowSliceIterSplitMut<'a, T, C, RS, CS>>;
+pub type ParColSliceIterSplit<'a, T, C, RS, CS> = Parallel<ColSliceIterSplit<'a, T, C, RS, CS>>;
+pub type ParColSliceIterSplitMut<'a, T, C, RS, CS> = Parallel<ColSliceIterSplitMut<'a, T, C, RS, CS>>;
 

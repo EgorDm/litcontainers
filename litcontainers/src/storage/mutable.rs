@@ -93,7 +93,7 @@ pub trait StorageMut<T, R, C>: Storage<T, R, C> + IndexMut<usize>
 	fn as_row_slice_mut_iter<'a: 'b, 'b>(&'a mut self) -> RowSliceIterMut<'b, T, R, C, Self> { RowSliceIterMut::new(self) }
 
 	fn as_row_slice_par_mut_iter<'a: 'b, 'b>(&'a mut self) -> ParRowSliceIterSplitMut<'b, T, C, Self::RStride, Self::CStride> {
-		ParRowSliceIterSplitMut::from_storage(self)
+		RowSliceIterSplitMut::from_storage(self).into_par_iter()
 	}
 
 	fn as_col_mut_iter<'a: 'b, 'b>(&'a mut self) -> ColIterMutPtr<'b, T, R, C, Self> { ColIterMutPtr::new(self) }
@@ -105,7 +105,7 @@ pub trait StorageMut<T, R, C>: Storage<T, R, C> + IndexMut<usize>
 	fn as_col_slice_mut_iter<'a: 'b, 'b>(&'a mut self) -> ColSliceIterMut<'b, T, R, C, Self> { ColSliceIterMut::new(self) }
 
 	fn as_col_slice_par_mut_iter<'a: 'b, 'b>(&'a mut self) -> ParColSliceIterSplitMut<'b, T, R, Self::RStride, Self::CStride> {
-		ParColSliceIterSplitMut::from_storage(self)
+		ColSliceIterSplitMut::from_storage(self).into_par_iter()
 	}
 
 	// Special ops

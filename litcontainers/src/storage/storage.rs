@@ -136,7 +136,7 @@ pub trait Storage<T, R, C>: SizedStorage<R, C> + Debug + Sized + Ownable<T, R, C
 	fn as_row_slice_iter<'a: 'b, 'b>(&'a self) -> RowSliceIter<'b, T, R, C, Self> { RowSliceIter::new(self) }
 
 	fn as_row_slice_par_iter<'a: 'b, 'b>(&'a self) -> ParRowSliceIterSplit<'b, T, C, Self::RStride, Self::CStride> {
-		ParRowSliceIterSplit::from_storage(self)
+		Parallel::new(RowSliceIterSplit::from_storage(self))
 	}
 
 	fn col_iter<'a>(self) -> ColIterPtrOwned<'a, T, R, C, Self> { ColIterPtrOwned::new(self) }
@@ -150,7 +150,7 @@ pub trait Storage<T, R, C>: SizedStorage<R, C> + Debug + Sized + Ownable<T, R, C
 	fn as_col_slice_iter<'a: 'b, 'b>(&'a self) -> ColSliceIter<'b, T, R, C, Self> { ColSliceIter::new(self) }
 
 	fn as_col_slice_par_iter<'a: 'b, 'b>(&'a self) -> ParColSliceIterSplit<'b, T, R, Self::RStride, Self::CStride> {
-		ParColSliceIterSplit::from_storage(self)
+		Parallel::new(ColSliceIterSplit::from_storage(self))
 	}
 
 	fn flip(&self) -> Self::OwnedType {

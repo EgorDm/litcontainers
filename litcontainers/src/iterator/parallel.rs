@@ -1,4 +1,4 @@
-use crate::iterator::dim_splittable::*;
+use crate::iterator::iter_slice_splittable::*;
 use rayon::iter::plumbing::{UnindexedConsumer, Consumer, ProducerCallback, bridge, Producer};
 use rayon::iter::{ParallelIterator, IndexedParallelIterator};
 
