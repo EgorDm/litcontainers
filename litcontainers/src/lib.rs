@@ -1,3 +1,6 @@
+#[macro_use]
+extern crate derive_new;
+
 extern crate itertools;
 
 #[macro_use] pub mod macros;
@@ -8,6 +11,7 @@ pub mod container;
 pub mod slice;
 pub mod ops;
 pub mod functions;
+pub mod wrapper;
 
 pub use format::*;
 pub use storage::*;
@@ -16,6 +20,7 @@ pub use container::*;
 pub use slice::*;
 pub use ops::*;
 pub use functions::*;
+pub use wrapper::*;
 
 // Documentation inlines
 #[doc(inline)] pub use format::{Scalar};

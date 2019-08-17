@@ -9,6 +9,11 @@ pub trait StorageMut<T, R, C>: Storage<T, R, C> + IndexMut<usize>
 	where T: Scalar, R: Dim, C: Dim
 {
 	#[inline]
+	fn as_ptr_mut(&mut self) -> *mut T {
+		unsafe { self.get_index_mut_ptr_unchecked(0) }
+	}
+
+	#[inline]
 	fn as_mut_slice<'b, 'a: 'b>(&'a mut self) -> &'b mut [T] {
 		unsafe { slice::from_raw_parts_mut(self.get_index_mut_ptr_unchecked(0), self.row_count() * self.col_count()) }
 	}

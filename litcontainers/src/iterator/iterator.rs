@@ -129,19 +129,19 @@ macro_rules! iter_ptr_impl_owned {
 			secondary: $scnd_size_fn: ident, $scnd_stride_fn: ident
 		} // TODO: use unsafe $ptr_fn which is safe since we stay within the bounds
 	) => {
-		pub struct $Name<'a, T, R, C, S>
-			where T: Scalar + 'a, R: Dim, C: Dim, S: $StorageType<T, R, C>
+		pub struct $Name<T, R, C, S>
+			where T: Scalar, R: Dim, C: Dim, S: $StorageType<T, R, C>
 		{
 			storage: $StorageRef,
 			ptr: $ElementPtr,
 			ptr_end: $ElementPtr,
 			cursor: usize,
 			cursor_end: usize,
-			_phantoms: PhantomData<(&'a (), R, C)>
+			_phantoms: PhantomData<(R, C)>
 		}
 
-		impl<'a, T, R, C, S> $Name<'a, T, R, C, S>
-			where T: Scalar + 'a, R: Dim, C: Dim, S: $StorageType<T, R, C>
+		impl<T, R, C, S> $Name<T, R, C, S>
+			where T: Scalar, R: Dim, C: Dim, S: $StorageType<T, R, C>
 		{
 			pub fn new(storage: $StorageRef) -> Self {
 				let size = storage.$prim_size_fn();
@@ -162,8 +162,8 @@ macro_rules! iter_ptr_impl_owned {
 			}
 		}
 
-		impl<'a, T, R, C, S> Iterator for $Name<'a, T, R, C, S>
-			where T: Scalar + 'a, R: Dim, C: Dim, S: $StorageType<T, R, C>
+		impl<T, R, C, S> Iterator for $Name<T, R, C, S>
+			where T: Scalar, R: Dim, C: Dim, S: $StorageType<T, R, C>
 		{
 			type Item = $ElementRet;
 
@@ -200,8 +200,8 @@ macro_rules! iter_ptr_impl_owned {
 			}
 		}
 
-		impl<'a, T, R, C, S> ExactSizeIterator for $Name<'a, T, R, C, S>
-			where T: Scalar + 'a, R: Dim, C: Dim, S: $StorageType<T, R, C>
+		impl<T, R, C, S> ExactSizeIterator for $Name<T, R, C, S>
+			where T: Scalar, R: Dim, C: Dim, S: $StorageType<T, R, C>
 		{}
 	}
 }
