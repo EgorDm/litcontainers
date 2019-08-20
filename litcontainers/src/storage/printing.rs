@@ -1,6 +1,7 @@
 use std::fmt::{Display, Formatter, Error};
-use crate::{Scalar, Storage, Dim};
+use crate::format::*;
 use num_traits::cast::cast;
+use crate::Storage;
 
 pub struct Fmt<F>(pub F) where F: Fn(&mut Formatter) -> Result<(), Error>;
 
@@ -12,8 +13,8 @@ impl<F> Display for Fmt<F>
 	}
 }
 
-pub fn print_storage<T, R, C, S>(s: &S, f: &mut Formatter) -> Result<(), Error>
-	where T: Scalar, R: Dim, C: Dim, S: Storage<T, R, C>
+pub fn print_storage<T, S>(s: &S, f: &mut Formatter) -> Result<(), Error>
+	where T: Scalar, S: Storage<T>
 {
 	let use_sci_fmt = if T::is_complex() {
 		true
@@ -38,8 +39,8 @@ pub fn print_storage<T, R, C, S>(s: &S, f: &mut Formatter) -> Result<(), Error>
 		Fmt(|f| s.col_dim().pfmt(f)),
 		Fmt(|f| s.col_stride_dim().pfmt(f)),
 	)?;
-	for i in 0..s.row_count() {
-		for e in s.slice_rows_as_iter(i) {
+	for i in 0..s.rows() {
+		for e in s.as_row_range_iter(i) {
 			write!(f, "{:>pad$}", format!("{}", Fmt(|f| e.fmt_num(f, 4, use_sci_fmt))), pad = padding)?;
 		}
 		write!(f, "\n")?;

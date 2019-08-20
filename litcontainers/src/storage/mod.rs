@@ -1,4 +1,3 @@
-pub mod sized;
 pub mod storage;
 pub mod mutable;
 pub mod dynamic;
@@ -9,7 +8,6 @@ pub mod transpose;
 pub mod printing;
 pub mod simple_types;
 
-#[doc(inline)] pub use sized::*;
 #[doc(inline)] pub use storage::*;
 #[doc(inline)] pub use mutable::*;
 #[doc(inline)] pub use dynamic::*;

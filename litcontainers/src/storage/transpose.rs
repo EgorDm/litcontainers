@@ -1,7 +1,8 @@
-use crate::format::*;
+/*use crate::format::*;
 use crate::storage::*;
-use crate::{Slice, SliceMut};
+use crate::slice::*;*/
 
+/*
 pub trait Transposable<T, R, C>: Storage<T, R, C>
 	where T: Scalar, R: Dim, C: Dim
 {
@@ -136,3 +137,4 @@ impl<T, R, C, S> Transposable<T, R, C> for S
 impl<T, R, C, S> TransposableMut<T, R, C> for S
 	where T: Scalar, R: Dim, C: Dim, S: StorageMut<T, R, C>
 {}
+*/
