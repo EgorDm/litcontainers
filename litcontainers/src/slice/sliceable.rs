@@ -1,5 +1,6 @@
+/*
 use crate::format::*;
-use crate::storage::{Storage, PtrStorage, StorageMut, PtrMutStorage};
+use crate::storage::{Storage, PtrStorage, StorageMut, PtrStorageMut};
 use crate::slice::{SliceRange, Slice, SliceMut};
 
 pub trait Sliceable<T, R, C>: Storage<T, R, C>
@@ -98,4 +99,4 @@ pub trait SliceableMut<T, R, C>: StorageMut<T, R, C>
 			)
 		})
 	}
-}
+}*/
