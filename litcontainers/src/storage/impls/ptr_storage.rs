@@ -1,8 +1,194 @@
 use crate::format::*;
 use std::marker::PhantomData;
-use crate::slice::offset::*;
 use crate::storage::*;
-use std::ops::{Index, IndexMut};
+
+#[repr(C)]
+#[derive(Debug, new)]
+pub struct PtrStorageCore<T, R, RS, C, CS>
+	where T: Scalar, R: Dim, RS: Dim, C: Dim, CS: Dim
+{
+	ptr: *mut T,
+	size: Size<R, C>,
+	stride: Strides<RS, CS>,
+}
+
+impl<T, R, RS, C, CS> StorageSize for PtrStorageCore<T, R, RS, C, CS>
+	where T: Scalar, R: Dim, RS: Dim, C: Dim, CS: Dim
+{
+	type Rows = R;
+	type Cols = C;
+
+	fn row_dim(&self) -> Self::Rows { self.size.row_dim() }
+
+	fn col_dim(&self) -> Self::Cols { self.size.col_dim() }
+}
+
+impl<T, R, RS, C, CS> Strided for PtrStorageCore<T, R, RS, C, CS>
+	where T: Scalar, R: Dim, RS: Dim, C: Dim, CS: Dim
+{
+	type RowStride = RS;
+	type ColStride = CS;
+
+	#[inline]
+	fn row_stride_dim(&self) -> Self::RowStride { self.stride.row_stride_dim() }
+
+	#[inline]
+	fn col_stride_dim(&self) -> Self::ColStride { self.stride.col_stride_dim() }
+}
+
+impl<T, R, RS, C, CS> Storage<T> for PtrStorageCore<T, R, RS, C, CS>
+	where T: Scalar, R: Dim, RS: Dim, C: Dim, CS: Dim
+{
+	#[inline]
+	fn as_ptr(&self) -> *const T { self.ptr as *const T }
+}
+
+impl<T, R, RS, C, CS> StorageMut<T> for PtrStorageCore<T, R, RS, C, CS>
+	where T: Scalar, R: Dim, RS: Dim, C: Dim, CS: Dim
+{
+	fn as_ptr_mut(&mut self) -> *mut T { self.ptr }
+}
+
+impl<T, R, RS, C, CS> Ownable<T> for PtrStorageCore<T, R, RS, C, CS>
+	where T: Scalar, R: Dim, RS: Dim, C: Dim, CS: Dim
+{
+	type OwnedType = VecStorageRM<T, R, C>;
+
+	#[inline]
+	fn owned(self) -> Self::OwnedType { self.clone_owned() }
+
+	#[inline]
+	fn clone_owned(&self) -> Self::OwnedType {
+		let data = self.as_iter().cloned().collect();
+		Self::OwnedType::from_data(self.size(), data)
+	}
+}
+
+impl<T, RS, C, CS> PtrStorageCore<T, Dynamic, RS, C, CS>
+	where T: Scalar, RS: Dim, C: Dim, CS: Dim
+{
+	#[inline]
+	fn offset_row(&mut self, p: usize) {
+		self.ptr = self.as_row_ptr(p) as *mut T;
+		self.size.rows = Dynamic::from(self.rows() - p);
+	}
+
+	pub fn shift_row_to<S: Storage<T>>(&mut self, s: &S, pos: usize, length: usize)
+	{
+		assert!(pos + length <= s.rows());
+		assert!(self.equal_strides(s));
+		assert!(self.cols() == s.cols());
+		self.ptr = s.as_row_ptr(pos) as *mut T;
+		self.size.rows = Dynamic::new(length);
+	}
+}
+
+impl<T, R, RS, CS> PtrStorageCore<T, R, RS, Dynamic, CS>
+	where T: Scalar, R: Dim, RS: Dim, CS: Dim
+{
+	#[inline]
+	fn offset_col(&mut self, p: usize) {
+		self.ptr = self.as_col_ptr(p) as *mut T;
+		self.size.cols = Dynamic::from(self.cols() - p);
+	}
+
+	pub fn shift_col_to<S: Storage<T>>(&mut self, s: &S, pos: usize, length: usize)
+	{
+		assert!(pos + length <= s.cols());
+		assert!(self.equal_strides(s));
+		assert!(self.rows() == s.rows());
+		self.ptr = s.as_col_ptr(pos) as *mut T;
+		self.size.cols = Dynamic::new(length);
+	}
+}
+
+impl<T, R, RS, C, CS> PtrStorageCore<T, R, RS, C, CS>
+	where T: Scalar, R: Dim, RS: Dim, C: Dim, CS: Dim
+{
+	pub fn split_at_row<P: Dim>(mut self, pos: P)
+		-> (PtrStorageCore<T, P, RS, C, CS>, PtrStorageCore<T, <R as DimSub<P>>::Output, RS, C, CS>)
+		where P: Dim, R: DimSub<P>
+	{
+		assert!(pos.value() < self.rows(), "Slice split is out of bounds or contains empty fragment!");
+		unsafe {
+			(
+				PtrStorageCore::new(
+					self.as_row_ptr_mut(0),
+					Size::new(pos.clone(), self.col_dim()),
+					self.strides()
+				),
+				PtrStorageCore::new(
+					self.as_row_ptr_mut(pos.value()),
+					Size::new(R::sub(self.row_dim(), pos), self.col_dim()),
+					self.strides()
+				)
+			)
+		}
+	}
+
+	pub fn split_at_col<P: Dim>(mut self, pos: P)
+		-> (PtrStorageCore<T, R, RS, P, CS>, PtrStorageCore<T, R, RS, <C as DimSub<P>>::Output, CS>)
+		where P: Dim, C: DimSub<P>
+	{
+		assert!(pos.value() < self.cols(), "Slice split is out of bounds or contains empty fragment!");
+		unsafe {
+			(
+				PtrStorageCore::new(
+					self.as_col_ptr_mut(0),
+					Size::new(self.row_dim(), pos.clone()),
+					self.strides()
+				),
+				PtrStorageCore::new(
+					self.as_col_ptr_mut(pos.value()),
+					Size::new(self.row_dim(), C::sub(self.col_dim(), pos)),
+					self.strides()
+				)
+			)
+		}
+	}
+}
+
+unsafe impl<T, R, RS, C, CS> Send for PtrStorageCore<T, R, RS, C, CS>
+	where T: Scalar, R: Dim, RS: Dim, C: Dim, CS: Dim {}
+
+unsafe impl<T, R, RS, C, CS> Sync for PtrStorageCore<T, R, RS, C, CS>
+	where T: Scalar, R: Dim, RS: Dim, C: Dim, CS: Dim {}
+
+
+#[repr(C)]
+#[derive(Debug, StorageSize, Strided, Storage, Ownable)]
+pub struct PtrStorage<'a, T, R, RS, C, CS>
+	where T: Scalar, R: Dim, RS: Dim, C: Dim, CS: Dim
+{
+	storage: PtrStorageCore<T, R, RS, C, CS>,
+	_phantoms: PhantomData<&'a ()>,
+}
+
+impl<'a, T, R, RS, C, CS> PtrStorage<'a, T, R, RS, C, CS>
+	where T: Scalar, R: Dim, RS: Dim, C: Dim, CS: Dim
+{
+	pub unsafe fn new(ptr: *const T, size: Size<R, C>, strides: Strides<RS, CS>) -> Self {
+		Self { storage: PtrStorageCore::new(ptr as *mut T, size, strides), _phantoms: PhantomData }
+	}
+}
+
+#[repr(C)]
+#[derive(Debug, StorageSize, Strided, Storage, StorageMut, Ownable)]
+pub struct PtrStorageMut<'a, T, R, RS, C, CS>
+	where T: Scalar, R: Dim, RS: Dim, C: Dim, CS: Dim
+{
+	storage: PtrStorageCore<T, R, RS, C, CS>,
+	_phantoms: PhantomData<&'a ()>,
+}
+
+impl<'a, T, R, RS, C, CS> PtrStorageMut<'a, T, R, RS, C, CS>
+	where T: Scalar, R: Dim, RS: Dim, C: Dim, CS: Dim
+{
+	pub unsafe fn new(ptr: *mut T, size: Size<R, C>, strides: Strides<RS, CS>) -> Self {
+		Self { storage: PtrStorageCore::new(ptr, size, strides), _phantoms: PhantomData }
+	}
+}
+/*
 
 macro_rules! ptr_storage (
 	($Name: ident, $Ptr: ty) => {
@@ -288,3 +474,4 @@ impl<'a, T, R, RS, C, CS> IndexMut<usize> for PtrMutStorage<'a, T, R, RS, C, CS>
 		unsafe { &mut *self.get_index_mut_ptr_unchecked(index) }
 	}
 }
+*/
