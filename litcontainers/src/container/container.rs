@@ -1,3 +1,4 @@
+/*
 use crate::format::*;
 use crate::storage::*;
 use std::marker::PhantomData;
@@ -16,8 +17,8 @@ pub type RowVec<T, C> = ContainerRM<T, U1, C>;
 // Container storing scalar values. Container is always the owner of its data.
 #[repr(C)]
 #[derive(Clone, Debug, Eq, PartialEq)]
-pub struct Container<T, R, C, S>
-	where T: Scalar, R: Dim, C: Dim, S: StorageMut<T, R, C>
+pub struct Container<T, S>
+	where T: Scalar, S: StorageMut<T, R, C>
 {
 	pub(crate) storage: S,
 	pub(crate) _phantoms: PhantomData<(T, R, C, S)>
@@ -131,3 +132,4 @@ impl<T, R, C, S> IndexMut<usize> for Container<T, R, C, S>
 }
 
 
+*/
