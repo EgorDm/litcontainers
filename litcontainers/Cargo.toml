@@ -5,6 +5,7 @@ authors = ["Egor Dmitriev <egordmitriev2@gmail.com>"]
 edition = "2018"
 
 [dependencies]
+litcontainers_derive = {path = "../litcontainers_derive"}
 typenum = "1.10.0"
 generic-array = "0.13.0"
 rand = "0.6.5"

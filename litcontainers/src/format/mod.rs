@@ -2,6 +2,7 @@ pub mod dimensions;
 pub mod scalar_type;
 pub mod axis;
 pub mod size;
+pub mod stride;
 
 #[doc(inline)]
 pub use dimensions::*;
@@ -9,5 +10,7 @@ pub use dimensions::*;
 pub use axis::*;
 #[doc(inline)]
 pub use size::*;
+#[doc(inline)]
+pub use stride::*;
 #[doc(inline)]
 pub use scalar_type::*;
