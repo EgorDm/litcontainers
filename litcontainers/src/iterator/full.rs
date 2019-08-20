@@ -1,5 +1,4 @@
 use crate::format::*;
-use crate::storage::{Storage, StorageMut};
 use super::axis::AxisIterRaw;
 use std::marker::PhantomData;
 
@@ -138,41 +137,39 @@ impl<'a, T, P, PS, SS> Iterator for FullIterMut<'a, T, P, PS, SS>
 	fn size_hint(&self) -> (usize, Option<usize>) { self.iter.size_hint() }
 }
 
-pub fn full_row_iter<T, R, C, S>(s: &S) -> FullIter<T, R, S::RStride, S::CStride>
-	where T: Scalar, R: Dim, C: Dim, S: Storage<T, R, C>
-{
-	FullIter::new(s.as_ptr(), s.row_dim(), s.row_stride_dim(), s.col_dim(), s.col_stride_dim())
-}
+pub type FullRowIter<'a, T, S: StorageSize + Strided> = FullIter<'a, T, S::Rows, S::RowStride, S::ColStride>;
+pub type FullRowIterMut<'a, T, S: StorageSize + Strided> = FullIterMut<'a, T, S::Rows, S::RowStride, S::ColStride>;
+pub type FullColIter<'a, T, S: StorageSize + Strided> = FullIter<'a, T, S::Cols, S::ColStride, S::RowStride>;
+pub type FullColIterMut<'a, T, S: StorageSize + Strided> = FullIterMut<'a, T, S::Cols, S::ColStride, S::RowStride>;
 
-pub fn full_row_iter_mut<T, R, C, S>(s: &mut S) -> FullIterMut<T, R, S::RStride, S::CStride>
-	where T: Scalar, R: Dim, C: Dim, S: StorageMut<T, R, C>
-{
-	FullIterMut::new(s.as_ptr_mut(), s.row_dim(), s.row_stride_dim(), s.col_dim(), s.col_stride_dim())
-}
+#[macro_export]
+macro_rules! full_row_iter (
+	($s: expr) => {
+		FullIter::new($s.as_ptr(), $s.row_dim(), $s.row_stride_dim(), $s.col_dim(), $s.col_stride_dim())
+	};
+	($s: expr, $r: expr) => {
+		FullIter::new($s.as_row_ptr($r.begin()), $r.size(), $s.row_stride_dim(), $s.col_dim(), $s.col_stride_dim())
+	};
+	(mut $s: expr) => {
+		FullIterMut::new($s.as_ptr_mut(), $s.row_dim(), $s.row_stride_dim(), $s.col_dim(), $s.col_stride_dim())
+	};
+	(mut $s: expr, $r: expr) => {
+		FullIterMut::new($s.as_row_ptr_mut($r.begin()), $r.size(), $s.row_stride_dim(), $s.col_dim(), $s.col_stride_dim())
+	};
+);
 
-pub fn full_col_iter<T, R, C, S>(s: &S) -> FullIter<T, C, S::CStride, S::RStride>
-	where T: Scalar, R: Dim, C: Dim, S: Storage<T, R, C>
-{
-	FullIter::new(s.as_ptr() as *mut T, s.col_dim(), s.col_stride_dim(), s.row_dim(), s.row_stride_dim())
-}
-
-pub fn full_col_iter_mut<T, R, C, S>(s: &mut S) -> FullIterMut<T, C, S::CStride, S::RStride>
-	where T: Scalar, R: Dim, C: Dim, S: StorageMut<T, R, C>
-{
-	FullIterMut::new(s.as_ptr_mut(), s.col_dim(), s.col_stride_dim(), s.row_dim(), s.row_stride_dim())
-}
-
-mod test {
-	use crate::format::*;
-	use crate::{ContainerRM, StorageConstructor};
-	use crate::iterator::refactor::full::{full_row_iter, full_col_iter};
-
-	#[test]
-	fn test_full_axis_iter() {
-		let data = ContainerRM::regspace_rows(U3, U3, 0.);
-		assert_eq!(full_row_iter(&data).cloned().collect::<Vec<f64>>(), [0.0, 1.0, 2.0, 0.0, 1.0, 2.0, 0.0, 1.0, 2.0]);
-		assert_eq!(full_col_iter(&data).cloned().collect::<Vec<f64>>(), [0.0, 0.0, 0.0, 1.0, 1.0, 1.0, 2.0, 2.0, 2.0]);
-	}
-
-}
-
+#[macro_export]
+macro_rules! full_col_iter (
+	($s: expr) => {
+		FullIter::new($s.as_ptr(), $s.col_dim(), $s.col_stride_dim(), $s.row_dim(), $s.row_stride_dim())
+	};
+	($s: expr, $r: expr) => {
+		FullIter::new($s.as_col_ptr($r.begin()), $r.size(), $s.col_stride_dim(), $s.row_dim(), $s.row_stride_dim())
+	};
+	(mut $s: expr) => {
+		FullIterMut::new($s.as_ptr_mut(), $s.col_dim(), $s.col_stride_dim(), $s.row_dim(), $s.row_stride_dim())
+	};
+	(mut $s: expr, $r: expr) => {
+		FullIterMut::new($s.as_col_ptr_mut($r.begin()), $r.size(), $s.col_stride_dim(), $s.row_dim(), $s.row_stride_dim())
+	};
+);

@@ -1,11 +1,12 @@
-pub mod iterator;
-pub mod dim;
-pub mod iter_slice_splittable;
 pub mod parallel;
 pub mod iter_tools;
-pub mod refactor;
+pub mod axis;
+#[macro_use]
+pub mod full;
+pub mod slice;
 
-#[doc(inline)] pub use iterator::*;
-#[doc(inline)] pub use dim::*;
-#[doc(inline)] pub use iter_slice_splittable::*;
+
 #[doc(inline)] pub use parallel::*;
+#[doc(inline)] pub use axis::*;
+#[doc(inline)] pub use full::*;
+#[doc(inline)] pub use slice::*;

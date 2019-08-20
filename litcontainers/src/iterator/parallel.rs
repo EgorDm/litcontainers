@@ -1,7 +1,9 @@
-use crate::iterator::iter_slice_splittable::*;
 use rayon::iter::plumbing::{UnindexedConsumer, Consumer, ProducerCallback, bridge, Producer};
 use rayon::iter::{ParallelIterator, IndexedParallelIterator};
 
+pub trait SplittableIterator: Sized + Iterator + ExactSizeIterator + DoubleEndedIterator {
+	fn split_at(self, pos: usize) -> (Self, Self);
+}
 
 #[derive(Copy, Clone, Debug)]
 pub struct Parallel<I> {

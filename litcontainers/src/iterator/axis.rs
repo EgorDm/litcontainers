@@ -4,7 +4,7 @@ use std::marker::PhantomData;
 
 
 #[derive(Debug, new)]
-pub(super) struct AxisIterRaw<T, S: Dim> {
+pub(crate) struct AxisIterRaw<T, S: Dim> {
 	pub(super) length: usize,
 	pub(super) stride: S,
 	cursor: usize,
@@ -23,7 +23,7 @@ impl<T, S: Dim> AxisIterRaw<T, S> {
 		self.ptr.offset((pos * self.stride.value()) as isize)
 	}
 
-	fn split_at(self, pos: usize) -> (Self, Self) {
+	pub(super) fn split_at(self, pos: usize) -> (Self, Self) {
 		assert!(pos <= self.length);
 		let left_ptr = unsafe { self.offset(self.cursor) };
 		let right_ptr = if pos != self.length {
@@ -85,7 +85,7 @@ impl<T, S: Dim> DoubleEndedIterator for AxisIterRaw<T, S> {
 /// Ref iterator
 #[derive(Debug)]
 pub struct AxisIter<'a, T, S: Dim> {
-	iter: AxisIterRaw<T, S>,
+	pub(crate) iter: AxisIterRaw<T, S>,
 	_phantoms: PhantomData<&'a T>
 }
 
@@ -134,7 +134,7 @@ impl<'a, T, S: Dim> DoubleEndedIterator for AxisIter<'a, T, S> {
 /// Ref mut iterator
 #[derive(Debug)]
 pub struct AxisIterMut<'a, T, S: Dim> {
-	iter: AxisIterRaw<T, S>,
+	pub(crate) iter: AxisIterRaw<T, S>,
 	_phantoms: PhantomData<&'a T>
 }
 
@@ -180,28 +180,27 @@ impl<'a, T, S: Dim> DoubleEndedIterator for AxisIterMut<'a, T, S> {
 	}
 }
 
-pub fn row_iter<T, R, C, S>(s: &S, pos: usize) -> AxisIter<T, S::CStride>
-	where T: Scalar, R: Dim, C: Dim, S: Storage<T, R, C>
+pub fn row_iter<T: Scalar, S: Storage<T>>(s: &S, pos: usize) -> AxisIter<T, S::ColStride>
 {
-	AxisIter::new(s.as_row_ptr(pos), s.col_stride_dim(), s.col_count())
+	AxisIter::new(s.as_row_ptr(pos), s.col_stride_dim(), s.cols())
 }
 
-pub fn row_iter_mut<T, R, C, S>(s: &mut S, pos: usize) -> AxisIterMut<T, S::CStride>
-	where T: Scalar, R: Dim, C: Dim, S: StorageMut<T, R, C>
+pub fn row_iter_mut<T, S>(s: &mut S, pos: usize) -> AxisIterMut<T, S::ColStride>
+	where T: Scalar, S: StorageMut<T>
 {
-	AxisIterMut::new(s.as_row_mut_ptr(pos), s.col_stride_dim(), s.col_count())
+	AxisIterMut::new(s.as_row_mut_ptr(pos), s.col_stride_dim(), s.cols())
 }
 
-pub fn col_iter<T, R, C, S>(s: &S, pos: usize) -> AxisIter<T, S::RStride>
-	where T: Scalar, R: Dim, C: Dim, S: Storage<T, R, C>
+pub fn col_iter<T, S>(s: &S, pos: usize) -> AxisIter<T, S::RowStride>
+	where T: Scalar, S: Storage<T>
 {
-	AxisIter::new(s.as_col_ptr(pos), s.row_stride_dim(), s.row_count())
+	AxisIter::new(s.as_col_ptr(pos), s.row_stride_dim(), s.rows())
 }
 
-pub fn col_iter_mut<T, R, C, S>(s: &mut S, pos: usize) -> AxisIterMut<T, S::RStride>
-	where T: Scalar, R: Dim, C: Dim, S: StorageMut<T, R, C>
+pub fn col_iter_mut<T, S>(s: &mut S, pos: usize) -> AxisIterMut<T, S::RowStride>
+	where T: Scalar, S: StorageMut<T>
 {
-	AxisIterMut::new(s.as_col_mut_ptr(pos), s.row_stride_dim(), s.row_count())
+	AxisIterMut::new(s.as_col_mut_ptr(pos), s.row_stride_dim(), s.rows())
 }
 
 
