@@ -1,12 +1,15 @@
 #[macro_use]
 extern crate derive_new;
+#[macro_use]
+extern crate litcontainers_derive;
 
 extern crate itertools;
 
 #[macro_use] pub mod macros;
 pub mod format;
-pub mod storage;
+#[macro_use]
 pub mod iterator;
+pub mod storage;
 pub mod container;
 pub mod slice;
 pub mod ops;
@@ -14,8 +17,8 @@ pub mod functions;
 pub mod wrapper;
 
 pub use format::*;
-pub use storage::*;
 pub use iterator::*;
+pub use storage::*;
 pub use container::*;
 pub use slice::*;
 pub use ops::*;
@@ -23,9 +26,8 @@ pub use functions::*;
 pub use wrapper::*;
 
 // Documentation inlines
-#[doc(inline)] pub use format::{Scalar};
-#[doc(inline)] pub use storage::{Storage, StorageMut, StorageConstructor, Ownable, SizedStorage, DynamicColStorage, DynamicRowStorage};
-#[doc(inline)] pub use container::{Container, ContainerCM, ContainerRM};
+#[doc(inline)] pub use format::{Scalar, StorageSize, Strided};
+#[doc(inline)] pub use storage::{Storage, StorageMut, StorageConstructor, Ownable, DynamicColStorage, DynamicRowStorage};
 #[doc(inline)] pub use slice::{Slice, SliceMut};
 
 
