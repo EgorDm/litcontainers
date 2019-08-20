@@ -1,3 +1,4 @@
+/*
 use crate::{format::*, storage::*, RowVec};
 
 pub fn argmax_cols<T, R, C, S>(s: &S) -> RowVec<u32, R>
@@ -26,4 +27,4 @@ pub fn max_bucket_cols<T, R, C, S, TA, SA>(s: &S, axis: &SA) -> RowVec<TA, R>
 		*v = axis[*i as usize];
 	}
 	ret
-}
+}*/

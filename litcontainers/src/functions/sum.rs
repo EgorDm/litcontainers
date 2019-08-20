@@ -1,3 +1,4 @@
+/*
 use crate::*;
 
 pub fn cumsum_rows<T, R, C, S>(s: &S) -> ContainerRM<T, R, C>
@@ -80,4 +81,4 @@ pub fn mean_cols<T, R, C, S>(s: &S) -> RowVec<T, C>
 		*out /= elem_count;
 	}
 	ret
-}
+}*/
