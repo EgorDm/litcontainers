@@ -66,7 +66,7 @@ impl<T, R, C> StorageMut<T> for VecStorageRM<T, R, C>
 impl<T, C> DynamicRowStorage<T> for VecStorageRM<T, Dynamic, C>
 	where T: Scalar, C: Dim
 {
-	fn set_row_count(&mut self, count: usize) {
+	fn set_rows(&mut self, count: usize) {
 		unsafe {self.resize_element_count(count * self.cols())};
 		self.size.rows = Dynamic::from(count);
 	}
@@ -75,7 +75,7 @@ impl<T, C> DynamicRowStorage<T> for VecStorageRM<T, Dynamic, C>
 impl<T, R> DynamicColStorage<T> for VecStorageRM<T, R, Dynamic>
 	where T: Scalar, R: Dim
 {
-	fn set_col_count(&mut self, count: usize) {
+	fn set_cols(&mut self, count: usize) {
 		if count == self.cols() { return; }
 
 		let mut new_data = vec![T::default(); self.rows() * count];

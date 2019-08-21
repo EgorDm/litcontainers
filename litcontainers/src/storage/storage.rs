@@ -5,6 +5,7 @@ use crate::iterator::*;
 use std::fmt::Debug;
 use std::slice;
 use crate::slice::{SliceRange};
+use crate::Wrapper;
 
 //type RowItss<S> =
 
@@ -19,7 +20,7 @@ pub trait Storage<T>: StorageSize + Strided + Debug + Sized + Ownable<T> + Send 
 	fn as_ptr(&self) -> *const T;
 
 	#[inline]
-	fn as_slice<'b, 'a: 'b>(&'a self) -> &'b [T] {
+	fn as_slice(&self) -> &[T] {
 		unsafe { slice::from_raw_parts(self.as_ptr(), self.len()) }
 	}
 

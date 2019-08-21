@@ -1,12 +1,13 @@
 use crate::format::*;
 use crate::storage::*;
 use std::marker::PhantomData;
+use crate::Wrapper;
 
 
 /// Slice containing references to scalar values.
-pub type Slice<'a, T, R, RS, C, CS> = SliceBase<'a, T, PtrStorage<'a, T, R, RS, C, CS>>;
+pub type Slice<'a, T, R, RS, C, CS> = Wrapper<T, SliceBase<'a, T, PtrStorage<'a, T, R, RS, C, CS>>>;
 /// Slice containing mutable references to scalar values.
-pub type SliceMut<'a, T, R, RS, C, CS> = SliceBase<'a, T, PtrStorageMut<'a, T, R, RS, C, CS>>;
+pub type SliceMut<'a, T, R, RS, C, CS> = Wrapper<T, SliceBase<'a, T, PtrStorageMut<'a, T, R, RS, C, CS>>>;
 
 /// Container containing references to scalar values.
 #[repr(C)]

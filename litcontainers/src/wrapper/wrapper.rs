@@ -17,20 +17,24 @@ impl<T, S> StorageMut<T> for Wrapper<T, S>
 	fn as_ptr_mut(&mut self) -> *mut T { self.storage.as_ptr_mut() }
 }
 
+impl<T, S> StorageConstructor<T> for Wrapper<T, S>
+	where T: Scalar, S: Storage<T> + StorageConstructor<T>
+{
+	fn from_value(s: Size<Self::Rows, Self::Cols>, value: T) -> Self { S::from_value(s, value).into()  }
+}
+
 impl<T, S> DynamicRowStorage<T> for Wrapper<T, S>
 	where T: Scalar, S: StorageMut<T> + DynamicRowStorage<T>
 {
-	fn set_row_count(&mut self, count: usize) {
-		self.storage.set_row_count(count)
+	fn set_rows(&mut self, count: usize) {
+		self.storage.set_rows(count)
 	}
 }
 
 impl<T, S> DynamicColStorage<T> for Wrapper<T, S>
 	where T: Scalar, S: StorageMut<T> + DynamicColStorage<T>
 {
-	fn set_col_count(&mut self, count: usize) {
-		self.storage.set_col_count(count)
-	}
+	fn set_cols(&mut self, count: usize) { self.storage.set_cols(count) }
 }
 
 impl<T, S> fmt::Display for Wrapper<T, S>
@@ -39,4 +43,8 @@ impl<T, S> fmt::Display for Wrapper<T, S>
 	fn fmt(&self, f: &mut fmt::Formatter) -> Result<(), fmt::Error> {
 		write!(f, "{}", Fmt(|f| print_storage(self, f)))
 	}
+}
+
+impl<T: Scalar, S: Storage<T>> From<S> for Wrapper<T, S> {
+	fn from(s: S) -> Self { Wrapper::new(s) }
 }

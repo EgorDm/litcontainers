@@ -11,7 +11,7 @@ pub trait StorageMut<T>: Storage<T>
 	fn as_ptr_mut(&mut self) -> *mut T;
 
 	#[inline]
-	fn as_mut_slice<'b, 'a: 'b>(&'a mut self) -> &'b mut [T] {
+	fn as_slice_mut<'b, 'a: 'b>(&'a mut self) -> &'b mut [T] {
 		unsafe { slice::from_raw_parts_mut(self.as_ptr_mut(), self.len()) }
 	}
 
@@ -47,12 +47,6 @@ pub trait StorageMut<T>: Storage<T>
 
 	// Row Contigious Access Functions
 	#[inline]
-	fn as_row_mut_slice<'b, 'a: 'b>(&'a mut self, v: usize) -> &'b mut [T] {
-		let size = self.index(v, self.cols() - 1) - self.index(v, 0) + 1;
-		unsafe { slice::from_raw_parts_mut(self.as_row_mut_ptr(v), size) }
-	}
-
-	#[inline]
 	fn as_row_mut_ptr(&mut self, v: usize) -> *mut T {
 		assert!(v < self.rows(), "Row out of bounds!");
 		unsafe { self.as_row_mut_ptr_unchecked(v) }
@@ -64,12 +58,6 @@ pub trait StorageMut<T>: Storage<T>
 	}
 
 	// Col Contigious Access Functions
-	#[inline]
-	fn as_col_mut_slice<'b, 'a: 'b>(&'a mut self, v: usize) -> &'b mut [T] {
-		let size = self.index(self.rows() - 1, v) - self.index(0, v) + 1;
-		unsafe { slice::from_raw_parts_mut(self.as_col_mut_ptr(v), size) }
-	}
-
 	#[inline]
 	fn as_col_mut_ptr(&mut self, v: usize) -> *mut T {
 		assert!(v < self.cols(), "Col out of bounds!");
