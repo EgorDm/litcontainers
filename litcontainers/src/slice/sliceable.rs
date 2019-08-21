@@ -1,102 +1,91 @@
-/*
 use crate::format::*;
-use crate::storage::{Storage, PtrStorage, StorageMut, PtrStorageMut};
-use crate::slice::{SliceRange, Slice, SliceMut};
+use crate::storage::*;
+use crate::{Slice, SliceBase, SliceRange, SliceMut};
 
-pub trait Sliceable<T, R, C>: Storage<T, R, C>
-	where T: Scalar, R: Dim, C: Dim
-{
+pub trait Sliceable<T: Scalar>: Storage<T> {
 	#[inline]
-	fn slice_rows<'b: 'c, 'c, RR: SliceRange<R>>(&'b self, range: RR) -> Slice<'c, T, RR::Size, Self::RStride, C, Self::CStride> {
-		assert!(range.end() <= self.row_count(), "Slice is out of bounds!");
-		//TODO: cound check
-		Slice::new(unsafe {
+	fn slice_rows<RR: SliceRange<Self::Rows>>(&self, range: RR)
+		-> Slice<T, RR::Size, Self::RowStride, Self::Cols, Self::ColStride>
+	{
+		assert!(self.rows() <= range.end(), "Range is out of bounds!");
+		unsafe {
 			PtrStorage::new(
 				self.as_row_ptr(range.begin()),
-				range.size(),
-				self.col_dim(),
-				self.row_stride_dim(),
-				self.col_stride_dim(),
-			)
-		})
+				Size::new(range.size(), self.col_dim()),
+				Strides::new(self.row_stride_dim(), self.col_stride_dim())
+			).into()
+		}
 	}
 
 	#[inline]
-	fn slice_cols<'b: 'c, 'c, CR: SliceRange<C>>(&'b self, range: CR) -> Slice<'c, T, R, Self::RStride, CR::Size, Self::CStride> {
-		assert!(range.end() <= self.col_count(), "Slice is out of bounds!");
-		Slice::new(unsafe {
+	fn slice_cols<CR: SliceRange<Self::Cols>>(&self, range: CR)
+		-> Slice<T, Self::Rows, Self::RowStride, CR::Size, Self::ColStride>
+	{
+		assert!(self.cols() <= range.end(), "Range is out of bounds!");
+		unsafe {
 			PtrStorage::new(
 				self.as_col_ptr(range.begin()),
-				self.row_dim(),
-				range.size(),
-				self.row_stride_dim(),
-				self.col_stride_dim(),
-			)
-		})
+				Size::new(self.row_dim(), range.size()),
+				Strides::new(self.row_stride_dim(), self.col_stride_dim())
+			).into()
+		}
 	}
 
 	#[inline]
-	fn slice<'b: 'c, 'c, RR: SliceRange<R>, CR: SliceRange<C>>(&'b self, range_rows: RR, range_cols: CR)
-		-> Slice<'c, T, RR::Size, Self::RStride, CR::Size, Self::CStride>
+	fn slice<RR: SliceRange<Self::Rows>, CR: SliceRange<Self::Cols>>(&self, range_rows: RR, range_cols: CR)
+		-> Slice<T, RR::Size, Self::RowStride, CR::Size, Self::ColStride>
 	{
-		assert!(range_cols.end() <= self.col_count() && range_rows.end() <= self.row_count(), "Slice is out of bounds!");
-		Slice::new(unsafe {
+		assert!(self.cols() <= range_cols.end() && self.rows() <= range_rows.end(), "Range is out of bounds!");
+		unsafe {
 			PtrStorage::new(
-				self.get_index_ptr_unchecked(self.calc_index(range_rows.begin(), range_cols.begin())),
-				range_rows.size(),
-				range_cols.size(),
-				self.row_stride_dim(),
-				self.col_stride_dim(),
-			)
-		})
+				self.get_ptr(range_rows.begin(), range_cols.begin()),
+				Size::new(range_rows.size(), range_cols.size()),
+				Strides::new(self.row_stride_dim(), self.col_stride_dim())
+			).into()
+		}
 	}
 }
 
-
-pub trait SliceableMut<T, R, C>: StorageMut<T, R, C>
-	where T: Scalar, R: Dim, C: Dim
-{
+pub trait SliceableMut<T: Scalar>: StorageMut<T> {
 	#[inline]
-	fn slice_rows_mut<'b: 'c, 'c, RR: SliceRange<R>>(&'b mut self, range: RR) -> SliceMut<'c, T, RR::Size, Self::RStride, C, Self::CStride> {
-		assert!(range.end() <= self.row_count(), "Slice is out of bounds!");
-		SliceMut::new(unsafe {
-			PtrMutStorage::new(
-				self.as_row_mut_ptr(range.begin()),
-				range.size(),
-				self.col_dim(),
-				self.row_stride_dim(),
-				self.col_stride_dim(),
-			)
-		})
-	}
-
-	#[inline]
-	fn slice_cols_mut<'b: 'c, 'c, CC: SliceRange<C>>(&'b mut self, range: CC) -> SliceMut<'c, T, R, Self::RStride, CC::Size, Self::CStride> {
-		assert!(range.end() <= self.col_count(), "Slice is out of bounds!");
-		SliceMut::new(unsafe {
-			PtrMutStorage::new(
-				self.as_col_mut_ptr(range.begin()),
-				self.row_dim(),
-				range.size(),
-				self.row_stride_dim(),
-				self.col_stride_dim(),
-			)
-		})
-	}
-
-	#[inline]
-	fn slice_mut<'b: 'c, 'c, RR: SliceRange<R>, CR: SliceRange<C>>(&'b mut self, range_rows: RR, range_cols: CR)
-		-> SliceMut<'c, T, RR::Size, Self::RStride, CR::Size, Self::CStride>
+	fn slice_rows_mut<RR: SliceRange<Self::Rows>>(&mut self, range: RR)
+		-> SliceMut<T, RR::Size, Self::RowStride, Self::Cols, Self::ColStride>
 	{
-		assert!(range_cols.end() <= self.col_count() && range_rows.end() <= self.row_count(), "Slice is out of bounds!");
-		SliceMut::new(unsafe {
-			PtrMutStorage::new(
-				self.get_index_mut_ptr_unchecked(self.calc_index(range_rows.begin(), range_cols.begin())),
-				range_rows.size(),
-				range_cols.size(),
-				self.row_stride_dim(),
-				self.col_stride_dim(),
-			)
-		})
+		assert!(self.rows() <= range.end(), "Range is out of bounds!");
+		unsafe {
+			PtrStorageMut::new(
+				self.as_row_ptr_mut(range.begin()),
+				Size::new(range.size(), self.col_dim()),
+				Strides::new(self.row_stride_dim(), self.col_stride_dim())
+			).into()
+		}
 	}
-}*/
+
+	#[inline]
+	fn slice_cols_mut<CR: SliceRange<Self::Cols>>(&mut self, range: CR)
+		-> SliceMut<T, Self::Rows, Self::RowStride, CR::Size, Self::ColStride>
+	{
+		assert!(self.cols() <= range.end(), "Range is out of bounds!");
+		unsafe {
+			PtrStorageMut::new(
+				self.as_col_ptr_mut(range.begin()),
+				Size::new(self.row_dim(), range.size()),
+				Strides::new(self.row_stride_dim(), self.col_stride_dim())
+			).into()
+		}
+	}
+
+	#[inline]
+	fn slice_mut<RR: SliceRange<Self::Rows>, CR: SliceRange<Self::Cols>>(&mut self, range_rows: RR, range_cols: CR)
+		-> SliceMut<T, RR::Size, Self::RowStride, CR::Size, Self::ColStride>
+	{
+		assert!(self.cols() <= range_cols.end() && self.rows() <= range_rows.end(), "Range is out of bounds!");
+		unsafe {
+			PtrStorageMut::new(
+				self.get_ptr_mut(range_rows.begin(), range_cols.begin()),
+				Size::new(range_rows.size(), range_cols.size()),
+				Strides::new(self.row_stride_dim(), self.col_stride_dim())
+			).into()
+		}
+	}
+}

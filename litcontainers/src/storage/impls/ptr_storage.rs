@@ -1,6 +1,7 @@
 use crate::format::*;
 use std::marker::PhantomData;
 use crate::storage::*;
+use crate::{Slice, SliceBase, SliceMut};
 
 #[repr(C)]
 #[derive(Debug, new)]
@@ -172,6 +173,11 @@ impl<'a, T, R, RS, C, CS> PtrStorage<'a, T, R, RS, C, CS>
 	}
 }
 
+impl<'a, T, R, RS, C, CS> Into<Slice<'a, T, R, RS, C, CS>> for PtrStorage<'a, T, R, RS, C, CS>
+	where T: Scalar, R: Dim, RS: Dim, C: Dim, CS: Dim {
+	fn into(self) -> Slice<'a, T, R, RS, C, CS> { SliceBase::new(self).into() }
+}
+
 #[repr(C)]
 #[derive(Debug, StorageSize, Strided, Storage, StorageMut, Ownable)]
 pub struct PtrStorageMut<'a, T, R, RS, C, CS>
@@ -188,6 +194,12 @@ impl<'a, T, R, RS, C, CS> PtrStorageMut<'a, T, R, RS, C, CS>
 		Self { storage: PtrStorageCore::new(ptr, size, strides), _phantoms: PhantomData }
 	}
 }
+
+impl<'a, T, R, RS, C, CS> Into<SliceMut<'a, T, R, RS, C, CS>> for PtrStorageMut<'a, T, R, RS, C, CS>
+	where T: Scalar, R: Dim, RS: Dim, C: Dim, CS: Dim {
+	fn into(self) -> SliceMut<'a, T, R, RS, C, CS> { SliceBase::new(self).into() }
+}
+
 /*
 
 macro_rules! ptr_storage (

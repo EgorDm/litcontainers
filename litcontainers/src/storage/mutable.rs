@@ -1,8 +1,8 @@
 use crate::format::*;
 use crate::storage::*;
 use crate::iterator::*;
+use crate::{SliceRange, SliceableMut};
 use std::slice;
-use crate::SliceRange;
 
 pub trait StorageMut<T>: Storage<T>
 	where T: Scalar
@@ -25,6 +25,13 @@ pub trait StorageMut<T>: Storage<T>
 	#[inline]
 	unsafe fn get_mut_unchecked(&mut self, r: usize, c: usize) -> &mut T {
 		&mut *self.as_ptr_mut().offset(self.index(r, c) as isize)
+	}
+
+	#[inline]
+	fn get_ptr_mut(&mut self, r: usize, c: usize) -> *mut T {
+		assert!(r < self.rows(), "Out of range row!");
+		assert!(c < self.cols(), "Out of range col!");
+		unsafe { self.as_ptr_mut().offset(self.index(r, c) as isize) }
 	}
 
 	#[inline]
@@ -70,24 +77,24 @@ pub trait StorageMut<T>: Storage<T>
 	}
 
 	// Iterator
-	fn as_iter_mut<'a: 'b, 'b>(&'a mut self) -> FullRowIterMut<'b, T, Self> { self.as_row_iter_mut() }
+	fn as_iter_mut(&mut self) -> FullRowIterMut<T, Self> { self.as_row_iter_mut() }
 
-	fn as_row_iter_mut<'a: 'b, 'b>(&'a mut self) -> FullRowIterMut<'b, T, Self> { full_row_iter!(mut self) }
+	fn as_row_iter_mut(&mut self) -> FullRowIterMut<T, Self> { full_row_iter!(mut self) }
 
-	fn as_row_slice_iter_mut<'a: 'b, 'b>(&'a mut self) -> RowSliceIterMut<'b, T, Self::Rows, Self::RowStride, Self::Cols, Self::ColStride> { RowSliceIterMut::from_storage(self) }
+	fn as_row_slice_iter_mut(&mut self) -> RowSliceIterMut<T, Self::Rows, Self::RowStride, Self::Cols, Self::ColStride> { RowSliceIterMut::from_storage(self) }
 
-	fn as_row_range_iter_mut<'a: 'b, 'b, RR: SliceRange<Self::Rows>>(&'a mut self, range: RR)
-		-> FullIterMut<'a, T, RR::Size, Self::RowStride, Self::ColStride>
+	fn as_row_range_iter_mut<RR: SliceRange<Self::Rows>>(&mut self, range: RR)
+		-> FullIterMut<T, RR::Size, Self::RowStride, Self::ColStride>
 	{
 		full_row_iter!(mut self, range)
 	}
 
-	fn as_col_iter_mut<'a: 'b, 'b>(&'a mut self) -> FullColIterMut<'b, T, Self> { full_col_iter!(mut self) }
+	fn as_col_iter_mut(&mut self) -> FullColIterMut<T, Self> { full_col_iter!(mut self) }
 
-	fn as_col_slice_iter_mut<'a: 'b, 'b>(&'a mut self) -> ColSliceIterMut<'b, T, Self::Rows, Self::RowStride, Self::Cols, Self::ColStride> { ColSliceIterMut::from_storage(self) }
+	fn as_col_slice_iter_mut(&mut self) -> ColSliceIterMut<T, Self::Rows, Self::RowStride, Self::Cols, Self::ColStride> { ColSliceIterMut::from_storage(self) }
 
-	fn as_col_range_iter_mut<'a: 'b, 'b, CR: SliceRange<Self::Cols>>(&'a mut self, range: CR)
-		-> FullIterMut<'a, T, CR::Size, Self::ColStride, Self::RowStride>
+	fn as_col_range_iter_mut<CR: SliceRange<Self::Cols>>(&mut self, range: CR)
+		-> FullIterMut<T, CR::Size, Self::ColStride, Self::RowStride>
 	{
 		full_col_iter!(mut self, range)
 	}
@@ -103,6 +110,4 @@ pub trait StorageMut<T>: Storage<T>
 	}
 }
 
-/*
-impl<T, R, C, S> SliceableMut<T, R, C> for S
-	where T: Scalar, R: Dim, C: Dim, S: StorageMut<T, R, C> {}*/
+impl<T: Scalar, S: StorageMut<T>> SliceableMut<T> for S {}

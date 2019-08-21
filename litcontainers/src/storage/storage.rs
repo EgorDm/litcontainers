@@ -5,7 +5,8 @@ use crate::iterator::*;
 use std::fmt::Debug;
 use std::slice;
 use crate::slice::{SliceRange};
-use crate::Wrapper;
+use crate::{Wrapper, Sliceable};
+use std::iter::Cloned;
 
 //type RowItss<S> =
 
@@ -29,6 +30,13 @@ pub trait Storage<T>: StorageSize + Strided + Debug + Sized + Ownable<T> + Send 
 		assert!(r < self.rows(), "Out of range row!");
 		assert!(c < self.cols(), "Out of range col!");
 		unsafe { self.get_unchecked(r, c) }
+	}
+
+	#[inline]
+	fn get_ptr(&self, r: usize, c: usize) -> *const T {
+		assert!(r < self.rows(), "Out of range row!");
+		assert!(c < self.cols(), "Out of range col!");
+		unsafe { self.as_ptr().offset(self.index(r, c) as isize) }
 	}
 
 	#[inline]
@@ -65,31 +73,30 @@ pub trait Storage<T>: StorageSize + Strided + Debug + Sized + Ownable<T> + Send 
 	unsafe fn as_col_ptr_unchecked(&self, p: usize) -> *const T { self.as_ptr().offset(self.col_index(p) as isize) }
 
 	// Iterator
-	fn as_iter<'a: 'b, 'b>(&'a self) -> FullRowIter<T, Self> { self.as_row_iter() }
+	fn iter(&self) -> Cloned<FullRowIter<T, Self>> { self.as_iter().cloned() }
 
-	fn as_row_iter<'a: 'b, 'b>(&'a self) -> FullRowIter<'a, T, Self> {
-		full_row_iter!(self)
-	}
+	fn as_iter(&self) -> FullRowIter<T, Self> { self.as_row_iter() }
 
-	fn as_row_slice_iter<'a: 'b, 'b>(&'a self) -> RowSliceIter<'b, T, Self::Rows, Self::RowStride, Self::Cols, Self::ColStride> { RowSliceIter::from_storage(self) }
+	fn as_row_iter(&self) -> FullRowIter<T, Self> { full_row_iter!(self) }
 
-	fn as_row_range_iter<'a: 'b, 'b, RR: SliceRange<Self::Rows>>(&'a self, range: RR)
-		-> FullIter<'a, T, RR::Size, Self::RowStride, Self::ColStride>
+	fn as_row_slice_iter(&self) -> RowSliceIter<T, Self::Rows, Self::RowStride, Self::Cols, Self::ColStride> { RowSliceIter::from_storage(self) }
+
+	fn as_row_range_iter<RR: SliceRange<Self::Rows>>(&self, range: RR)
+		-> FullIter<T, RR::Size, Self::RowStride, Self::ColStride>
 	{
 		full_row_iter!(self, range)
 	}
 
-	fn as_col_iter<'a: 'b, 'b>(&'a self) -> FullColIter<T, Self> { full_col_iter!(self) }
+	fn as_col_iter(&self) -> FullColIter<T, Self> { full_col_iter!(self) }
 
-	fn as_col_slice_iter<'a: 'b, 'b>(&'a self) -> RowSliceIter<'b, T, Self::Rows, Self::RowStride, Self::Cols, Self::ColStride> { RowSliceIter::from_storage(self) }
+	fn as_col_slice_iter(&self) -> RowSliceIter<T, Self::Rows, Self::RowStride, Self::Cols, Self::ColStride> { RowSliceIter::from_storage(self) }
 
-	fn as_col_range_iter<'a: 'b, 'b, CR: SliceRange<Self::Cols>>(&'a self, range: CR)
-		-> FullIter<'a, T, CR::Size, Self::ColStride, Self::RowStride>
+	fn as_col_range_iter<CR: SliceRange<Self::Cols>>(&self, range: CR)
+		-> FullIter<T, CR::Size, Self::ColStride, Self::RowStride>
 	{
 		full_col_iter!(self, range)
 	}
 }
 
-/*
-impl<T, R, C, S> Sliceable<T, R, C> for S
-	where T: Scalar, R: Dim, C: Dim, S: Storage<T, R, C> {}*/
+
+impl<T: Scalar, S: Storage<T>> Sliceable<T> for S {}

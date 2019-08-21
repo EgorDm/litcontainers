@@ -1,5 +1,5 @@
 use crate::format::*;
-use crate::slice::{Slice, SliceMut};
+use crate::slice::{Slice, SliceMut, SliceBase};
 use crate::storage::*;
 use super::axis::*;
 use std::marker::PhantomData;
@@ -66,7 +66,7 @@ impl<'a, T, R, RS, C, CS> RowSliceIter<'a, T, R, RS, C, CS>
 	where T: Scalar, R: Dim, RS: Dim, C: Dim, CS: Dim
 {
 	fn make_slice(&self, ptr: *mut T) -> <Self as Iterator>::Item {
-		<Self as Iterator>::Item::new(
+		SliceBase::new(
 			unsafe {
 				PtrStorage::new(
 					ptr as *const T,
@@ -74,7 +74,7 @@ impl<'a, T, R, RS, C, CS> RowSliceIter<'a, T, R, RS, C, CS>
 					Strides::new(self.size.col_dim(), self.stride.col_stride_dim())
 				)
 			}
-		)
+		).into()
 	}
 }
 
@@ -83,15 +83,13 @@ impl<'a, T, R, RS, C, CS> RowSliceIterMut<'a, T, R, RS, C, CS>
 	where T: Scalar, R: Dim, RS: Dim, C: Dim, CS: Dim
 {
 	fn make_slice(&self, ptr: *mut T) -> <Self as Iterator>::Item {
-		<Self as Iterator>::Item::new(
-			unsafe {
-				PtrStorageMut::new(
-					ptr,
-					Size::new(U1, self.size.col_dim()),
-					Strides::new(self.size.col_dim(), self.stride.col_stride_dim())
-				)
-			}
-		)
+		unsafe {
+			PtrStorageMut::new(
+				ptr,
+				Size::new(U1, self.size.col_dim()),
+				Strides::new(self.size.col_dim(), self.stride.col_stride_dim())
+			).into()
+		}
 	}
 }
 
@@ -100,15 +98,13 @@ impl<'a, T, R, RS, C, CS> ColSliceIter<'a, T, R, RS, C, CS>
 	where T: Scalar, R: Dim, RS: Dim, C: Dim, CS: Dim
 {
 	fn make_slice(&self, ptr: *mut T) -> <Self as Iterator>::Item {
-		<Self as Iterator>::Item::new(
-			unsafe {
-				PtrStorage::new(
-					ptr as *const T,
-					Size::new(self.size.row_dim(), U1),
-					Strides::new(self.stride.row_stride_dim(), self.size.row_dim())
-				)
-			}
-		)
+		unsafe {
+			PtrStorage::new(
+				ptr as *const T,
+				Size::new(self.size.row_dim(), U1),
+				Strides::new(self.stride.row_stride_dim(), self.size.row_dim())
+			).into()
+		}
 	}
 }
 
@@ -117,14 +113,12 @@ impl<'a, T, R, RS, C, CS> ColSliceIterMut<'a, T, R, RS, C, CS>
 	where T: Scalar, R: Dim, RS: Dim, C: Dim, CS: Dim
 {
 	fn make_slice(&self, ptr: *mut T) -> <Self as Iterator>::Item {
-		<Self as Iterator>::Item::new(
-			unsafe {
-				PtrStorageMut::new(
-					ptr,
-					Size::new(self.size.row_dim(), U1),
-					Strides::new(self.stride.row_stride_dim(), self.size.row_dim())
-				)
-			}
-		)
+		unsafe {
+			PtrStorageMut::new(
+				ptr,
+				Size::new(self.size.row_dim(), U1),
+				Strides::new(self.stride.row_stride_dim(), self.size.row_dim())
+			).into()
+		}
 	}
 }
