@@ -2,9 +2,10 @@
 extern crate itertools;
 
 mod storage;
-/*
-mod iterators;
-mod ops;
 mod printing;
+mod iterators;
+
+/*
+mod ops;
 mod macros;
 mod functions;*/

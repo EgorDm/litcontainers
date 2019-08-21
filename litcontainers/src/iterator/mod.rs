@@ -5,7 +5,6 @@ pub mod axis;
 pub mod full;
 pub mod slice;
 
-
 #[doc(inline)] pub use parallel::*;
 #[doc(inline)] pub use axis::*;
 #[doc(inline)] pub use full::*;

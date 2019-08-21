@@ -1,7 +1,7 @@
 use litcontainers::*;
 
 fn mock_container() -> ContainerRM<f64, U3, Dynamic> {
-	ContainerRM::from_vec(U3, Dynamic::new(2), &[1., 2., 3., 4., 5., 6.])
+	ContainerRM::from_vec(Size::new(U3, Dynamic::new(2)), &[1., 2., 3., 4., 5., 6.])
 }
 
 #[test]

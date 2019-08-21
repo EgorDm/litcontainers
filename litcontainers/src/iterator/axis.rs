@@ -1,6 +1,8 @@
 use crate::format::*;
 use crate::storage::{Storage, StorageMut};
 use std::marker::PhantomData;
+use crate::{SplittableIterator, Parallel};
+use rayon::iter::{IntoParallelIterator};
 
 
 #[derive(Debug, new)]
@@ -11,19 +13,12 @@ pub(crate) struct AxisIterRaw<T, S: Dim> {
 	ptr: *mut T,
 }
 
-impl<T, S: Dim> AxisIterRaw<T, S> {
-	unsafe fn offset(&self, pos: usize) -> *mut T {
-		debug_assert!(
-			pos <= self.length,
-			"pos={}, length={:#?}, stride={:#?}",
-			pos,
-			self.length,
-			self.stride
-		);
-		self.ptr.offset((pos * self.stride.value()) as isize)
-	}
+unsafe impl<T, S: Dim> Send for AxisIterRaw<T, S> {}
 
-	pub(super) fn split_at(self, pos: usize) -> (Self, Self) {
+unsafe impl<T, S: Dim> Sync for AxisIterRaw<T, S> {}
+
+impl<T, S: Dim> SplittableIterator for AxisIterRaw<T, S> {
+	fn split_at(self, pos: usize) -> (Self, Self) {
 		assert!(pos <= self.length);
 		let left_ptr = unsafe { self.offset(self.cursor) };
 		let right_ptr = if pos != self.length {
@@ -46,6 +41,19 @@ impl<T, S: Dim> AxisIterRaw<T, S> {
 		};
 
 		(left, right)
+	}
+}
+
+impl<T, S: Dim> AxisIterRaw<T, S> {
+	unsafe fn offset(&self, pos: usize) -> *mut T {
+		debug_assert!(
+			pos <= self.length,
+			"pos={}, length={:#?}, stride={:#?}",
+			pos,
+			self.length,
+			self.stride
+		);
+		self.ptr.offset((pos * self.stride.value()) as isize)
 	}
 }
 
@@ -101,7 +109,9 @@ impl<'a, T, S: Dim> AxisIter<'a, T, S> {
 			_phantoms: PhantomData
 		}
 	}
+}
 
+impl<'a, T, S: Dim> SplittableIterator for AxisIter<'a, T, S> {
 	fn split_at(self, pos: usize) -> (Self, Self) {
 		let (left, right) = self.iter.split_at(pos);
 		(
@@ -131,6 +141,13 @@ impl<'a, T, S: Dim> DoubleEndedIterator for AxisIter<'a, T, S> {
 	}
 }
 
+impl<'a, T: Send + Sync, S: Dim> IntoParallelIterator for AxisIter<'a, T, S> {
+	type Iter = Parallel<Self>;
+	type Item = <Self as Iterator>::Item;
+
+	fn into_par_iter(self) -> Self::Iter { Parallel::new(self) }
+}
+
 /// Ref mut iterator
 #[derive(Debug)]
 pub struct AxisIterMut<'a, T, S: Dim> {
@@ -150,7 +167,9 @@ impl<'a, T, S: Dim> AxisIterMut<'a, T, S> {
 			_phantoms: PhantomData
 		}
 	}
+}
 
+impl<'a, T, S: Dim> SplittableIterator for AxisIterMut<'a, T, S> {
 	fn split_at(self, pos: usize) -> (Self, Self) {
 		let (left, right) = self.iter.split_at(pos);
 		(
@@ -180,6 +199,14 @@ impl<'a, T, S: Dim> DoubleEndedIterator for AxisIterMut<'a, T, S> {
 	}
 }
 
+impl<'a, T: Send + Sync, S: Dim> IntoParallelIterator for AxisIterMut<'a, T, S> {
+	type Iter = Parallel<Self>;
+	type Item = <Self as Iterator>::Item;
+
+	fn into_par_iter(self) -> Self::Iter { Parallel::new(self) }
+}
+
+
 pub fn row_iter<T: Scalar, S: Storage<T>>(s: &S, pos: usize) -> AxisIter<T, S::ColStride>
 {
 	AxisIter::new(s.as_row_ptr(pos), s.col_stride_dim(), s.cols())
@@ -201,14 +228,4 @@ pub fn col_iter_mut<T, S>(s: &mut S, pos: usize) -> AxisIterMut<T, S::RowStride>
 	where T: Scalar, S: StorageMut<T>
 {
 	AxisIterMut::new(s.as_col_mut_ptr(pos), s.row_stride_dim(), s.rows())
-}
-
-
-#[test]
-fn test_axis_iter() {
-	let data: Vec<i32> = (0..10).collect();
-	let target: Vec<i32> = (0..5).map(|v| v * 2).collect();
-	let iter = AxisIter::new(data.as_ptr() as *mut i32, U2, 5);
-	let result: Vec<i32> = iter.cloned().collect();
-	assert_eq!(result, target);
 }

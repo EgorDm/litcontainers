@@ -1,7 +1,8 @@
 use crate::format::*;
 use crate::slice::{Slice, SliceMut, SliceBase};
 use crate::storage::*;
-use super::axis::*;
+use super::{axis::*, SplittableIterator, Parallel};
+use rayon::iter::{IntoParallelIterator};
 use std::marker::PhantomData;
 
 macro_rules! slice_iter (
@@ -28,7 +29,11 @@ macro_rules! slice_iter (
 			{
 				Self::new($iter_fn(s, 0).iter, s.size(), s.strides())
 			}
+		}
 
+		impl<'a, T, R, RS, C, CS> SplittableIterator for $Name<'a, T, R, RS, C, CS>
+			where T: Scalar, R: Dim, RS: Dim, C: Dim, CS: Dim
+		{
 			fn split_at(self, pos: usize) -> (Self, Self) {
 				let (left, right) = self.iter.split_at(pos);
 				(
@@ -49,6 +54,8 @@ macro_rules! slice_iter (
 			fn next(&mut self) -> Option<Self::Item> {
 				self.iter.next().map(|v| self.make_slice(v))
 			}
+
+			fn size_hint(&self) -> (usize, Option<usize>) { self.iter.size_hint() }
 		}
 
 		impl<'a, T, R, RS, C, CS> DoubleEndedIterator for $Name<'a, T, R, RS, C, CS>
@@ -58,6 +65,16 @@ macro_rules! slice_iter (
 				self.iter.next_back().map(|v| self.make_slice(v))
 			}
 		}
+
+		impl<'a, T, R, RS, C, CS> IntoParallelIterator for $Name<'a, T, R, RS, C, CS>
+			where T: Scalar, R: Dim, RS: Dim, C: Dim, CS: Dim
+		{
+			type Iter = Parallel<Self>;
+			type Item = <Self as Iterator>::Item;
+
+			fn into_par_iter(self) -> Self::Iter { Parallel::new(self) }
+		}
+
 	}
 );
 
