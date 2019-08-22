@@ -2,7 +2,7 @@ use crate::{format::*, storage::*};
 use num_traits::Signed;
 
 pub fn find_nearest<T, S>(s: &S, v: T) -> usize
-	where T: ElementaryScalar + Signed, S: Storage<T>
+	where T: Scalar + Signed, S: Storage<T>
 {
 	let mut nearest_diff = T::max_val();
 	let mut nearest_idx = 0;

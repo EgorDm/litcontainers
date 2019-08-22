@@ -2,7 +2,7 @@ use crate::format::*;
 use crate::storage::*;
 use crate::{Slice, SliceBase, SliceRange, SliceMut};
 
-pub trait Sliceable<T: Scalar>: Storage<T> {
+pub trait Sliceable<T: Element>: Storage<T> {
 	#[inline]
 	fn slice_rows<RR: SliceRange<Self::Rows>>(&self, range: RR)
 		-> Slice<T, RR::Size, Self::RowStride, Self::Cols, Self::ColStride>
@@ -46,7 +46,7 @@ pub trait Sliceable<T: Scalar>: Storage<T> {
 	}
 }
 
-pub trait SliceableMut<T: Scalar>: StorageMut<T> {
+pub trait SliceableMut<T: Element>: StorageMut<T> {
 	#[inline]
 	fn slice_rows_mut<RR: SliceRange<Self::Rows>>(&mut self, range: RR)
 		-> SliceMut<T, RR::Size, Self::RowStride, Self::Cols, Self::ColStride>

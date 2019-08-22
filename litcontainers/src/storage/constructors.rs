@@ -3,7 +3,7 @@ use crate::format::*;
 use rand::Rng;
 
 pub trait StorageConstructor<T>: StorageMut<T>
-	where T: Scalar
+	where T: Element
 {
 	/// Creates a container with all elements set to given value.
 	#[inline]

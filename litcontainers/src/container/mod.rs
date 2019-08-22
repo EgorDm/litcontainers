@@ -1,3 +1,7 @@
-pub mod container;
+pub mod wrapper;
+pub mod operations;
+pub mod types;
 
-#[doc(inline)] pub use container::*;
+pub use wrapper::*;
+pub use operations::*;
+pub use types::*;

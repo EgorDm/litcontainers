@@ -1,11 +1,19 @@
 use super::Dim;
+use std::fmt;
+use crate::Fmt;
 
 pub type SStrides<S: Strided> = Strides<S::RowStride, S::ColStride>;
 
 #[derive(Debug, PartialEq, Eq, Clone, new)]
-pub struct Strides<RS, CS> {
+pub struct Strides<RS: Dim, CS: Dim> {
 	row_stride: RS,
 	col_stride: CS,
+}
+
+impl<RS: Dim, CS: Dim> fmt::Display for Strides<RS, CS> {
+	fn fmt(&self, f: &mut fmt::Formatter) -> Result<(), fmt::Error> {
+		write!(f, "Stride(Rows = {}, Cols = {})", Fmt(|f| self.row_stride_dim().pfmt(f)), Fmt(|f| self.col_stride_dim().pfmt(f)))
+	}
 }
 
 impl<RS: Dim, CS: Dim> Strided for Strides<RS, CS> {

@@ -356,14 +356,14 @@ impl<
 	}
 
 	#[inline]
-	fn from_usize(dim: usize) -> Self {
-		assert!(dim == Self::to_usize(), "Mismatched dimension.");
-		Self::new()
+	fn value(&self) -> usize {
+		Self::to_usize()
 	}
 
 	#[inline]
-	fn value(&self) -> usize {
-		Self::to_usize()
+	fn from_usize(dim: usize) -> Self {
+		assert_eq!(dim, Self::to_usize(), "Mismatched dimension.");
+		Self::new()
 	}
 
 	fn pfmt(&self, f: &mut Formatter) -> Result<(), Error> { write!(f, "U{}", self.value()) }

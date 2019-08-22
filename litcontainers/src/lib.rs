@@ -14,7 +14,6 @@ pub mod container;
 pub mod slice;
 pub mod ops;
 pub mod functions;
-pub mod wrapper;
 
 pub use format::*;
 pub use iterator::*;
@@ -23,7 +22,6 @@ pub use container::*;
 pub use slice::*;
 pub use ops::*;
 pub use functions::*;
-pub use wrapper::*;
 
 // Documentation inlines
 #[doc(inline)] pub use format::{Scalar, StorageSize, Strided};

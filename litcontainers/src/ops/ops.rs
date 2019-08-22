@@ -1,7 +1,7 @@
 use crate::format::*;
 
 pub trait Operation {
-	type Type: Scalar;
+	type Type: Element;
 	type Rows: Dim;
 	type Cols: Dim;
 	type Result;

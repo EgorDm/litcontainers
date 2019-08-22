@@ -5,7 +5,7 @@ use crate::{SliceRange, SliceableMut};
 use std::slice;
 
 pub trait StorageMut<T>: Storage<T>
-	where T: Scalar
+	where T: Element
 {
 	#[inline]
 	fn as_ptr_mut(&mut self) -> *mut T;

@@ -5,18 +5,15 @@ use crate::iterator::*;
 use std::fmt::Debug;
 use std::slice;
 use crate::slice::{SliceRange};
-use crate::{Wrapper, Sliceable};
+use crate::{Container, Sliceable};
 use std::iter::Cloned;
 
 //type RowItss<S> =
 
 // TODO: implement proper equality?
 pub trait Storage<T>: StorageSize + Strided + Debug + Sized + Ownable<T> + Send + Sync
-	where T: Scalar
+	where T: Element
 {
-	#[inline]
-	fn scalar_type(&self) -> ScalarType { T::get_scalar_type() }
-
 	#[inline]
 	fn as_ptr(&self) -> *const T;
 

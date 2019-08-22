@@ -1,10 +1,12 @@
 use super::Dim;
+use std::fmt;
+use crate::Fmt;
 
 pub type SSize<S: StorageSize> = Size<S::Rows, S::Cols>;
 
 // TODO: Can we write it more generic for possible 3d sizes?
 #[derive(Debug, PartialEq, Eq, Clone, new)]
-pub struct Size<R, C> {
+pub struct Size<R: Dim, C: Dim> {
 	pub rows: R,
 	pub cols: C,
 }
@@ -45,5 +47,11 @@ pub trait StorageSize {
 	#[inline]
 	fn equal_size<OS: StorageSize>(&self, o: &OS) -> bool {
 		self.cols() == o.cols() && self.rows() == o.rows()
+	}
+}
+
+impl<R: Dim, C: Dim> fmt::Display for Size<R, C> {
+	fn fmt(&self, f: &mut fmt::Formatter) -> Result<(), fmt::Error> {
+		write!(f, "Size(Rows = {}, Cols = {})", Fmt(|f| self.row_dim().pfmt(f)), Fmt(|f| self.col_dim().pfmt(f)))
 	}
 }

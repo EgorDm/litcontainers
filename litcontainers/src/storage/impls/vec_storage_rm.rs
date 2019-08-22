@@ -5,14 +5,14 @@ use std::cmp::min;
 #[repr(C)]
 #[derive(Eq, Debug, Clone, PartialEq)]
 pub struct VecStorageRM<T, R, C>
-	where T: Scalar, R: Dim, C: Dim
+	where T: Element, R: Dim, C: Dim
 {
 	data: Vec<T>,
 	size: Size<R, C>
 }
 
 impl<T, R, C> VecStorageRM<T, R, C>
-	where T: Scalar, R: Dim, C: Dim
+	where T: Element, R: Dim, C: Dim
 {
 	pub fn from_data(size: Size<R, C>, data: Vec<T>) -> Self {
 		assert_eq!(size.len(), data.len(), "Data size must match dimensions!");
@@ -30,7 +30,7 @@ impl<T, R, C> VecStorageRM<T, R, C>
 }
 
 impl<T, R, C> StorageSize for VecStorageRM<T, R, C>
-	where T: Scalar, R: Dim, C: Dim
+	where T: Element, R: Dim, C: Dim
 {
 	type Rows = R;
 	type Cols = C;
@@ -41,7 +41,7 @@ impl<T, R, C> StorageSize for VecStorageRM<T, R, C>
 }
 
 impl<T, R, C> Strided for VecStorageRM<T, R, C>
-	where T: Scalar, R: Dim, C: Dim
+	where T: Element, R: Dim, C: Dim
 {
 	type RowStride = C;
 	type ColStride = U1;
@@ -52,19 +52,19 @@ impl<T, R, C> Strided for VecStorageRM<T, R, C>
 }
 
 impl<T, R, C> Storage<T> for VecStorageRM<T, R, C>
-	where T: Scalar, R: Dim, C: Dim
+	where T: Element, R: Dim, C: Dim
 {
 	fn as_ptr(&self) -> *const T { self.data.as_ptr() }
 }
 
 impl<T, R, C> StorageMut<T> for VecStorageRM<T, R, C>
-	where T: Scalar, R: Dim, C: Dim
+	where T: Element, R: Dim, C: Dim
 {
 	fn as_ptr_mut(&mut self) -> *mut T { self.data.as_mut_ptr() }
 }
 
 impl<T, C> DynamicRowStorage<T> for VecStorageRM<T, Dynamic, C>
-	where T: Scalar, C: Dim
+	where T: Element, C: Dim
 {
 	fn set_rows(&mut self, count: usize) {
 		unsafe {self.resize_element_count(count * self.cols())};
@@ -73,7 +73,7 @@ impl<T, C> DynamicRowStorage<T> for VecStorageRM<T, Dynamic, C>
 }
 
 impl<T, R> DynamicColStorage<T> for VecStorageRM<T, R, Dynamic>
-	where T: Scalar, R: Dim
+	where T: Element, R: Dim
 {
 	fn set_cols(&mut self, count: usize) {
 		if count == self.cols() { return; }
@@ -92,7 +92,7 @@ impl<T, R> DynamicColStorage<T> for VecStorageRM<T, R, Dynamic>
 }
 
 impl<T, R, C> StorageConstructor<T> for VecStorageRM<T, R, C>
-	where T: Scalar, R: Dim, C: Dim
+	where T: Element, R: Dim, C: Dim
 {
 	fn from_value(s: SSize<Self>, value: T) -> Self {
 		let len = s.len();
@@ -101,7 +101,7 @@ impl<T, R, C> StorageConstructor<T> for VecStorageRM<T, R, C>
 }
 
 impl<T, R, C> Ownable<T> for VecStorageRM<T, R, C>
-	where T: Scalar, R: Dim, C: Dim
+	where T: Element, R: Dim, C: Dim
 {
 	type OwnedType = Self;
 

@@ -9,7 +9,7 @@ macro_rules! slice_iter (
 	($NameCore: ident, $Name: ident, $Stride: ident, $iter_fn: expr => $StorageRef: ty as $StorageType: ident, $Slice: ty) => {
 		#[derive(Debug)]
 		pub struct $Name<'a, T, R, RS, C, CS>
-			where T: Scalar, R: Dim, RS: Dim, C: Dim, CS: Dim
+			where T: Element, R: Dim, RS: Dim, C: Dim, CS: Dim
 		{
 			iter: AxisIterRaw<T, $Stride>,
 			size: Size<R, C>,
@@ -18,7 +18,7 @@ macro_rules! slice_iter (
 		}
 
 		impl<'a, T, R, RS, C, CS> $Name<'a, T, R, RS, C, CS>
-			where T: Scalar, R: Dim, RS: Dim, C: Dim, CS: Dim
+			where T: Element, R: Dim, RS: Dim, C: Dim, CS: Dim
 		{
 			fn new(iter: AxisIterRaw<T, $Stride>, size: Size<R, C>, stride: Strides<RS, CS>) -> Self {
 				Self { iter, size, stride, _phantoms: PhantomData }
@@ -32,7 +32,7 @@ macro_rules! slice_iter (
 		}
 
 		impl<'a, T, R, RS, C, CS> SplittableIterator for $Name<'a, T, R, RS, C, CS>
-			where T: Scalar, R: Dim, RS: Dim, C: Dim, CS: Dim
+			where T: Element, R: Dim, RS: Dim, C: Dim, CS: Dim
 		{
 			fn split_at(self, pos: usize) -> (Self, Self) {
 				let (left, right) = self.iter.split_at(pos);
@@ -44,10 +44,10 @@ macro_rules! slice_iter (
 		}
 
 		impl<'a, T, R, RS, C, CS> ExactSizeIterator for $Name<'a, T, R, RS, C, CS>
-			where T: Scalar, R: Dim, RS: Dim, C: Dim, CS: Dim {}
+			where T: Element, R: Dim, RS: Dim, C: Dim, CS: Dim {}
 
 		impl<'a, T, R, RS, C, CS> Iterator for $Name<'a, T, R, RS, C, CS>
-			where T: Scalar, R: Dim, RS: Dim, C: Dim, CS: Dim
+			where T: Element, R: Dim, RS: Dim, C: Dim, CS: Dim
 		{
 			type Item = $Slice;
 
@@ -59,7 +59,7 @@ macro_rules! slice_iter (
 		}
 
 		impl<'a, T, R, RS, C, CS> DoubleEndedIterator for $Name<'a, T, R, RS, C, CS>
-			where T: Scalar, R: Dim, RS: Dim, C: Dim, CS: Dim
+			where T: Element, R: Dim, RS: Dim, C: Dim, CS: Dim
 		{
 			fn next_back(&mut self) -> Option<Self::Item> {
 				self.iter.next_back().map(|v| self.make_slice(v))
@@ -67,7 +67,7 @@ macro_rules! slice_iter (
 		}
 
 		impl<'a, T, R, RS, C, CS> IntoParallelIterator for $Name<'a, T, R, RS, C, CS>
-			where T: Scalar, R: Dim, RS: Dim, C: Dim, CS: Dim
+			where T: Element, R: Dim, RS: Dim, C: Dim, CS: Dim
 		{
 			type Iter = Parallel<Self>;
 			type Item = <Self as Iterator>::Item;
@@ -80,7 +80,7 @@ macro_rules! slice_iter (
 
 slice_iter!(RowSliceIterCore, RowSliceIter, RS, col_iter => &'a S as Storage, Slice<'a, T, U1, C, C, CS>);
 impl<'a, T, R, RS, C, CS> RowSliceIter<'a, T, R, RS, C, CS>
-	where T: Scalar, R: Dim, RS: Dim, C: Dim, CS: Dim
+	where T: Element, R: Dim, RS: Dim, C: Dim, CS: Dim
 {
 	fn make_slice(&self, ptr: *mut T) -> <Self as Iterator>::Item {
 		SliceBase::new(
@@ -97,7 +97,7 @@ impl<'a, T, R, RS, C, CS> RowSliceIter<'a, T, R, RS, C, CS>
 
 slice_iter!(RowSliceIterMutCore, RowSliceIterMut, RS, col_iter => &'a mut S as StorageMut, SliceMut<'a, T, U1, C, C, CS>);
 impl<'a, T, R, RS, C, CS> RowSliceIterMut<'a, T, R, RS, C, CS>
-	where T: Scalar, R: Dim, RS: Dim, C: Dim, CS: Dim
+	where T: Element, R: Dim, RS: Dim, C: Dim, CS: Dim
 {
 	fn make_slice(&self, ptr: *mut T) -> <Self as Iterator>::Item {
 		unsafe {
@@ -112,7 +112,7 @@ impl<'a, T, R, RS, C, CS> RowSliceIterMut<'a, T, R, RS, C, CS>
 
 slice_iter!(ColSliceIterCore, ColSliceIter, CS, row_iter => &'a S as Storage, Slice<'a, T, R, RS, U1, R>);
 impl<'a, T, R, RS, C, CS> ColSliceIter<'a, T, R, RS, C, CS>
-	where T: Scalar, R: Dim, RS: Dim, C: Dim, CS: Dim
+	where T: Element, R: Dim, RS: Dim, C: Dim, CS: Dim
 {
 	fn make_slice(&self, ptr: *mut T) -> <Self as Iterator>::Item {
 		unsafe {
@@ -127,7 +127,7 @@ impl<'a, T, R, RS, C, CS> ColSliceIter<'a, T, R, RS, C, CS>
 
 slice_iter!(ColSliceIterMutCore, ColSliceIterMut, CS, row_iter_mut => &'a mut S as StorageMut, SliceMut<'a, T, R, RS, U1, R>);
 impl<'a, T, R, RS, C, CS> ColSliceIterMut<'a, T, R, RS, C, CS>
-	where T: Scalar, R: Dim, RS: Dim, C: Dim, CS: Dim
+	where T: Element, R: Dim, RS: Dim, C: Dim, CS: Dim
 {
 	fn make_slice(&self, ptr: *mut T) -> <Self as Iterator>::Item {
 		unsafe {

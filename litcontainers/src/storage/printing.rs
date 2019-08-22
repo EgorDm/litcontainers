@@ -3,45 +3,41 @@ use crate::format::*;
 use num_traits::cast::cast;
 use crate::Storage;
 
-pub struct Fmt<F>(pub F) where F: Fn(&mut Formatter) -> Result<(), Error>;
-
-impl<F> Display for Fmt<F>
-	where F: Fn(&mut Formatter) -> Result<(), Error>
-{
-	fn fmt(&self, f: &mut Formatter) -> Result<(), Error> {
-		(self.0)(f)
-	}
-}
-
 pub fn print_storage<T, S>(s: &S, f: &mut Formatter) -> Result<(), Error>
-	where T: Scalar, S: Storage<T>
+	where T: Element, S: Storage<T>
 {
-	let use_sci_fmt = if T::is_complex() {
-		true
-	} else if T::is_float() {
-		s.as_iter().any(|x| {
-			x.to_elementary() >= cast(100).unwrap() || x.to_elementary() <= cast(-100).unwrap()
-				|| (x.to_elementary() < cast(0.0001).unwrap() && x.to_elementary() >= cast(-0.0001).unwrap()
-				&& x.to_elementary() != cast(0.0).unwrap())
-		})
-	} else {
-		s.as_iter().any(|x| x.to_elementary() >= cast(100).unwrap() || x.to_elementary() <= cast(-100).unwrap())
+	let use_sci_fmt = match T::numeric() {
+		false => false,
+		true => {
+			if T::NumericType::is_complex() { true }
+			else if T::NumericType::is_float() {
+				s.as_iter().any(|x| {
+					let n = T::NumericType::from(*x).as_scalar();
+					n >= cast(100).unwrap() || n <= cast(-100).unwrap()
+						|| (n < cast(0.0001).unwrap() && n >= cast(-0.0001).unwrap()
+						&& n != cast(0.0).unwrap())
+				})
+			} else {
+				s.as_iter().any(|x| {
+					let n = T::NumericType::from(*x).as_scalar();
+					n >= cast(100).unwrap() || n <= cast(-100).unwrap()
+				})
+			}
+		}
 	};
 
-	let padding = if T::is_complex() { 27 } else if use_sci_fmt { 13 } else { 8 };
+	let padding = if T::NumericType::is_complex() { 27 } else if use_sci_fmt { 13 } else { 8 };
 
 	writeln!(
 		f,
-		"Storage[Type = {:#?}, Size = (Rows = {}, RowStride = {}, Cols = {}, ColStride = {})] => ",
-		s.scalar_type(),
-		Fmt(|f| s.row_dim().pfmt(f)),
-		Fmt(|f| s.row_stride_dim().pfmt(f)),
-		Fmt(|f| s.col_dim().pfmt(f)),
-		Fmt(|f| s.col_stride_dim().pfmt(f)),
+		"Storage[Type = {:#?}, {}, {}] => ",
+		T::element_type(),
+		s.size(),
+		s.strides()
 	)?;
 	for i in 0..s.rows() {
 		for e in s.as_row_range_iter(i) {
-			write!(f, "{:>pad$}", format!("{}", Fmt(|f| e.fmt_num(f, 4, use_sci_fmt))), pad = padding)?;
+			write!(f, "{:>pad$}", format!("{}", Fmt(|f| e.fmt_elem(f, 4, use_sci_fmt))), pad = padding)?;
 		}
 		write!(f, "\n")?;
 	}
