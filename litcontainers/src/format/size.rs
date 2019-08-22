@@ -1,6 +1,6 @@
 use super::Dim;
 use std::fmt;
-use crate::Fmt;
+use crate::{Fmt, Axis};
 
 pub type SSize<S: StorageSize> = Size<S::Rows, S::Cols>;
 
@@ -48,6 +48,9 @@ pub trait StorageSize {
 	fn equal_size<OS: StorageSize>(&self, o: &OS) -> bool {
 		self.cols() == o.cols() && self.rows() == o.rows()
 	}
+
+	#[inline]
+	fn get_axis_size<A: Axis<Self::Rows, Self::Cols>>(&self) -> A::RetType { A::get_axis(self.row_dim(), self.col_dim()) }
 }
 
 impl<R: Dim, C: Dim> fmt::Display for Size<R, C> {

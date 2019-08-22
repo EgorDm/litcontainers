@@ -111,20 +111,18 @@ impl<T, R, RS, C, CS> PtrStorageCore<T, R, RS, C, CS>
 		where P: Dim, R: DimSub<P>
 	{
 		assert!(pos.value() < self.rows(), "Slice split is out of bounds or contains empty fragment!");
-		unsafe {
-			(
-				PtrStorageCore::new(
-					self.as_row_ptr_mut(0),
-					Size::new(pos.clone(), self.col_dim()),
-					self.strides()
-				),
-				PtrStorageCore::new(
-					self.as_row_ptr_mut(pos.value()),
-					Size::new(R::sub(self.row_dim(), pos), self.col_dim()),
-					self.strides()
-				)
+		(
+			PtrStorageCore::new(
+				self.as_row_ptr_mut(0),
+				Size::new(pos.clone(), self.col_dim()),
+				self.strides()
+			),
+			PtrStorageCore::new(
+				self.as_row_ptr_mut(pos.value()),
+				Size::new(R::sub(self.row_dim(), pos), self.col_dim()),
+				self.strides()
 			)
-		}
+		)
 	}
 
 	pub fn split_at_col<P: Dim>(mut self, pos: P)

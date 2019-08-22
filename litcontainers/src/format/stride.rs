@@ -1,6 +1,6 @@
 use super::Dim;
 use std::fmt;
-use crate::Fmt;
+use crate::{Fmt, Axis};
 
 pub type SStrides<S: Strided> = Strides<S::RowStride, S::ColStride>;
 
@@ -59,4 +59,7 @@ pub trait Strided {
 	fn equal_strides<OS: Strided>(&self, o: &OS) -> bool {
 		self.col_stride() == o.col_stride() && self.row_stride() == o.row_stride()
 	}
+
+	#[inline]
+	fn get_axis_stride<A: Axis<Self::RowStride, Self::ColStride>>(&self) -> A::RetType { A::get_axis(self.row_stride_dim(), self.col_stride_dim()) }
 }

@@ -79,24 +79,24 @@ pub trait StorageMut<T>: Storage<T>
 	// Iterator
 	fn as_iter_mut(&mut self) -> FullRowIterMut<T, Self> { self.as_row_iter_mut() }
 
-	fn as_row_iter_mut(&mut self) -> FullRowIterMut<T, Self> { full_row_iter!(mut self) }
+	fn as_row_iter_mut(&mut self) -> FullRowIterMut<T, Self> { FullIterMut::from_storage(self, RowAxis) }
 
 	fn as_row_slice_iter_mut(&mut self) -> RowSliceIterMut<T, Self::Rows, Self::RowStride, Self::Cols, Self::ColStride> { RowSliceIterMut::from_storage(self) }
 
 	fn as_row_range_iter_mut<RR: SliceRange<Self::Rows>>(&mut self, range: RR)
 		-> FullIterMut<T, RR::Size, Self::RowStride, Self::ColStride>
 	{
-		full_row_iter!(mut self, range)
+		FullIterMut::from_storage_range(self, RowAxis, range)
 	}
 
-	fn as_col_iter_mut(&mut self) -> FullColIterMut<T, Self> { full_col_iter!(mut self) }
+	fn as_col_iter_mut(&mut self) -> FullColIterMut<T, Self> { FullIterMut::from_storage(self, ColAxis) }
 
 	fn as_col_slice_iter_mut(&mut self) -> ColSliceIterMut<T, Self::Rows, Self::RowStride, Self::Cols, Self::ColStride> { ColSliceIterMut::from_storage(self) }
 
 	fn as_col_range_iter_mut<CR: SliceRange<Self::Cols>>(&mut self, range: CR)
 		-> FullIterMut<T, CR::Size, Self::ColStride, Self::RowStride>
 	{
-		full_col_iter!(mut self, range)
+		FullIterMut::from_storage_range(self, ColAxis, range)
 	}
 
 	// Special ops

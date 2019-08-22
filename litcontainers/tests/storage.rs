@@ -82,8 +82,6 @@ fn mutable() {
 	assert_eq!(s.get(1, 1), 1337.);
 }
 
-
-
 #[test]
 fn slice() {
 	let s = mock_container();

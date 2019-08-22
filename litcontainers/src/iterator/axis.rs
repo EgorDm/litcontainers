@@ -10,7 +10,7 @@ pub(crate) struct AxisIterRaw<T, S: Dim> {
 	pub(super) length: usize,
 	pub(super) stride: S,
 	cursor: usize,
-	ptr: *mut T,
+	pub(super) ptr: *mut T,
 }
 
 unsafe impl<T, S: Dim> Send for AxisIterRaw<T, S> {}

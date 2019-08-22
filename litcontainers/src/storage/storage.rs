@@ -74,24 +74,24 @@ pub trait Storage<T>: StorageSize + Strided + Debug + Sized + Ownable<T> + Send 
 
 	fn as_iter(&self) -> FullRowIter<T, Self> { self.as_row_iter() }
 
-	fn as_row_iter(&self) -> FullRowIter<T, Self> { full_row_iter!(self) }
+	fn as_row_iter(&self) -> FullRowIter<T, Self> { FullIter::from_storage(self, RowAxis) }
 
 	fn as_row_slice_iter(&self) -> RowSliceIter<T, Self::Rows, Self::RowStride, Self::Cols, Self::ColStride> { RowSliceIter::from_storage(self) }
 
 	fn as_row_range_iter<RR: SliceRange<Self::Rows>>(&self, range: RR)
 		-> FullIter<T, RR::Size, Self::RowStride, Self::ColStride>
 	{
-		full_row_iter!(self, range)
+		FullIter::from_storage_range(self, RowAxis, range)
 	}
 
-	fn as_col_iter(&self) -> FullColIter<T, Self> { full_col_iter!(self) }
+	fn as_col_iter(&self) -> FullColIter<T, Self> { FullIter::from_storage(self, ColAxis) }
 
 	fn as_col_slice_iter(&self) -> RowSliceIter<T, Self::Rows, Self::RowStride, Self::Cols, Self::ColStride> { RowSliceIter::from_storage(self) }
 
 	fn as_col_range_iter<CR: SliceRange<Self::Cols>>(&self, range: CR)
 		-> FullIter<T, CR::Size, Self::ColStride, Self::RowStride>
 	{
-		full_col_iter!(self, range)
+		FullIter::from_storage_range(self, ColAxis, range)
 	}
 }
 
