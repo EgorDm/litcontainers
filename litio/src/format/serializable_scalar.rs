@@ -1,4 +1,4 @@
-use litcontainers::{Scalar, ElementaryScalar};
+use litcontainers::{Scalar};
 use num_complex::Complex;
 use num_traits::Float;
 use serde::{Serializer, Serialize, Deserialize, Deserializer};

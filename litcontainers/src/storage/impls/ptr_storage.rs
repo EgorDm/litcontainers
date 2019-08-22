@@ -200,6 +200,62 @@ impl<'a, T, R, RS, C, CS> Into<SliceMut<'a, T, R, RS, C, CS>> for PtrStorageMut<
 	fn into(self) -> SliceMut<'a, T, R, RS, C, CS> { SliceBase::new(self).into() }
 }
 
+impl<'a, T, R, RS, C, CS> InplaceMap<T> for PtrStorageMut<'a, T, R, RS, C, CS>
+	where T: Element, R: Dim, RS: Dim, C: Dim, CS: Dim
+{
+	fn map_inplace<F: FnMut(&mut T)>(&mut self, mut f: F) {
+		if self.rows() / self.row_stride() <= self.cols() / self.col_stride() {
+			for row in 0..self.rows() {
+				let mut row_ptr = self.as_row_ptr_mut(row);
+				for _ in 0..self.cols() {
+					unsafe {
+						f(&mut *row_ptr);
+						row_ptr = row_ptr.offset(self.col_stride() as isize);
+					}
+				}
+			}
+		} else {
+			for col in 0..self.cols() {
+				let mut col_ptr = self.as_col_ptr_mut(col);
+				for _ in 0..self.rows() {
+					unsafe {
+						f(&mut *col_ptr);
+						col_ptr = col_ptr.offset(self.row_stride() as isize);
+					}
+				}
+			}
+		}
+	}
+}
+
+impl<'a, T, R, RS, C, CS, U> InplaceZipMap<T, U> for PtrStorageMut<'a, T, R, RS, C, CS>
+	where T: Element, R: Dim, RS: Dim, C: Dim, CS: Dim
+{
+	fn map_inplace_zip<F: FnMut(&mut T, U), I: Iterator<Item=U>>(&mut self, mut i: I, mut f: F) {
+		if self.rows() / self.row_stride() <= self.cols() / self.col_stride() {
+			for row in 0..self.rows() {
+				let mut row_ptr = self.as_row_ptr_mut(row);
+				for _ in 0..self.cols() {
+					unsafe {
+						f(&mut *row_ptr, i.next().unwrap());
+						row_ptr = row_ptr.offset(self.col_stride() as isize);
+					}
+				}
+			}
+		} else {
+			for col in 0..self.cols() {
+				let mut col_ptr = self.as_col_ptr_mut(col);
+				for _ in 0..self.rows() {
+					unsafe {
+						f(&mut *col_ptr, i.next().unwrap());
+						col_ptr = col_ptr.offset(self.row_stride() as isize);
+					}
+				}
+			}
+		}
+	}
+}
+
 /*
 
 macro_rules! ptr_storage (

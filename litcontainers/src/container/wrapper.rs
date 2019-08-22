@@ -49,3 +49,15 @@ impl<T, S> fmt::Display for Container<T, S>
 impl<T: Element, S: Storage<T>> From<S> for Container<T, S> {
 	fn from(s: S) -> Self { Container::new(s) }
 }
+
+impl<T, S> InplaceMap<T> for Container<T, S>
+	where T: Element, S: StorageMut<T> + InplaceMap<T>
+{
+	fn map_inplace<F: FnMut(&mut T)>(&mut self, f: F) { self.storage.map_inplace(f) }
+}
+
+impl<T, S, U> InplaceZipMap<T, U> for Container<T, S>
+	where T: Element, S: StorageMut<T> + InplaceZipMap<T, U>
+{
+	fn map_inplace_zip<F: FnMut(&mut T, U), I: Iterator<Item=U>>(&mut self, i: I, f: F) { self.storage.map_inplace_zip(i, f) }
+}

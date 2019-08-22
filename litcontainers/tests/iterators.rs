@@ -53,6 +53,18 @@ fn parallel_slice() {
 	assert_eq!(res, 21);
 }
 
+#[test]
+fn inline_mutation() {
+	let mut s = mock_container();
+
+	s.mapv_inplace(|v| v * 2.);
+	assert_eq!(s.as_slice(), &[2., 4., 6., 8., 10., 12.]);
+
+	s.mapv_inplace_zip((&[2., 4., 6., 8., 10., 12.]).iter(), |a, b| a + b);
+	assert_eq!(s.as_slice(), &[4., 8., 12., 16., 20., 24.]);
+
+}
+
 /*
 
 

@@ -1,5 +1,6 @@
 use super::ops::*;
 use std::ops::Add;
+use crate::{InplaceMap, InplaceZipMap};
 
 // TODO: 1 impl for refexive and 1 for non reflexive
 #[derive(new)]
