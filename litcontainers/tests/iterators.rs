@@ -38,8 +38,8 @@ fn splittable_iter() {
 	let iter = slice.as_row_slice_iter();
 
 	let (i1, i2) = iter.split_at(1);
-	assert_eq!(i1.map(|sl| sl.iter().collect::<Vec<_>>()).flatten().collect::<Vec<_>>(), &[1., 2.]);
-	assert_eq!(i2.map(|sl| sl.iter().collect::<Vec<_>>()).flatten().collect::<Vec<_>>(), &[3., 4., 5., 6.]);
+	assert_eq!(i1.map(|sl| sl.iter()).flatten().collect::<Vec<_>>(), &[1., 2.]);
+	assert_eq!(i2.map(|sl| sl.iter()).flatten().collect::<Vec<_>>(), &[3., 4., 5., 6.]);
 }
 
 #[test]

@@ -70,11 +70,13 @@ pub trait Storage<T>: StorageSize + Strided + Debug + Sized + Ownable<T> + Send 
 	unsafe fn as_col_ptr_unchecked(&self, p: usize) -> *const T { self.as_ptr().offset(self.col_index(p) as isize) }
 
 	// Iterator
-	fn iter(&self) -> Cloned<FullRowIter<T, Self>> { self.as_iter().cloned() }
+	fn iter(self) -> FullAxisIterOwned<T, Self, RowAxis> {
+		FullAxisIterOwned::<T, Self, RowAxis>::from_storage(self, RowAxis)
+	}
 
-	fn as_iter(&self) -> FullRowIter<T, Self> { self.as_row_iter() }
+	fn as_iter(&self) -> FullAxisIter<T, Self, RowAxis> { self.as_row_iter() }
 
-	fn as_row_iter(&self) -> FullRowIter<T, Self> { FullIter::from_storage(self, RowAxis) }
+	fn as_row_iter(&self) -> FullAxisIter<T, Self, RowAxis> { FullIter::from_storage(self, RowAxis) }
 
 	fn as_row_slice_iter(&self) -> RowSliceIter<T, Self::Rows, Self::RowStride, Self::Cols, Self::ColStride> { RowSliceIter::from_storage(self) }
 
@@ -84,9 +86,9 @@ pub trait Storage<T>: StorageSize + Strided + Debug + Sized + Ownable<T> + Send 
 		FullIter::from_storage_range(self, RowAxis, range)
 	}
 
-	fn as_col_iter(&self) -> FullColIter<T, Self> { FullIter::from_storage(self, ColAxis) }
+	fn as_col_iter(&self) -> FullAxisIter<T, Self, ColAxis> { FullIter::from_storage(self, ColAxis) }
 
-	fn as_col_slice_iter(&self) -> RowSliceIter<T, Self::Rows, Self::RowStride, Self::Cols, Self::ColStride> { RowSliceIter::from_storage(self) }
+	fn as_col_slice_iter(&self) -> ColSliceIter<T, Self::Rows, Self::RowStride, Self::Cols, Self::ColStride> { ColSliceIter::from_storage(self) }
 
 	fn as_col_range_iter<CR: SliceRange<Self::Cols>>(&self, range: CR)
 		-> FullIter<T, CR::Size, Self::ColStride, Self::RowStride>

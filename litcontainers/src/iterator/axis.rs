@@ -55,6 +55,18 @@ impl<T, S: Dim> AxisIterRaw<T, S> {
 		);
 		self.ptr.offset((pos * self.stride.value()) as isize)
 	}
+
+	pub(super) fn from_storage<ST, A>(s: &ST, a: A, pos: usize) -> Self
+		where T: Element, ST: Storage<T>, A: Axis<ST::Rows, ST::Cols> + Axis<ST::RowStride, ST::ColStride>,
+		      AxisParallel<A, ST::RowStride, ST::ColStride>: Axis<ST::RowStride, ST::ColStride, RetType=S>
+	{
+		Self::new(
+			s.get_axis_size::<AxisParallel<A, ST::Rows, ST::Cols>>().value(),
+			s.get_axis_stride::<AxisParallel<A, ST::RowStride, ST::ColStride>>(),
+			0,
+			<A as Axis<ST::Rows, ST::Cols>>::get_val(s.as_row_ptr(pos), s.as_col_ptr(pos)) as *mut T,
+		)
+	}
 }
 
 impl<T, S: Dim> ExactSizeIterator for AxisIterRaw<T, S> {}
@@ -108,6 +120,17 @@ impl<'a, T, S: Dim> AxisIter<'a, T, S> {
 			},
 			_phantoms: PhantomData
 		}
+	}
+
+	pub fn from_storage<ST, A>(s: &ST, a: A, pos: usize) -> Self
+		where T: Element, ST: Storage<T>, A: Axis<ST::Rows, ST::Cols> + Axis<ST::RowStride, ST::ColStride>,
+				AxisParallel<A, ST::RowStride, ST::ColStride>: Axis<ST::RowStride, ST::ColStride, RetType=S>
+	{
+		Self::new(
+			<A as Axis<ST::Rows, ST::Cols>>::get_val(s.as_row_ptr(pos), s.as_col_ptr(pos)),
+			s.get_axis_stride::<AxisParallel<A, ST::RowStride, ST::ColStride>>(),
+			s.get_axis_size::<AxisParallel<A, ST::Rows, ST::Cols>>().value()
+		)
 	}
 }
 
@@ -167,6 +190,17 @@ impl<'a, T, S: Dim> AxisIterMut<'a, T, S> {
 			_phantoms: PhantomData
 		}
 	}
+
+	pub fn from_storage<ST, A>(s: &mut ST, a: A, pos: usize) -> Self
+		where T: Element, ST: StorageMut<T>, A: Axis<ST::Rows, ST::Cols> + Axis<ST::RowStride, ST::ColStride>,
+		      AxisParallel<A, ST::RowStride, ST::ColStride>: Axis<ST::RowStride, ST::ColStride, RetType=S>
+	{
+		Self::new(
+			<A as Axis<ST::Rows, ST::Cols>>::get_val(s.as_row_ptr_mut(pos), s.as_col_ptr_mut(pos)),
+			s.get_axis_stride::<AxisParallel<A, ST::RowStride, ST::ColStride>>(),
+			s.get_axis_size::<AxisParallel<A, ST::Rows, ST::Cols>>().value()
+		)
+	}
 }
 
 impl<'a, T, S: Dim> SplittableIterator for AxisIterMut<'a, T, S> {
@@ -209,7 +243,8 @@ impl<'a, T: Send + Sync, S: Dim> IntoParallelIterator for AxisIterMut<'a, T, S> 
 
 pub fn row_iter<T: Element, S: Storage<T>>(s: &S, pos: usize) -> AxisIter<T, S::ColStride>
 {
-	AxisIter::new(s.as_row_ptr(pos), s.col_stride_dim(), s.cols())
+	//AxisIter::new(s.as_row_ptr(pos), s.col_stride_dim(), s.cols())
+	AxisIter::from_storage(s, RowAxis, pos)
 }
 
 pub fn row_iter_mut<T, S>(s: &mut S, pos: usize) -> AxisIterMut<T, S::ColStride>
@@ -221,7 +256,8 @@ pub fn row_iter_mut<T, S>(s: &mut S, pos: usize) -> AxisIterMut<T, S::ColStride>
 pub fn col_iter<T, S>(s: &S, pos: usize) -> AxisIter<T, S::RowStride>
 	where T: Element, S: Storage<T>
 {
-	AxisIter::new(s.as_col_ptr(pos), s.row_stride_dim(), s.rows())
+	//AxisIter::new(s.as_col_ptr(pos), s.row_stride_dim(), s.rows())
+	AxisIter::from_storage(s, ColAxis, pos)
 }
 
 pub fn col_iter_mut<T, S>(s: &mut S, pos: usize) -> AxisIterMut<T, S::RowStride>

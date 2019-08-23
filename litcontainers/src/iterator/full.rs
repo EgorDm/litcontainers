@@ -28,6 +28,13 @@ impl<T, P, PS, SS> FullIterCore<T, P, PS, SS>
 		}
 	}
 
+	unsafe fn reset(mut self, ptr: *mut T) -> Self {
+		self.cursor = 1;
+		self.ptr = ptr;
+		self.axis = AxisIterRaw::new(self.axis.length, self.axis.stride, 0, ptr);
+		self
+	}
+
 	unsafe fn offset(&self, pos: usize) -> *mut T {
 		debug_assert!(
 			pos <= self.length.value(),
@@ -92,7 +99,7 @@ impl<'a, T, P, PS, SS> FullIter<'a, T, P, PS, SS>
 	pub fn from_storage<S, A>(s: &S, a: A) -> Self
 		where T: Element, S: Storage<T>,
 		      A: Axis<S::Rows, S::Cols, RetType=P> + Axis<S::RowStride, S::ColStride, RetType=PS>,
-		      <A as Axis<S::RowStride, S::ColStride>>::Parallel: Axis<S::RowStride, S::ColStride, RetType=SS>
+		      AxisParallel<A, S::RowStride, S::ColStride>: Axis<S::RowStride, S::ColStride, RetType=SS>
 	{
 		Self::new(
 			s.as_ptr(),
@@ -106,10 +113,10 @@ impl<'a, T, P, PS, SS> FullIter<'a, T, P, PS, SS>
 	pub fn from_storage_range<S, A, R>(s: &S, a: A, r: R) -> Self
 		where T: Element, S: Storage<T>, R: SliceRange<<A as Axis<S::Rows, S::Cols>>::RetType, Size=P>,
 		      A: Axis<S::Rows, S::Cols> + Axis<S::RowStride, S::ColStride, RetType=PS>,
-		      <A as Axis<S::RowStride, S::ColStride>>::Parallel: Axis<S::RowStride, S::ColStride, RetType=SS>
+		      AxisParallel<A, S::RowStride, S::ColStride>: Axis<S::RowStride, S::ColStride, RetType=SS>
 	{
 		Self::new(
-			unsafe {<A as Axis<S::RowStride, S::ColStride>>::get_val(s.as_row_ptr_unchecked(r.begin()), s.as_col_ptr_unchecked(r.begin())) },
+			unsafe { <A as Axis<S::RowStride, S::ColStride>>::get_val(s.as_row_ptr_unchecked(r.begin()), s.as_col_ptr_unchecked(r.begin())) },
 			r.size(),
 			s.get_axis_stride::<A>(),
 			s.get_axis_size::<<A as Axis<S::Rows, S::Cols>>::Parallel>(),
@@ -154,14 +161,14 @@ impl<'a, T, P, PS, SS> FullIterMut<'a, T, P, PS, SS>
 	pub fn from_storage<S, A>(s: &mut S, a: A) -> Self
 		where T: Element, S: StorageMut<T>,
 		      A: Axis<S::Rows, S::Cols, RetType=P> + Axis<S::RowStride, S::ColStride, RetType=PS>,
-		      <A as Axis<S::RowStride, S::ColStride>>::Parallel: Axis<S::RowStride, S::ColStride, RetType=SS>
+		      AxisParallel<A, S::RowStride, S::ColStride>: Axis<S::RowStride, S::ColStride, RetType=SS>
 	{
 		Self::new(
 			s.as_ptr_mut(),
 			s.get_axis_size::<A>(),
 			s.get_axis_stride::<A>(),
-			s.get_axis_size::<<A as Axis<S::Rows, S::Cols>>::Parallel>(),
-			s.get_axis_stride::<<A as Axis<S::RowStride, S::ColStride>>::Parallel>()
+			s.get_axis_size::<AxisParallel<A, S::Rows, S::Cols>>(),
+			s.get_axis_stride::<AxisParallel<A, S::RowStride, S::ColStride>>()
 		)
 	}
 
@@ -171,7 +178,7 @@ impl<'a, T, P, PS, SS> FullIterMut<'a, T, P, PS, SS>
 		      <A as Axis<S::RowStride, S::ColStride>>::Parallel: Axis<S::RowStride, S::ColStride, RetType=SS>
 	{
 		Self::new(
-			unsafe {<A as Axis<S::RowStride, S::ColStride>>::get_val(s.as_row_ptr_mut_unchecked(r.begin()), s.as_col_ptr_mut_unchecked(r.begin())) },
+			unsafe { <A as Axis<S::RowStride, S::ColStride>>::get_val(s.as_row_ptr_mut_unchecked(r.begin()), s.as_col_ptr_mut_unchecked(r.begin())) },
 			r.size(),
 			s.get_axis_stride::<A>(),
 			s.get_axis_size::<<A as Axis<S::Rows, S::Cols>>::Parallel>(),
@@ -195,57 +202,57 @@ impl<'a, T, P, PS, SS> Iterator for FullIterMut<'a, T, P, PS, SS>
 	fn size_hint(&self) -> (usize, Option<usize>) { self.iter.size_hint() }
 }
 
-pub type FullRowIter<'a, T, S: StorageSize + Strided> = FullIter<'a, T, S::Rows, S::RowStride, S::ColStride>;
-pub type FullRowIterMut<'a, T, S: StorageSize + Strided> = FullIterMut<'a, T, S::Rows, S::RowStride, S::ColStride>;
-pub type FullColIter<'a, T, S: StorageSize + Strided> = FullIter<'a, T, S::Cols, S::ColStride, S::RowStride>;
-pub type FullColIterMut<'a, T, S: StorageSize + Strided> = FullIterMut<'a, T, S::Cols, S::ColStride, S::RowStride>;
-
-/*#[derive(Debug)]
-pub struct FullIterCoreOwned<T, P, PS, SS, S>
-	where P: Dim, PS: Dim, SS: Dim, S: Storage<T>
+#[derive(Debug)]
+pub struct FullIterOwned<T, P, PS, SS, S>
+	where T: Element, P: Dim, PS: Dim, SS: Dim, S: Storage<T>
 {
-	owner: S,
-
-}*/
-
-pub type FullAxisIter<'a, T: Element, S: Storage<T>, A: Axis<S::Rows, S::Cols> + Axis<S::RowStride, S::ColStride>> = FullIter<'a, T, <A as Axis<S::Rows, S::Cols>>::RetType, <A as Axis<S::RowStride, S::ColStride>>::RetType, <<A as Axis<S::RowStride, S::ColStride>>::Parallel as Axis<S::RowStride, S::ColStride>>::RetType>;
-
-pub fn full_row_iter_test<T, S, A>(s: &S, a: A)
-	-> FullAxisIter<T, S, A>
-	where T: Element, S: Storage<T>, A: Axis<S::Rows, S::Cols> + Axis<S::RowStride, S::ColStride>
-{
-	FullIter::new(s.as_ptr(), s.get_axis_size::<A>(), s.get_axis_stride::<A>(), s.get_axis_size::<<A as Axis<S::Rows, S::Cols>>::Parallel>(), s.get_axis_stride::<<A as Axis<S::RowStride, S::ColStride>>::Parallel>())
+	storage: S,
+	iter: FullIterCore<T, P, PS, SS>
 }
 
+impl<T, P, PS, SS, S> FullIterOwned<T, P, PS, SS, S>
+	where T: Element, P: Dim, PS: Dim, SS: Dim, S: Storage<T>
+{
+	pub fn from_storage<A>(s: S, a: A) -> Self
+		where T: Element,
+		      A: Axis<S::Rows, S::Cols, RetType=P> + Axis<S::RowStride, S::ColStride, RetType=PS>,
+		      AxisParallel<A, S::RowStride, S::ColStride>: Axis<S::RowStride, S::ColStride, RetType=SS>
+	{
+		let prim_size = s.get_axis_size::<A>();
+		let prim_stride = s.get_axis_stride::<A>();
+		let scnd_size = s.get_axis_size::<AxisParallel<A, S::Rows, S::Cols>>();
+		let scnd_stride = s.get_axis_stride::<AxisParallel<A, S::RowStride, S::ColStride>>();
 
-#[macro_export]
-macro_rules! full_row_iter (
-	($s: expr) => {
-		FullIter::new($s.as_ptr(), $s.row_dim(), $s.row_stride_dim(), $s.col_dim(), $s.col_stride_dim())
-	};
-	($s: expr, $r: expr) => {
-		FullIter::new($s.as_row_ptr($r.begin()), $r.size(), $s.row_stride_dim(), $s.col_dim(), $s.col_stride_dim())
-	};
-	(mut $s: expr) => {
-		FullIterMut::new($s.as_ptr_mut(), $s.row_dim(), $s.row_stride_dim(), $s.col_dim(), $s.col_stride_dim())
-	};
-	(mut $s: expr, $r: expr) => {
-		FullIterMut::new($s.as_row_ptr_mut($r.begin()), $r.size(), $s.row_stride_dim(), $s.col_dim(), $s.col_stride_dim())
-	};
-);
+		let mut ret = Self {
+			storage: s,
+			iter: FullIterCore::new(std::ptr::null_mut(), prim_size, prim_stride, scnd_size, scnd_stride)
+		};
+		ret.iter = FullIterCore::new(ret.storage.as_ptr() as *mut T, prim_size, prim_stride, scnd_size, scnd_stride);
+		ret
+	}
+}
 
-#[macro_export]
-macro_rules! full_col_iter (
-	($s: expr) => {
-		FullIter::new($s.as_ptr(), $s.col_dim(), $s.col_stride_dim(), $s.row_dim(), $s.row_stride_dim())
-	};
-	($s: expr, $r: expr) => {
-		FullIter::new($s.as_col_ptr($r.begin()), $r.size(), $s.col_stride_dim(), $s.row_dim(), $s.row_stride_dim())
-	};
-	(mut $s: expr) => {
-		FullIterMut::new($s.as_ptr_mut(), $s.col_dim(), $s.col_stride_dim(), $s.row_dim(), $s.row_stride_dim())
-	};
-	(mut $s: expr, $r: expr) => {
-		FullIterMut::new($s.as_col_ptr_mut($r.begin()), $r.size(), $s.col_stride_dim(), $s.row_dim(), $s.row_stride_dim())
-	};
-);
+impl<T, P, PS, SS, S> ExactSizeIterator for FullIterOwned<T, P, PS, SS, S>
+	where T: Element, P: Dim, PS: Dim, SS: Dim, S: Storage<T>
+{}
+
+impl<T, P, PS, SS, S> Iterator for FullIterOwned<T, P, PS, SS, S>
+	where T: Element, P: Dim, PS: Dim, SS: Dim, S: Storage<T>
+{
+	type Item = T;
+
+	fn next(&mut self) -> Option<Self::Item> {
+		self.iter.next().map(|v| unsafe { *v })
+	}
+
+	fn size_hint(&self) -> (usize, Option<usize>) { self.iter.size_hint() }
+}
+
+pub type FullAxisIter<'a, T: Element, S: Storage<T>, A: Axis<S::Rows, S::Cols> + Axis<S::RowStride, S::ColStride>>
+= FullIter<'a, T, AxisRes<A, S::Rows, S::Cols>, AxisRes<A, S::RowStride, S::ColStride>, AxisParallelRes<A, S::RowStride, S::ColStride>>;
+
+pub type FullAxisIterMut<'a, T: Element, S: StorageMut<T>, A: Axis<S::Rows, S::Cols> + Axis<S::RowStride, S::ColStride>>
+= FullIterMut<'a, T, AxisRes<A, S::Rows, S::Cols>, AxisRes<A, S::RowStride, S::ColStride>, AxisParallelRes<A, S::RowStride, S::ColStride>>;
+
+pub type FullAxisIterOwned<T: Element, S: Storage<T>, A: Axis<S::Rows, S::Cols> + Axis<S::RowStride, S::ColStride>>
+= FullIterOwned<T, AxisRes<A, S::Rows, S::Cols>, AxisRes<A, S::RowStride, S::ColStride>, AxisParallelRes<A, S::RowStride, S::ColStride>, S>;
