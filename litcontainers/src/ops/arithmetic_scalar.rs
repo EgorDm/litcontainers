@@ -1,6 +1,6 @@
 use super::ops::*;
 use std::ops::Add;
-use crate::{InplaceMap, InplaceZipMap};
+use crate::{InplaceMap};
 
 // TODO: 1 impl for refexive and 1 for non reflexive
 #[derive(new)]
@@ -12,7 +12,10 @@ pub struct AddScalar<L, R>
 }
 
 impl<L, R, S> Operation for AddScalar<L, R>
-	where L: Operation<Result=S>, R: Into<L::Type>, S: InplaceMap<L::Type>, L::Type: Add<L::Type, Output=L::Type>
+	where L: Operation<Result=S>,
+	      R: Into<L::Type>,
+	      S: InplaceMap<L::Type>,
+	      L::Type: Add<L::Type, Output=L::Type>
 {
 	type Type = L::Type;
 	type Rows = L::Rows;
@@ -40,7 +43,7 @@ impl<'a, L, R, S> Operation for AddOps<L, R>
 		L: Operation<Result=S>,
 		R: Operation<Type=L::Type, Rows=L::Rows, Cols=L::Cols>,
 		L::Type: Add<R::Type, Output=L::Type>,
-		S: InplaceZipMap<L::Type, R::Type>
+		S: InplaceMap<L::Type>
 {
 	type Type = L::Type;
 	type Rows = L::Rows;

@@ -28,11 +28,10 @@ impl<T, P, PS, SS> FullIterCore<T, P, PS, SS>
 		}
 	}
 
-	unsafe fn reset(mut self, ptr: *mut T) -> Self {
+	unsafe fn reset(&mut self, ptr: *mut T) {
 		self.cursor = 1;
 		self.ptr = ptr;
 		self.axis = AxisIterRaw::new(self.axis.length, self.axis.stride, 0, ptr);
-		self
 	}
 
 	unsafe fn offset(&self, pos: usize) -> *mut T {
@@ -89,14 +88,14 @@ pub struct FullIter<'a, T, P, PS, SS>
 impl<'a, T, P, PS, SS> FullIter<'a, T, P, PS, SS>
 	where P: Dim, PS: Dim, SS: Dim
 {
-	pub fn new<S: Dim>(ptr: *const T, prim_size: P, prim_stride: PS, scnd_size: S, scnd_stride: SS) -> Self {
+	fn new<S: Dim>(ptr: *const T, prim_size: P, prim_stride: PS, scnd_size: S, scnd_stride: SS) -> Self {
 		Self {
 			iter: FullIterCore::new(ptr as *mut T, prim_size, prim_stride, scnd_size, scnd_stride),
 			_phantoms: PhantomData
 		}
 	}
 
-	pub fn from_storage<S, A>(s: &S, a: A) -> Self
+	pub fn from_storage<S, A>(s: &S, _a: A) -> Self
 		where T: Element, S: Storage<T>,
 		      A: Axis<S::Rows, S::Cols, RetType=P> + Axis<S::RowStride, S::ColStride, RetType=PS>,
 		      AxisParallel<A, S::RowStride, S::ColStride>: Axis<S::RowStride, S::ColStride, RetType=SS>
@@ -110,7 +109,7 @@ impl<'a, T, P, PS, SS> FullIter<'a, T, P, PS, SS>
 		)
 	}
 
-	pub fn from_storage_range<S, A, R>(s: &S, a: A, r: R) -> Self
+	pub fn from_storage_range<S, A, R>(s: &S, _a: A, r: R) -> Self
 		where T: Element, S: Storage<T>, R: SliceRange<<A as Axis<S::Rows, S::Cols>>::RetType, Size=P>,
 		      A: Axis<S::Rows, S::Cols> + Axis<S::RowStride, S::ColStride, RetType=PS>,
 		      AxisParallel<A, S::RowStride, S::ColStride>: Axis<S::RowStride, S::ColStride, RetType=SS>
@@ -151,14 +150,14 @@ pub struct FullIterMut<'a, T, P, PS, SS>
 impl<'a, T, P, PS, SS> FullIterMut<'a, T, P, PS, SS>
 	where P: Dim, PS: Dim, SS: Dim
 {
-	pub fn new<S: Dim>(ptr: *mut T, prim_size: P, prim_stride: PS, scnd_size: S, scnd_stride: SS) -> Self {
+	fn new<S: Dim>(ptr: *mut T, prim_size: P, prim_stride: PS, scnd_size: S, scnd_stride: SS) -> Self {
 		Self {
 			iter: FullIterCore::new(ptr, prim_size, prim_stride, scnd_size, scnd_stride),
 			_phantoms: PhantomData
 		}
 	}
 
-	pub fn from_storage<S, A>(s: &mut S, a: A) -> Self
+	pub fn from_storage<S, A>(s: &mut S, _a: A) -> Self
 		where T: Element, S: StorageMut<T>,
 		      A: Axis<S::Rows, S::Cols, RetType=P> + Axis<S::RowStride, S::ColStride, RetType=PS>,
 		      AxisParallel<A, S::RowStride, S::ColStride>: Axis<S::RowStride, S::ColStride, RetType=SS>
@@ -172,7 +171,7 @@ impl<'a, T, P, PS, SS> FullIterMut<'a, T, P, PS, SS>
 		)
 	}
 
-	pub fn from_storage_range<S, A, R>(s: &mut S, a: A, r: R) -> Self
+	pub fn from_storage_range<S, A, R>(s: &mut S, _a: A, r: R) -> Self
 		where T: Element, S: StorageMut<T>, R: SliceRange<<A as Axis<S::Rows, S::Cols>>::RetType, Size=P>,
 		      A: Axis<S::Rows, S::Cols> + Axis<S::RowStride, S::ColStride, RetType=PS>,
 		      <A as Axis<S::RowStride, S::ColStride>>::Parallel: Axis<S::RowStride, S::ColStride, RetType=SS>
@@ -213,7 +212,7 @@ pub struct FullIterOwned<T, P, PS, SS, S>
 impl<T, P, PS, SS, S> FullIterOwned<T, P, PS, SS, S>
 	where T: Element, P: Dim, PS: Dim, SS: Dim, S: Storage<T>
 {
-	pub fn from_storage<A>(s: S, a: A) -> Self
+	pub fn from_storage<A>(s: S, _a: A) -> Self
 		where T: Element,
 		      A: Axis<S::Rows, S::Cols, RetType=P> + Axis<S::RowStride, S::ColStride, RetType=PS>,
 		      AxisParallel<A, S::RowStride, S::ColStride>: Axis<S::RowStride, S::ColStride, RetType=SS>
@@ -227,7 +226,7 @@ impl<T, P, PS, SS, S> FullIterOwned<T, P, PS, SS, S>
 			storage: s,
 			iter: FullIterCore::new(std::ptr::null_mut(), prim_size, prim_stride, scnd_size, scnd_stride)
 		};
-		ret.iter = FullIterCore::new(ret.storage.as_ptr() as *mut T, prim_size, prim_stride, scnd_size, scnd_stride);
+		unsafe { ret.iter.reset(ret.storage.as_ptr() as *mut T); }
 		ret
 	}
 }

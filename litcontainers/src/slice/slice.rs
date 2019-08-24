@@ -31,8 +31,8 @@ impl<'a, T, S> InplaceMap<T> for SliceBase<'a, T, S>
 	fn map_inplace<F: FnMut(&mut T)>(&mut self, f: F) { self.storage.map_inplace(f) }
 }
 
-impl<'a, T, S, U> InplaceZipMap<T, U> for SliceBase<'a, T, S>
-	where T: Element, S: StorageMut<T> + InplaceZipMap<T, U>
+impl<'a, T, S> InplaceMapOrdered<T> for SliceBase<'a, T, S>
+	where T: Element, S: StorageMut<T> + InplaceMapOrdered<T>
 {
-	fn map_inplace_zip<F: FnMut(&mut T, U), I: Iterator<Item=U>>(&mut self, i: I, f: F) { self.storage.map_inplace_zip(i, f) }
+	fn map_inplace_ordered<F: FnMut(&mut T)>(&mut self, f: F) { self.storage.map_inplace_ordered(f) }
 }

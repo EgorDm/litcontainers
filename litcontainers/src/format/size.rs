@@ -2,7 +2,7 @@ use super::Dim;
 use std::fmt;
 use crate::{Fmt, Axis};
 
-pub type SSize<S: StorageSize> = Size<S::Rows, S::Cols>;
+pub type SSize<S> = Size<<S as StorageSize>::Rows, <S as StorageSize>::Cols>;
 
 // TODO: Can we write it more generic for possible 3d sizes?
 #[derive(Debug, PartialEq, Eq, Clone, new)]

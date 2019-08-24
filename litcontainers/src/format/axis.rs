@@ -32,9 +32,9 @@ impl<R: Dim, C: Dim> Axis<R, C> for RowAxis {
 
 	fn parallel() -> Self::Parallel { ColAxis }
 
-	fn get_axis(r: R, c: C) -> Self::RetType { r }
+	fn get_axis(r: R, _c: C) -> Self::RetType { r }
 
-	fn get_val<V>(r: V, c: V) -> V { r }
+	fn get_val<V>(r: V, _c: V) -> V { r }
 }
 
 pub struct ColAxis;
@@ -47,7 +47,7 @@ impl<R: Dim, C: Dim> Axis<R, C> for ColAxis {
 
 	fn parallel() -> Self::Parallel { RowAxis }
 
-	fn get_axis(r: R, c: C) -> Self::RetType { c }
+	fn get_axis(_r: R, c: C) -> Self::RetType { c }
 
-	fn get_val<V>(r: V, c: V) -> V { c }
+	fn get_val<V>(_r: V, c: V) -> V { c }
 }

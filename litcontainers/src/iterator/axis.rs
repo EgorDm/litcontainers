@@ -56,7 +56,7 @@ impl<T, S: Dim> AxisIterRaw<T, S> {
 		self.ptr.offset((pos * self.stride.value()) as isize)
 	}
 
-	pub(super) fn from_storage<ST, A>(s: &ST, a: A, pos: usize) -> Self
+	pub(super) fn from_storage<ST, A>(s: &ST, _a: A, pos: usize) -> Self
 		where T: Element, ST: Storage<T>, A: Axis<ST::Rows, ST::Cols> + Axis<ST::RowStride, ST::ColStride>,
 		      AxisParallel<A, ST::RowStride, ST::ColStride>: Axis<ST::RowStride, ST::ColStride, RetType=S>
 	{
@@ -122,7 +122,7 @@ impl<'a, T, S: Dim> AxisIter<'a, T, S> {
 		}
 	}
 
-	pub fn from_storage<ST, A>(s: &ST, a: A, pos: usize) -> Self
+	pub fn from_storage<ST, A>(s: &ST, _a: A, pos: usize) -> Self
 		where T: Element, ST: Storage<T>, A: Axis<ST::Rows, ST::Cols> + Axis<ST::RowStride, ST::ColStride>,
 				AxisParallel<A, ST::RowStride, ST::ColStride>: Axis<ST::RowStride, ST::ColStride, RetType=S>
 	{
@@ -191,7 +191,7 @@ impl<'a, T, S: Dim> AxisIterMut<'a, T, S> {
 		}
 	}
 
-	pub fn from_storage<ST, A>(s: &mut ST, a: A, pos: usize) -> Self
+	pub fn from_storage<ST, A>(s: &mut ST, _a: A, pos: usize) -> Self
 		where T: Element, ST: StorageMut<T>, A: Axis<ST::Rows, ST::Cols> + Axis<ST::RowStride, ST::ColStride>,
 		      AxisParallel<A, ST::RowStride, ST::ColStride>: Axis<ST::RowStride, ST::ColStride, RetType=S>
 	{

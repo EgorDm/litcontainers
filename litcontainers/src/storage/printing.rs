@@ -1,4 +1,4 @@
-use std::fmt::{Display, Formatter, Error};
+use std::fmt::{Formatter, Error};
 use crate::format::*;
 use num_traits::cast::cast;
 use crate::Storage;

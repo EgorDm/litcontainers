@@ -1,7 +1,7 @@
 use crate::format::*;
 use crate::storage::{Storage, StorageMut, DynamicRowStorage, DynamicColStorage, StorageConstructor, Ownable};
 use std::cmp::min;
-use crate::{InplaceMap, InplaceZipMap};
+use crate::{InplaceMap, InplaceMapOrdered};
 
 #[repr(C)]
 #[derive(Eq, Debug, Clone, PartialEq)]
@@ -127,17 +127,8 @@ impl<T, R, C> InplaceMap<T> for VecStorageRM<T, R, C>
 	}
 }
 
-impl<T, R, C, U> InplaceZipMap<T, U> for VecStorageRM<T, R, C>
+impl<T, R, C> InplaceMapOrdered<T> for VecStorageRM<T, R, C>
 	where T: Element, R: Dim, C: Dim
 {
-	fn map_inplace_zip<F: FnMut(&mut T, U), I: Iterator<Item=U>>(&mut self, mut i: I, mut f: F) {
-		// TODO: assert size?
-		unsafe {
-			let mut ptr = self.as_ptr_mut();
-			for _ in 0..self.len() {
-				f(&mut *ptr, i.next().unwrap());
-				ptr = ptr.offset(1);
-			}
-		}
-	}
+	fn map_inplace_ordered<F: FnMut(&mut T)>(&mut self, f: F) { self.map_inplace(f) }
 }

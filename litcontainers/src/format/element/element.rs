@@ -1,8 +1,7 @@
-use std::fmt::{Debug, Display};
+use std::fmt::{Debug};
 use std::fmt;
-use num_traits::{Float, cast::cast};
+use num_traits::{Float};
 use num_complex::Complex;
-use super::numeric::*;
 use super::super::print::*;
 use crate::{NumericElement, Scalar, ScalarType};
 

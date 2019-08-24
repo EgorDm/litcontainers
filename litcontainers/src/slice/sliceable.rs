@@ -1,6 +1,6 @@
 use crate::format::*;
 use crate::storage::*;
-use crate::{Slice, SliceBase, SliceRange, SliceMut};
+use crate::{Slice, SliceRange, SliceMut};
 
 pub trait Sliceable<T: Element>: Storage<T> {
 	#[inline]

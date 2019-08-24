@@ -2,7 +2,7 @@ use super::Dim;
 use std::fmt;
 use crate::{Fmt, Axis};
 
-pub type SStrides<S: Strided> = Strides<S::RowStride, S::ColStride>;
+pub type SStrides<S> = Strides<<S as Strided>::RowStride, <S as Strided>::ColStride>;
 
 #[derive(Debug, PartialEq, Eq, Clone, new)]
 pub struct Strides<RS: Dim, CS: Dim> {

@@ -1,14 +1,10 @@
 use crate::format::*;
 use crate::storage::*;
-#[macro_use]
 use crate::iterator::*;
 use std::fmt::Debug;
 use std::slice;
 use crate::slice::{SliceRange};
-use crate::{Container, Sliceable};
-use std::iter::Cloned;
-
-//type RowItss<S> =
+use crate::{Sliceable};
 
 // TODO: implement proper equality?
 pub trait Storage<T>: StorageSize + Strided + Debug + Sized + Ownable<T> + Send + Sync
@@ -96,6 +92,5 @@ pub trait Storage<T>: StorageSize + Strided + Debug + Sized + Ownable<T> + Send 
 		FullIter::from_storage_range(self, ColAxis, range)
 	}
 }
-
 
 impl<T: Scalar, S: Storage<T>> Sliceable<T> for S {}

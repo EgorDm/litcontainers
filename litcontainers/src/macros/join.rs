@@ -45,21 +45,3 @@ macro_rules! join_rows {
 	($v0: expr $(, $v: expr)*; $d: expr) => (join_rows!($v0 $(, $v)*; $d; ContainerRM));
 	($v0: expr $(, $v: expr)*) => (join_rows!($v0 $(, $v)*; Dynamic::new($v0.rows() $(+ $v.rows())*); ContainerRM));
 }
-
-mod test {
-	use crate::*;
-
-	#[test]
-	fn join() {
-		let a = ContainerRM::from_vec(Size::new(U2, Dynamic::new(2)), &[1., 2., 3., 4.]);
-		let b = ContainerRM::from_vec(Size::new(U2, Dynamic::new(2)), &[1., 2., 3., 4.]);
-		let c = ContainerRM::from_vec(Size::new(U2, Dynamic::new(2)), &[1., 2., 3., 4.]);
-		assert_eq!(join_cols!(a, b, c; U6; ContainerRM).as_slice(), [1., 2., 1., 2., 1., 2., 3., 4., 3., 4., 3., 4.]);
-		assert_eq!(join_cols!(a, b, c; U6).as_slice(), [1., 2., 1., 2., 1., 2., 3., 4., 3., 4., 3., 4.]);
-		assert_eq!(join_cols!(a, b, c).as_slice(), [1., 2., 1., 2., 1., 2., 3., 4., 3., 4., 3., 4.]);
-
-		assert_eq!(join_rows!(a, b, c; U6; ContainerRM).as_slice(), [1., 2., 3., 4., 1., 2., 3., 4., 1., 2., 3., 4.]);
-		assert_eq!(join_rows!(a, b, c; U6).as_slice(), [1., 2., 3., 4., 1., 2., 3., 4., 1., 2., 3., 4.]);
-		assert_eq!(join_rows!(a, b, c).as_slice(), [1., 2., 3., 4., 1., 2., 3., 4., 1., 2., 3., 4.]);
-	}
-}
