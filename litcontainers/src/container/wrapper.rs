@@ -1,7 +1,9 @@
 use crate::format::*;
 use crate::storage::*;
+use crate::ops::*;
 use std::marker::PhantomData;
 use std::fmt;
+use std::ops::Add;
 
 // Container storing scalar values. Wraps around given storage.
 #[derive(Debug, Storage, StorageSize, Strided, Ownable, new)]
@@ -60,4 +62,12 @@ impl<T, S> InplaceMapOrdered<T> for Container<T, S>
 	where T: Element, S: StorageMut<T> + InplaceMapOrdered<T>
 {
 	fn map_inplace_ordered<F: FnMut(&mut T)>(&mut self, f: F) { self.storage.map_inplace_ordered(f) }
+}
+
+impl<T, S> IntoOperation for Container<T, S>
+	where T: Element, S: Storage<T>
+{
+	type OpType = OwnedProvider<T, Self>;
+
+	fn into_operation(self) -> Self::OpType { OwnedProvider::new(self) }
 }

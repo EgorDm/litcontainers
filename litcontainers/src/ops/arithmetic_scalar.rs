@@ -1,58 +1,117 @@
 use super::ops::*;
-use std::ops::Add;
+use std::ops::{Add, AddAssign, Sub, SubAssign, Mul, MulAssign, Div, DivAssign, Rem, RemAssign};
 use crate::{InplaceMap};
 
-// TODO: 1 impl for refexive and 1 for non reflexive
-#[derive(new)]
-pub struct AddScalar<L, R>
-	where L: Operation, R: Into<L::Type>
-{
-	left: L,
-	right: R,
-}
+macro_rules! operation_simple_scalar_op (
+	($($Name: ident => $Trait: ident: $op_fn: ident),* $(,)*) => {$(
+		#[derive(new)]
+		pub struct $Name<L>
+			where L: Operation
+		{
+			left: L,
+			right: L::Type,
+		}
 
-impl<L, R, S> Operation for AddScalar<L, R>
-	where L: Operation<Result=S>,
-	      R: Into<L::Type>,
-	      S: InplaceMap<L::Type>,
-	      L::Type: Add<L::Type, Output=L::Type>
-{
-	type Type = L::Type;
-	type Rows = L::Rows;
-	type Cols = L::Cols;
-	type Result = L::Result;
+		impl<L, S> Operation for $Name<L>
+			where L: Operation<Result=S>,
+			      S: InplaceMap<L::Type>,
+			      L::Type: $Trait<L::Type, Output=L::Type>
+		{
+			type Type = L::Type;
+			type Rows = L::Rows;
+			type Cols = L::Cols;
+			type Result = L::Result;
 
-	fn apply(self) -> Self::Result {
-		let r = self.right.into();
-		let mut ret = self.left.apply();
-		ret.mapv_inplace(|v| v.add(r.clone()));
-		ret
+			fn apply(self) -> Self::Result {
+				let r = self.right;
+				let mut ret = self.left.apply();
+				ret.mapv_inplace(|v| v.$op_fn(r.clone()));
+				ret
+			}
+		}
+	)*}
+);
+
+operation_simple_scalar_op!(
+    AddScalar => Add: add,
+	SubScalar => Sub: sub,
+	MulScalar => Mul: mul,
+	DivScalar => Div: div,
+	RemScalar => Rem: rem,
+);
+
+macro_rules! operation_simple_scalar_rev_op (
+	($($Name: ident => $Trait: ident: $op_fn: ident),* $(,)*) => {$(
+		#[derive(new)]
+		pub struct $Name<R>
+			where R: Operation
+		{
+			left: R::Type,
+			right: R,
+		}
+
+		impl<R, S> Operation for $Name<R>
+			where R: Operation<Result=S>,
+			      S: InplaceMap<R::Type>,
+			      R::Type: $Trait<R::Type, Output=R::Type>
+		{
+			type Type = R::Type;
+			type Rows = R::Rows;
+			type Cols = R::Cols;
+			type Result = R::Result;
+
+			fn apply(self) -> Self::Result {
+				let l = self.left;
+				let mut ret = self.right.apply();
+				ret.mapv_inplace(|v| l.clone().$op_fn(v));
+				ret
+			}
+		}
+	)*}
+);
+
+operation_simple_scalar_rev_op!(
+	SubScalarRev => Sub: sub,
+	DivScalarRev => Div: div,
+	RemScalarRev => Rem: rem,
+);
+
+macro_rules! arithmetic_ops (
+	(
+		$($Name: ident: $op_fn: ident => $Trait: ident),* $(,)*
+		;
+		$($NameRev: ident: $op_fn_rev: ident => $TraitRev: ident),* $(,)*
+	) => {
+		pub trait ArithmeticScalarOps: IntoOperation + Sized {
+		$(
+			fn $op_fn<R>(self, rhs: R) -> $Name<Self::OpType>
+				where <Self::OpType as Operation>::Type: $Trait<<Self::OpType as Operation>::Type, Output=<Self::OpType as Operation>::Type> + From<R>
+			{
+				$Name::new(self.into_operation(), rhs.into())
+			}
+		)*
+		$(
+			fn $op_fn_rev<L>(self, lhs: L) -> $NameRev<Self::OpType>
+				where <Self::OpType as Operation>::Type: $TraitRev<<Self::OpType as Operation>::Type, Output=<Self::OpType as Operation>::Type> + From<L>
+			{
+				$NameRev::new(lhs.into(), self.into_operation())
+			}
+		)*
+		}
 	}
-}
+);
 
-#[derive(new)]
-pub struct AddOps<L, R>
-	where L: Operation, R: Operation
-{
-	left: L,
-	right: R,
-}
+arithmetic_ops!(
+	AddScalar: add_scalar => Add,
+    SubScalar: sub_scalar => Sub,
+	MulScalar: mul_scalar => Mul,
+	DivScalar: div_scalar => Div,
+	RemScalar: rem_scalar => Rem,
+	;
+	SubScalarRev: sub_scalar_rev => Sub,
+	DivScalarRev: div_scalar_rev => Div,
+	RemScalarRev: rem_scalar_rev => Rem,
+);
 
-impl<'a, L, R, S> Operation for AddOps<L, R>
-	where
-		L: Operation<Result=S>,
-		R: Operation<Type=L::Type, Rows=L::Rows, Cols=L::Cols>,
-		L::Type: Add<R::Type, Output=L::Type>,
-		S: InplaceMap<L::Type>
-{
-	type Type = L::Type;
-	type Rows = L::Rows;
-	type Cols = L::Cols;
-	type Result = L::Result;
+impl<O: IntoOperation> ArithmeticScalarOps for O {}
 
-	fn apply(self) -> Self::Result {
-		let mut ret = self.left.apply();
-		//ret.mapv_inplace_zip(self.right.iter(), |v, u| v.add(u));
-		ret
-	}
-}
