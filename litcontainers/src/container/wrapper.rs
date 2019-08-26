@@ -1,9 +1,11 @@
 use crate::format::*;
 use crate::storage::*;
 use crate::ops::*;
+use crate::iterator::*;
 use std::marker::PhantomData;
 use std::fmt;
-use std::ops::Add;
+use std::iter::Cloned;
+use std::borrow::Borrow;
 
 // Container storing scalar values. Wraps around given storage.
 #[derive(Debug, Storage, StorageSize, Strided, Ownable, new)]
@@ -71,3 +73,20 @@ impl<T, S> IntoOperation for Container<T, S>
 
 	fn into_operation(self) -> Self::OpType { OwnedProvider::new(self) }
 }
+
+impl<'a, T, S> IntoOperation for &'a Container<T, S>
+	where T: Element, S: Storage<T>
+{
+	type OpType = BorrowedProvider<'a, T, Container<T, S>>;
+
+	fn into_operation(self) -> Self::OpType { BorrowedProvider::new(self) }
+}
+
+/*
+impl<'a, T, S> IntoOrderedIterator<T> for &'a Container<T, S>
+	where T: Element, S: Storage<T>
+{
+	type IntoIter = Cloned<FullAxisIter<'a, T, Self, RowAxis>>;
+
+	fn into_ordered_iter(self) -> Self::IntoIter { self.as_iter().cloned() }
+}*/

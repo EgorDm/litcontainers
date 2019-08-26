@@ -3,7 +3,27 @@ use litcontainers::*;
 #[test]
 fn ops_scalar() {
 	let s = ContainerRM::from_vec(Size::new(U3, D!(2)), &[1., 2., 3., 4., 5., 6.]);
+
+	{
+		let res = &s * 2;
+		assert_eq!(res.as_slice(), [2., 4., 6., 8., 10., 12.]);
+	}
+
 	let res = s * 2.;
+	assert_eq!(res.as_slice(), [2., 4., 6., 8., 10., 12.]);
+}
+
+#[test]
+fn ops_storage() {
+	let l = ContainerRM::from_vec(Size::new(U3, D!(2)), &[1., 2., 3., 4., 5., 6.]);
+	let r = ContainerRM::from_vec(Size::new(U3, D!(2)), &[1., 2., 3., 4., 5., 6.]);
+
+	{
+		let res = &l + r.into_slice();
+		assert_eq!(res.as_slice(), [2., 4., 6., 8., 10., 12.]);
+	}
+
+	let res = l + r;
 	assert_eq!(res.as_slice(), [2., 4., 6., 8., 10., 12.]);
 }
 /*

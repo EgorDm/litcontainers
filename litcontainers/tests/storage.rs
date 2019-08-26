@@ -1,4 +1,5 @@
 use litcontainers::*;
+use std::ops::Deref;
 
 fn mock_container() -> ContainerRM<f64, U3, Dynamic> {
 	ContainerRM::from_vec(Size::new(U3, Dynamic::new(2)), &[1., 2., 3., 4., 5., 6.])
@@ -86,10 +87,16 @@ fn mutable() {
 fn slice() {
 	let s = mock_container();
 
+	let zz = test(&s);
+
 	assert_eq!(s.slice_rows(1..3).rows(), 2);
 	assert_eq!(s.slice_rows(1..3).as_slice(), [3., 4., 5., 6.]);
 	assert_eq!(s.slice_cols(1).cols(), 1);
 	assert_eq!(s.slice_cols(1).iter().collect::<Vec<_>>(), vec![2., 4., 6.]);
 	assert_eq!(s.slice_rows(1..3).slice_cols(1).iter().collect::<Vec<_>>(), vec![4., 6.]);
 	assert_eq!(s.slice_rows(1..3).slice_cols(1).slice_rows(1).iter().collect::<Vec<_>>(), vec![6.]);
+}
+
+fn test<'a, U: Deref<Target=S> + 'a, T: Element, S: Storage<T> + 'a>(u: U) -> FullAxisIter<'a, T, S, RowAxis> {
+	u.as_iter()
 }

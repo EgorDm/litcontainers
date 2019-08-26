@@ -5,6 +5,9 @@ use std::fmt::Debug;
 use std::slice;
 use crate::slice::{SliceRange};
 use crate::{Sliceable};
+use std::iter::Cloned;
+use std::borrow::Borrow;
+use std::ops::Deref;
 
 // TODO: implement proper equality?
 pub trait Storage<T>: StorageSize + Strided + Debug + Sized + Ownable<T> + Send + Sync
@@ -93,4 +96,10 @@ pub trait Storage<T>: StorageSize + Strided + Debug + Sized + Ownable<T> + Send 
 	}
 }
 
-impl<T: Scalar, S: Storage<T>> Sliceable<T> for S {}
+impl<T: Element, S: Storage<T>> Sliceable<T> for S {}
+
+impl<T: Element, S: Storage<T>> IntoOrderedIterator<T> for S {
+	type IntoIter = FullAxisIterOwned<T, Self, RowAxis>;
+
+	fn into_ordered_iter(self) -> Self::IntoIter { self.iter() }
+}

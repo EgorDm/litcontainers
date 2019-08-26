@@ -50,6 +50,42 @@ impl<T, R, RS, C, CS> StorageMut<T> for PtrStorageCore<T, R, RS, C, CS>
 	fn as_ptr_mut(&mut self) -> *mut T { self.ptr }
 }
 
+impl<T, R, RS, C, CS> InplaceMap<T> for PtrStorageCore<T, R, RS, C, CS>
+	where T: Element, R: Dim, RS: Dim, C: Dim, CS: Dim
+{
+	fn map_inplace<F: FnMut(&mut T)>(&mut self, mut f: F) {
+		if self.rows() / self.row_stride() <= self.cols() / self.col_stride() {
+			for row in 0..self.rows() {
+				let mut row_ptr = self.as_row_ptr_mut(row);
+				for _ in 0..self.cols() {
+					unsafe {
+						f(&mut *row_ptr);
+						row_ptr = row_ptr.offset(self.col_stride() as isize);
+					}
+				}
+			}
+		} else {
+			for col in 0..self.cols() {
+				let mut col_ptr = self.as_col_ptr_mut(col);
+				for _ in 0..self.rows() {
+					unsafe {
+						f(&mut *col_ptr);
+						col_ptr = col_ptr.offset(self.row_stride() as isize);
+					}
+				}
+			}
+		}
+	}
+}
+
+impl<T, R, RS, C, CS> InplaceMapOrdered<T> for PtrStorageCore<T, R, RS, C, CS>
+	where T: Element, R: Dim, RS: Dim, C: Dim, CS: Dim
+{
+	fn map_inplace_ordered<F: FnMut(&mut T)>(&mut self, mut f: F) {
+		for v in self.as_iter_mut() { f(v) }
+	}
+}
+
 impl<T, R, RS, C, CS> Ownable<T> for PtrStorageCore<T, R, RS, C, CS>
 	where T: Element, R: Dim, RS: Dim, C: Dim, CS: Dim
 {
@@ -199,35 +235,11 @@ impl<'a, T, R, RS, C, CS> Into<SliceMut<'a, T, R, RS, C, CS>> for PtrStorageMut<
 impl<'a, T, R, RS, C, CS> InplaceMap<T> for PtrStorageMut<'a, T, R, RS, C, CS>
 	where T: Element, R: Dim, RS: Dim, C: Dim, CS: Dim
 {
-	fn map_inplace<F: FnMut(&mut T)>(&mut self, mut f: F) {
-		if self.rows() / self.row_stride() <= self.cols() / self.col_stride() {
-			for row in 0..self.rows() {
-				let mut row_ptr = self.as_row_ptr_mut(row);
-				for _ in 0..self.cols() {
-					unsafe {
-						f(&mut *row_ptr);
-						row_ptr = row_ptr.offset(self.col_stride() as isize);
-					}
-				}
-			}
-		} else {
-			for col in 0..self.cols() {
-				let mut col_ptr = self.as_col_ptr_mut(col);
-				for _ in 0..self.rows() {
-					unsafe {
-						f(&mut *col_ptr);
-						col_ptr = col_ptr.offset(self.row_stride() as isize);
-					}
-				}
-			}
-		}
-	}
+	fn map_inplace<F: FnMut(&mut T)>(&mut self, f: F) { self.storage.map_inplace(f) }
 }
 
 impl<'a, T, R, RS, C, CS> InplaceMapOrdered<T> for PtrStorageMut<'a, T, R, RS, C, CS>
 	where T: Element, R: Dim, RS: Dim, C: Dim, CS: Dim
 {
-	fn map_inplace_ordered<F: FnMut(&mut T)>(&mut self, mut f: F) {
-		for v in self.as_iter_mut() { f(v) }
-	}
+	fn map_inplace_ordered<F: FnMut(&mut T)>(&mut self, f: F) { self.storage.map_inplace_ordered(f) }
 }

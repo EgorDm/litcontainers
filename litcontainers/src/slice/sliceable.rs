@@ -12,7 +12,7 @@ pub trait Sliceable<T: Element>: Storage<T> {
 			PtrStorage::new(
 				self.as_row_ptr(range.begin()),
 				Size::new(range.size(), self.col_dim()),
-				Strides::new(self.row_stride_dim(), self.col_stride_dim())
+				self.strides()
 			).into()
 		}
 	}
@@ -26,7 +26,7 @@ pub trait Sliceable<T: Element>: Storage<T> {
 			PtrStorage::new(
 				self.as_col_ptr(range.begin()),
 				Size::new(self.row_dim(), range.size()),
-				Strides::new(self.row_stride_dim(), self.col_stride_dim())
+				self.strides()
 			).into()
 		}
 	}
@@ -40,7 +40,17 @@ pub trait Sliceable<T: Element>: Storage<T> {
 			PtrStorage::new(
 				self.get_ptr(range_rows.begin(), range_cols.begin()),
 				Size::new(range_rows.size(), range_cols.size()),
-				Strides::new(self.row_stride_dim(), self.col_stride_dim())
+				self.strides()
+			).into()
+		}
+	}
+
+	fn into_slice(&self) -> Slice<T, Self::Rows, Self::RowStride, Self::Cols, Self::ColStride> {
+		unsafe {
+			PtrStorage::new(
+				self.as_ptr(),
+				self.size(),
+				self.strides()
 			).into()
 		}
 	}
@@ -56,7 +66,7 @@ pub trait SliceableMut<T: Element>: StorageMut<T> {
 			PtrStorageMut::new(
 				self.as_row_ptr_mut(range.begin()),
 				Size::new(range.size(), self.col_dim()),
-				Strides::new(self.row_stride_dim(), self.col_stride_dim())
+				self.strides()
 			).into()
 		}
 	}
@@ -70,7 +80,7 @@ pub trait SliceableMut<T: Element>: StorageMut<T> {
 			PtrStorageMut::new(
 				self.as_col_ptr_mut(range.begin()),
 				Size::new(self.row_dim(), range.size()),
-				Strides::new(self.row_stride_dim(), self.col_stride_dim())
+				self.strides()
 			).into()
 		}
 	}
@@ -84,7 +94,7 @@ pub trait SliceableMut<T: Element>: StorageMut<T> {
 			PtrStorageMut::new(
 				self.get_ptr_mut(range_rows.begin(), range_cols.begin()),
 				Size::new(range_rows.size(), range_cols.size()),
-				Strides::new(self.row_stride_dim(), self.col_stride_dim())
+				self.strides()
 			).into()
 		}
 	}

@@ -4,7 +4,7 @@ use crate::iterator::*;
 use crate::{SliceRange, SliceableMut};
 use std::slice;
 
-pub trait StorageMut<T>: Storage<T>
+pub trait StorageMut<T>: Storage<T> + InplaceMap<T> + InplaceMapOrdered<T>
 	where T: Element
 {
 	#[inline]
