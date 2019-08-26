@@ -1,5 +1,5 @@
 use super::ops::*;
-use std::ops::{Add, AddAssign, Sub, SubAssign, Mul, MulAssign, Div, DivAssign, Rem, RemAssign};
+use std::ops::{Add, Sub, Mul, Div, Rem};
 use crate::{InplaceMap};
 
 macro_rules! operation_simple_scalar_op (
@@ -82,17 +82,19 @@ macro_rules! arithmetic_ops (
 		;
 		$($NameRev: ident: $op_fn_rev: ident => $TraitRev: ident),* $(,)*
 	) => {
-		pub trait ArithmeticScalarOps: IntoOperation + Sized {
+		pub trait ArithmeticScalarOps<O>: IntoOperation + Sized
+			where O: Into< <Self::OpType as Operation>::Type>
+		{
 		$(
-			fn $op_fn<R>(self, rhs: R) -> $Name<Self::OpType>
-				where <Self::OpType as Operation>::Type: $Trait<<Self::OpType as Operation>::Type, Output=<Self::OpType as Operation>::Type> + From<R>
+			fn $op_fn(self, rhs: O) -> $Name<Self::OpType>
+				where <Self::OpType as Operation>::Type: $Trait<<Self::OpType as Operation>::Type, Output=<Self::OpType as Operation>::Type> + From<O>
 			{
 				$Name::new(self.into_operation(), rhs.into())
 			}
 		)*
 		$(
-			fn $op_fn_rev<L>(self, lhs: L) -> $NameRev<Self::OpType>
-				where <Self::OpType as Operation>::Type: $TraitRev<<Self::OpType as Operation>::Type, Output=<Self::OpType as Operation>::Type> + From<L>
+			fn $op_fn_rev(self, lhs: O) -> $NameRev<Self::OpType>
+				where <Self::OpType as Operation>::Type: $TraitRev<<Self::OpType as Operation>::Type, Output=<Self::OpType as Operation>::Type> + From<O>
 			{
 				$NameRev::new(lhs.into(), self.into_operation())
 			}
@@ -113,5 +115,5 @@ arithmetic_ops!(
 	RemScalarRev: rem_scalar_rev => Rem,
 );
 
-impl<O: IntoOperation> ArithmeticScalarOps for O {}
+impl<O: IntoOperation, OT: Into<<O::OpType as Operation>::Type>> ArithmeticScalarOps<OT> for O {}
 
