@@ -1,11 +1,8 @@
 use crate::format::*;
 use crate::storage::*;
 use crate::ops::*;
-use crate::iterator::*;
 use std::marker::PhantomData;
 use std::fmt;
-use std::iter::Cloned;
-use std::borrow::Borrow;
 
 // Container storing scalar values. Wraps around given storage.
 #[derive(Debug, Storage, StorageSize, Strided, Ownable, new)]

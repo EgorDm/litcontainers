@@ -60,15 +60,3 @@ impl<T: NumericElement + Scalar + Float> NumericElement for Complex<T> {
 
 	fn as_scalar(&self) -> Self::ScalarType { self.norm() }
 }
-
-impl<T: Scalar + Float> crate::Sqrt for Complex<T> {
-	type Output = Self;
-
-	fn sqrt(self) -> Self::Output { Complex::sqrt(&self) }
-}
-
-impl<T: Scalar + Float> crate::Sqrt for T {
-	type Output = Self;
-
-	fn sqrt(self) -> Self::Output { <T as Float>::sqrt(self) }
-}

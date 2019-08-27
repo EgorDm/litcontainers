@@ -5,9 +5,6 @@ use std::fmt::Debug;
 use std::slice;
 use crate::slice::{SliceRange};
 use crate::{Sliceable};
-use std::iter::Cloned;
-use std::borrow::Borrow;
-use std::ops::Deref;
 
 // TODO: implement proper equality?
 pub trait Storage<T>: StorageSize + Strided + Debug + Sized + Ownable<T> + Send + Sync

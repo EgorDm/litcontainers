@@ -1,4 +1,5 @@
 use crate::{Scalar};
+use num_traits::{Float, Signed};
 
 macro_rules! unary_op_trait (
 	($Trait: ident, $method: ident, $TraitAssign: ident, $method_assign: ident) => {
@@ -32,16 +33,47 @@ unary_op_trait!(Log10, log10, Log10Assign, log10_assign);
 unary_op_trait!(Ln, ln, LnAssign, ln_assign);
 unary_op_trait!(Norm, norm, NormAssign, norm_assign);
 
+macro_rules! impl_op_traits (
+	($($GroupTrait: ident => $Trait: ident: $op_fn: ident),* $(,)*) => {$(
+		impl<T: $GroupTrait> $Trait for T {
+			type Output = T;
+
+			fn $op_fn(self) -> Self::Output { $GroupTrait::$op_fn(self) }
+		}
+	)*}
+);
+
+impl_op_traits!(
+	Float   => ASin: asin,
+	Float   => Sin: sin,
+	Float   => ACos: acos,
+	Float   => Cos: cos,
+	Float   => ATan: atan,
+	Float   => Tan: tan,
+	Float   => Exp: exp,
+	Float   => Exp2: exp2,
+	Float   => Ceil: ceil,
+	Float   => Floor: floor,
+	Float   => Round: round,
+	Float   => Sqrt: sqrt,
+	Float   => Log2: log2,
+	Float   => Log10: log10,
+	Float   => Ln: ln,
+);
+
+impl<T: Signed> Abs for T {
+	type Output = T;
+
+	fn abs(self) -> Self::Output { Signed::abs(&self) }
+}
+
+
 macro_rules! binary_op_trait (
 	($Trait: ident, $method: ident, $TraitAssign: ident, $method_assign: ident) => {
 		pub trait $Trait<RHS=Self> {
 			type Output;
 
 			fn $method(self, rhs: RHS) -> Self::Output;
-		}
-
-		pub trait $TraitAssign<RHS=Self> {
-		    fn $method_assign(&mut self, rhs: RHS);
 		}
 	}
 );
@@ -51,15 +83,25 @@ binary_op_trait!(Log, log, LogAssign, log_assign);
 binary_op_trait!(Max, max, MaxAssign, max_assign);
 binary_op_trait!(Min, min, MinAssign, min_assign);
 
-macro_rules! unary_simple_op_trait (
-	($Trait: ident, $method: ident) => {
-		pub trait $Trait {
-			type Output;
+macro_rules! impl_binary_op_traits (
+	($($GroupTrait: ident => $Trait: ident: $op_fn: ident),* $(,)*) => {$(
+		impl<T: $GroupTrait, A: Into<T>> $Trait<A> for T {
+			type Output = T;
 
-			fn $method(&self) -> Self::Output;
+			fn $op_fn(self, rhs: A) -> Self::Output { $GroupTrait::$op_fn(self, rhs.into())}
 		}
-	}
+	)*}
 );
+
+impl_binary_op_traits!(
+	Float => Log: log,
+	Float => Max: max,
+	Float => Min: min,
+);
+
+pub trait PowAssign<RHS = Self> {
+	fn pow_assign(&mut self, rhs: RHS);
+}
 
 pub trait Clamp<R> {
 	type Output;
@@ -72,22 +114,5 @@ pub trait ClampAssign<R> {
 }
 
 pub fn clamp<T: Scalar>(x: T, min: T, max: T) -> T {
-	if x < min { min }
-	else if x > max { max }
-	else { x }
+	if x < min { min } else if x > max { max } else { x }
 }
-
-unary_simple_op_trait!(Sum, sum);
-unary_simple_op_trait!(RowSum, row_sum);
-unary_simple_op_trait!(ColSum, col_sum);
-unary_simple_op_trait!(Mean, mean);
-
-unary_simple_op_trait!(Maximum, maximum);
-unary_simple_op_trait!(Minimum, minimum);
-
-unary_simple_op_trait!(RowMean, row_mean);
-unary_simple_op_trait!(ColMean, col_mean);
-unary_simple_op_trait!(RowMax, row_max);
-unary_simple_op_trait!(ColMax, col_max);
-unary_simple_op_trait!(RowMin, row_min);
-unary_simple_op_trait!(ColMin, col_min);

@@ -2,7 +2,6 @@ use crate::format::*;
 use crate::storage::*;
 use crate::*;
 use std::marker::PhantomData;
-use std::ops::Deref;
 
 #[derive(new)]
 pub struct OwnedProvider<T, S>

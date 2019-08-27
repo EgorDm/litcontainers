@@ -87,14 +87,14 @@ macro_rules! arithmetic_ops (
 		{
 		$(
 			fn $op_fn(self, rhs: O) -> $Name<Self::OpType>
-				where <Self::OpType as Operation>::Type: $Trait<<Self::OpType as Operation>::Type, Output=<Self::OpType as Operation>::Type> + From<O>
+				where <Self::OpType as Operation>::Type: $Trait<<Self::OpType as Operation>::Type, Output=<Self::OpType as Operation>::Type>
 			{
 				$Name::new(self.into_operation(), rhs.into())
 			}
 		)*
 		$(
 			fn $op_fn_rev(self, lhs: O) -> $NameRev<Self::OpType>
-				where <Self::OpType as Operation>::Type: $TraitRev<<Self::OpType as Operation>::Type, Output=<Self::OpType as Operation>::Type> + From<O>
+				where <Self::OpType as Operation>::Type: $TraitRev<<Self::OpType as Operation>::Type, Output=<Self::OpType as Operation>::Type>
 			{
 				$NameRev::new(lhs.into(), self.into_operation())
 			}
