@@ -3,7 +3,8 @@ use crate::storage::*;
 use crate::container::*;
 use crate::slice::*;
 use crate::ops::*;
-use std::ops::{Add, Sub, Mul, Div, Rem};
+use std::ops::{Add, Sub, Mul, Div, Rem, Neg};
+use num_traits::{Pow};
 
 macro_rules! impl_arith_scalar_traits (
 	(
@@ -21,9 +22,9 @@ macro_rules! impl_arith_scalar_traits (
 			impl<'a, T, S, R> $Trait<R> for &'a Container<T, S>
 				where T: Element, R: Element, S: Storage<T>, T: $Trait<T, Output=T> + From<R>
 			{
-				type Output = VecStorageRM<T, S::Rows, S::Cols>;
+				type Output = ContainerRM<T, S::Rows, S::Cols>;
 
-				fn $trait_fn(self, rhs: R) -> Self::Output { self.into_slice().$op_fn(rhs).apply() }
+				fn $trait_fn(self, rhs: R) -> Self::Output { self.into_slice().$op_fn(rhs).apply().into() }
 			}
 		)*
 	}
@@ -57,9 +58,9 @@ macro_rules! impl_arith_storage_traits (
 				      S: Storage<T>, R: Storage<T>,
 				      T: $Trait<T, Output=T>
 			{
-				type Output = VecStorageRM<T, S::Rows, S::Cols>;
+				type Output = ContainerRM<T, S::Rows, S::Cols>;
 
-				fn $trait_fn(self, rhs: Container<T, R>) -> Self::Output { self.into_slice().$op_fn(rhs).apply() }
+				fn $trait_fn(self, rhs: Container<T, R>) -> Self::Output { self.into_slice().$op_fn(rhs).apply().into() }
 			}
 		)*
 	}
@@ -92,9 +93,9 @@ macro_rules! impl_scientific_traits (
 			impl<'a, T, S> $Trait for &'a Container<T, S>
 				where T: Element, S: Storage<T>, T: $Trait<Output=T>
 			{
-				type Output = VecStorageRM<T, S::Rows, S::Cols>;
+				type Output = ContainerRM<T, S::Rows, S::Cols>;
 
-				fn $trait_fn(self) -> Self::Output { self.into_slice().$op_fn().apply() }
+				fn $trait_fn(self) -> Self::Output { self.into_slice().$op_fn().apply().into() }
 			}
 		)*
 		$(
@@ -109,9 +110,9 @@ macro_rules! impl_scientific_traits (
 			impl<'a, T, S, R> $TraitBi<R> for &'a Container<T, S>
 				where T: Element, R: Element, S: Storage<T>, T: $TraitBi<T, Output=T> + From<R>
 			{
-				type Output = VecStorageRM<T, S::Rows, S::Cols>;
+				type Output = ContainerRM<T, S::Rows, S::Cols>;
 
-				fn $trait_fn_bi(self, rhs: R) -> Self::Output { self.into_slice().$op_fn_bi(rhs).apply() }
+				fn $trait_fn_bi(self, rhs: R) -> Self::Output { self.into_slice().$op_fn_bi(rhs).apply().into() }
 			}
 		)*
 	}
@@ -134,8 +135,26 @@ impl_scientific_traits!(
 	Log2Op  : log2_op     => Log2:      log2,
 	Log10Op : log10_op    => Log10:     log10,
 	LnOp    : ln_op       => Ln:        ln,
+	NegOp   : neg_op     => Neg:       neg,
 	;
+	PowOp   : pow_op => Pow: pow,
 	LogOp   : log_op => Log: log,
 	MaxOp   : max_op => Max: max,
 	MinOp   : min_op => Min: min,
 );
+
+impl<T, S, R> Clamp<R> for Container<T, S>
+	where T: Element, R: Element, S: Storage<T>, T: Clamp<T, Output=T> + From<R>
+{
+	type Output = <Self as Ownable<T>>::OwnedType;
+
+	fn clamp(self, min: R, max: R) -> Self::Output { self.clamp_op(min, max).apply() }
+}
+
+impl<'a, T, S, R> Clamp<R> for &'a Container<T, S>
+	where T: Element, R: Element, S: Storage<T>, T: Clamp<T, Output=T> + From<R>
+{
+	type Output = VecStorageRM<T, S::Rows, S::Cols>;
+
+	fn clamp(self, min: R, max: R) -> Self::Output { self.into_slice().clamp_op(min, max).apply() }
+}

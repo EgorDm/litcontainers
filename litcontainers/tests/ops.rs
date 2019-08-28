@@ -9,8 +9,8 @@ fn ops_scalar() {
 		assert_eq!(res.as_slice(), [2., 4., 6., 8., 10., 12.]);
 	}
 
-	let res = s * 2.;
-	assert_eq!(res.as_slice(), [2., 4., 6., 8., 10., 12.]);
+	assert_eq!((&s + 1.).as_slice(), [2., 3., 4., 5., 6., 7.]);
+	assert_eq!((-&s).as_slice(), [-1., -2., -3., -4., -5., -6.]);
 }
 
 #[test]
@@ -18,13 +18,27 @@ fn ops_storage() {
 	let l = ContainerRM::from_vec(Size::new(U3, D!(2)), &[1., 2., 3., 4., 5., 6.]);
 	let r = ContainerRM::from_vec(Size::new(U3, D!(2)), &[1., 2., 3., 4., 5., 6.]);
 
+	assert_eq!((&l + r.into_slice()).as_slice(), [2., 4., 6., 8., 10., 12.]);
+	assert_eq!((&l * r.into_slice()).as_slice(), [1., 4., 9., 16., 25., 36.]);
+
 	{
 		let res = &l + r.into_slice();
 		assert_eq!(res.as_slice(), [2., 4., 6., 8., 10., 12.]);
 	}
 
-	let res = l + r;
-	assert_eq!(res.as_slice(), [2., 4., 6., 8., 10., 12.]);
+	assert_eq!((l.slice_rows(0..3) + r.into_slice()).as_slice(), [2., 4., 6., 8., 10., 12.]);
+	assert_eq!((l.slice_rows(0..3) + r.into_slice()).as_slice(), [2., 4., 6., 8., 10., 12.]);
+}
+
+#[test]
+fn ops_sci() {
+	let s = ContainerRM::from_vec(Size::new(U3, D!(2)), &[1., 2., 3., 4., 5., 6.]);
+
+	assert_eq!((&s - 0.1).ceil().as_slice(), [1., 2., 3., 4., 5., 6.]);
+	assert_eq!((&s).clamp(3, 4).as_slice(), [3., 3., 3., 4., 4., 4.]);
+	assert_eq!((&s - 0.1).floor().as_slice(), [0., 1., 2., 3., 4., 5.]);
+	assert_eq!((&s).max(2.).as_slice(), [2., 2., 3., 4., 5., 6.]);
+	assert_eq!((&s).pow(2).as_slice(), [1., 4., 9., 16., 25., 36.]);
 }
 /*
 #[test]

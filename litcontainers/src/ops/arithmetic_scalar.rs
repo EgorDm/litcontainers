@@ -1,5 +1,5 @@
 use super::ops::*;
-use std::ops::{Add, Sub, Mul, Div, Rem};
+use std::ops::{Add, Sub, Mul, Div, Rem, Neg};
 use crate::{InplaceMap};
 
 macro_rules! operation_simple_scalar_op (

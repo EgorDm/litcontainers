@@ -1,7 +1,9 @@
 use super::ops::*;
 use super::ops_traits::*;
 use crate::{InplaceMap};
-use num_traits::{Float, Signed};
+use num_traits::{Pow};
+use std::ops::{Neg};
+
 
 macro_rules! operation_scientific_scalar_unary_op (
 	($($Name: ident => $Trait: ident: $op_fn: ident),* $(,)*) => {$(
@@ -47,6 +49,7 @@ operation_scientific_scalar_unary_op!(
 	Log2Op     => Log2: log2,
 	Log10Op    => Log10: log10,
 	LnOp       => Ln: ln,
+	NegOp      => Neg: neg
 );
 
 macro_rules! operation_scientific_scalar_binary_op (
@@ -80,10 +83,39 @@ macro_rules! operation_scientific_scalar_binary_op (
 );
 
 operation_scientific_scalar_binary_op!(
+	PowOp => Pow: pow,
 	LogOp => Log: log,
 	MaxOp => Max: max,
 	MinOp => Min: min,
 );
+
+#[derive(new)]
+pub struct ClampOp<L>
+	where L: Operation
+{
+	data: L,
+	min: L::Type,
+	max: L::Type,
+}
+
+impl<L, S> Operation for ClampOp<L>
+	where L: Operation<Result=S>,
+		  S: InplaceMap<L::Type>,
+		  L::Type: Clamp<L::Type, Output=L::Type>
+{
+	type Type = L::Type;
+	type Rows = L::Rows;
+	type Cols = L::Cols;
+	type Result = L::Result;
+
+	fn apply(self) -> Self::Result {
+		let min = self.min.clone();
+		let max = self.max.clone();
+		let mut ret = self.data.apply();
+		ret.mapv_inplace(|v| v.clamp(min, max));
+		ret
+	}
+}
 
 macro_rules! scientific_ops (
 	(
@@ -107,6 +139,17 @@ macro_rules! scientific_ops (
 				$NameBi::new(self.into_operation(), rhs.into())
 			}
 		)*
+			fn clamp_op<O>(self, min: O, max: O) -> ClampOp<Self::OpType>
+				where <Self::OpType as Operation>::Type: Clamp<<Self::OpType as Operation>::Type, Output=<Self::OpType as Operation>::Type> + From<O>
+			{
+				ClampOp::new(self.into_operation(), min.into(), max.into())
+			}
+
+			fn neg_op(self) -> NegOp<Self::OpType>
+				where <Self::OpType as Operation>::Type: Neg<Output=<Self::OpType as Operation>::Type>
+			{
+				NegOp::new(self.into_operation())
+			}
 		}
 	}
 );
@@ -129,6 +172,7 @@ scientific_ops!(
 	Log10Op : log10_op    => Log10,
 	LnOp    : ln_op       => Ln,
 	;
+	PowOp   : pow_op => Pow,
 	LogOp   : log_op => Log,
 	MaxOp   : max_op => Max,
 	MinOp   : min_op => Min,

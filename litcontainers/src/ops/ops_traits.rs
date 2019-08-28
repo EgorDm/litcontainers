@@ -1,37 +1,40 @@
 use crate::{Scalar};
 use num_traits::{Float, Signed};
+pub use num_traits::pow::Pow;
 
 macro_rules! unary_op_trait (
-	($Trait: ident, $method: ident, $TraitAssign: ident, $method_assign: ident) => {
+	($($Trait: ident: $trait_fn: ident => $TraitAssign: ident: $trait_assign_fn: ident),* $(,)*) => {$(
 		pub trait $Trait {
 			type Output;
 
-			fn $method(self) -> Self::Output;
+			fn $trait_fn(self) -> Self::Output;
 		}
 
 		pub trait $TraitAssign {
-			fn $method_assign(&mut self);
+			fn $trait_assign_fn(&mut self);
 		}
-	}
+	)*}
 );
 
-unary_op_trait!(ASin, asin, ASinAssign, asin_assign);
-unary_op_trait!(Sin, sin, SinAssign, sin_assign);
-unary_op_trait!(ACos, acos, ACosAssign, acos_assign);
-unary_op_trait!(Cos, cos, CosAssign, cos_assign);
-unary_op_trait!(Tan, tan, TanAssign, tan_assign);
-unary_op_trait!(ATan, atan, ATanAssign, atan_assign);
-unary_op_trait!(Exp, exp, ExpAssign, exp_assign);
-unary_op_trait!(Exp2, exp2, Exp2Assign, exp2_assign);
-unary_op_trait!(Ceil, ceil, CeilAssign, ceil_assign);
-unary_op_trait!(Floor, floor, FloorAssign, floor_assign);
-unary_op_trait!(Round, round, RoundAssign, round_assign);
-unary_op_trait!(Abs, abs, AbsAssign, abs_assign);
-unary_op_trait!(Sqrt, sqrt, SqrtAssign, sqrt_assign);
-unary_op_trait!(Log2, log2, Log2Assign, log2_assign);
-unary_op_trait!(Log10, log10, Log10Assign, log10_assign);
-unary_op_trait!(Ln, ln, LnAssign, ln_assign);
-unary_op_trait!(Norm, norm, NormAssign, norm_assign);
+unary_op_trait!(
+	ASin    : asin   => ASinAssign  : asin_assign,
+	Sin     : sin    => SinAssign   : sin_assign,
+	ACos    : acos   => ACosAssign  : acos_assign,
+	Cos     : cos    => CosAssign   : cos_assign,
+	Tan     : tan    => TanAssign   : tan_assign,
+	ATan    : atan   => ATanAssign  : atan_assign,
+	Exp     : exp    => ExpAssign   : exp_assign,
+	Exp2    : exp2   => Exp2Assign  : exp2_assign,
+	Ceil    : ceil   => CeilAssign  : ceil_assign,
+	Floor   : floor  => FloorAssign : floor_assign,
+	Round   : round  => RoundAssign : round_assign,
+	Abs     : abs    => AbsAssign   : abs_assign,
+	Sqrt    : sqrt   => SqrtAssign  : sqrt_assign,
+	Log2    : log2   => Log2Assign  : log2_assign,
+	Log10   : log10  => Log10Assign : log10_assign,
+	Ln      : ln     => LnAssign    : ln_assign,
+	Norm    : norm   => NormAssign  : norm_assign,
+);
 
 macro_rules! impl_op_traits (
 	($($GroupTrait: ident => $Trait: ident: $op_fn: ident),* $(,)*) => {$(
@@ -69,21 +72,23 @@ impl<T: Signed> Abs for T {
 
 
 macro_rules! binary_op_trait (
-	($Trait: ident, $method: ident, $TraitAssign: ident, $method_assign: ident) => {
+	($($Trait: ident: $trait_fn: ident => $TraitAssign: ident: $trait_assign_fn: ident),* $(,)*) => {$(
 		pub trait $Trait<RHS=Self> {
 			type Output;
 
-			fn $method(self, rhs: RHS) -> Self::Output;
+			fn $trait_fn(self, rhs: RHS) -> Self::Output;
 		}
-	}
+	)*}
 );
 
-binary_op_trait!(Pow, pow, PowAssign, pow_assign);
-binary_op_trait!(Log, log, LogAssign, log_assign);
-binary_op_trait!(Max, max, MaxAssign, max_assign);
-binary_op_trait!(Min, min, MinAssign, min_assign);
+binary_op_trait!(
+	Log: log => LogAssign: log_assign,
+	Max: max => MaxAssign: max_assign,
+	Min: min => MinAssign: min_assign,
+);
 
 macro_rules! impl_binary_op_traits (
+
 	($($GroupTrait: ident => $Trait: ident: $op_fn: ident),* $(,)*) => {$(
 		impl<T: $GroupTrait, A: Into<T>> $Trait<A> for T {
 			type Output = T;
@@ -113,6 +118,12 @@ pub trait ClampAssign<R> {
 	fn clamp_assign(&mut self, min: R, max: R);
 }
 
-pub fn clamp<T: Scalar>(x: T, min: T, max: T) -> T {
+pub fn clamp<T: PartialOrd>(x: T, min: T, max: T) -> T {
 	if x < min { min } else if x > max { max } else { x }
+}
+
+impl<T: PartialOrd, A: Into<T>> Clamp<A> for T {
+	type Output = T;
+
+	fn clamp(self, min: A, max: A) -> Self::Output { clamp(self, min.into(), max.into())}
 }
