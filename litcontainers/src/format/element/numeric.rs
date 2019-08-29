@@ -10,7 +10,7 @@ pub trait NumericElement: Element +
 	Mul<Output=Self> + MulAssign<Self> +
 	Div<Output=Self> + DivAssign<Self> +
 	Rem<Output=Self> + RemAssign<Self> +
-	Num + NumCast + Sum
+	Num + NumCast + Sum + Default
 {
 	fn from_usize(v: usize) -> Self { Self::from(v).unwrap() }
 

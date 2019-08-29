@@ -1,7 +1,8 @@
 use crate::format::*;
 use crate::storage::{Storage, StorageMut, DynamicRowStorage, DynamicColStorage, StorageConstructor, Ownable};
 use std::cmp::min;
-use crate::{InplaceMap, InplaceMapOrdered, Container};
+use crate::{InplaceMap, InplaceMapOrdered, Container, InplaceForeach};
+use std::ops::Index;
 
 #[repr(C)]
 #[derive(Eq, Debug, Clone, PartialEq)]
@@ -131,4 +132,29 @@ impl<T, R, C> InplaceMapOrdered<T> for VecStorageRM<T, R, C>
 	where T: Element, R: Dim, C: Dim
 {
 	fn map_inplace_ordered<F: FnMut(&mut T)>(&mut self, f: F) { self.map_inplace(f) }
+}
+
+impl<T, R, C> InplaceForeach<T> for VecStorageRM<T, R, C>
+	where T: Element, R: Dim, C: Dim
+{
+	fn foreach<F: FnMut(&T)>(&self, mut f: F) {
+		unsafe {
+			let mut ptr = self.as_ptr();
+			for _ in 0..self.len() {
+				f(&*ptr);
+				ptr = ptr.offset(1);
+			}
+		}
+	}
+}
+
+impl<T, R, C> Index<usize> for VecStorageRM<T, R, C>
+	where T: Element, R: Dim, C: Dim
+{
+	type Output = T;
+
+	fn index(&self, index: usize) -> &Self::Output {
+		assert!(index < self.len(), "Index out of bounds");
+		unsafe { &*self.as_ptr().offset(index as isize) }
+	}
 }

@@ -29,3 +29,7 @@ pub trait InplaceMapOrdered<T: Clone> {
 		self.map_inplace_ordered(|v| *v = f(v.clone(), i.next().unwrap()))
 	}
 }
+
+pub trait InplaceForeach<T: Clone> {
+	fn foreach<F: FnMut(&T)>(&self, f: F);
+}

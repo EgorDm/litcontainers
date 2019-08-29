@@ -24,14 +24,14 @@ pub trait StorageMut<T>: Storage<T> + InplaceMap<T> + InplaceMapOrdered<T>
 
 	#[inline]
 	unsafe fn get_mut_unchecked(&mut self, r: usize, c: usize) -> &mut T {
-		&mut *self.as_ptr_mut().offset(self.index(r, c) as isize)
+		&mut *self.as_ptr_mut().offset(self.get_index(r, c) as isize)
 	}
 
 	#[inline]
 	fn get_ptr_mut(&mut self, r: usize, c: usize) -> *mut T {
 		assert!(r < self.rows(), "Out of range row!");
 		assert!(c < self.cols(), "Out of range col!");
-		unsafe { self.as_ptr_mut().offset(self.index(r, c) as isize) }
+		unsafe { self.as_ptr_mut().offset(self.get_index(r, c) as isize) }
 	}
 
 	#[inline]
@@ -83,7 +83,7 @@ pub trait StorageMut<T>: Storage<T> + InplaceMap<T> + InplaceMapOrdered<T>
 
 	fn as_row_slice_iter_mut(&mut self) -> RowSliceIterMut<T, Self::Rows, Self::RowStride, Self::Cols, Self::ColStride> { RowSliceIterMut::from_storage(self) }
 
-	fn as_row_range_iter_mut<RR: SliceRange<Self::Rows>>(&mut self, range: RR)
+	fn as_row_range_iter_mut<RR: SliceRange>(&mut self, range: RR)
 		-> FullIterMut<T, RR::Size, Self::RowStride, Self::ColStride>
 	{
 		FullIterMut::from_storage_range(self, RowAxis, range)
@@ -93,7 +93,7 @@ pub trait StorageMut<T>: Storage<T> + InplaceMap<T> + InplaceMapOrdered<T>
 
 	fn as_col_slice_iter_mut(&mut self) -> ColSliceIterMut<T, Self::Rows, Self::RowStride, Self::Cols, Self::ColStride> { ColSliceIterMut::from_storage(self) }
 
-	fn as_col_range_iter_mut<CR: SliceRange<Self::Cols>>(&mut self, range: CR)
+	fn as_col_range_iter_mut<CR: SliceRange>(&mut self, range: CR)
 		-> FullIterMut<T, CR::Size, Self::ColStride, Self::RowStride>
 	{
 		FullIterMut::from_storage_range(self, ColAxis, range)

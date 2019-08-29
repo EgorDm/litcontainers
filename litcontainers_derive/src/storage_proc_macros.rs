@@ -60,6 +60,25 @@ pub fn storage_derive(input: TokenStream) -> TokenStream {
 			#[inline]
 			fn as_ptr(&self) -> *const T { self.#storage_field.as_ptr() }
 		}
+
+		impl #impl_generics InplaceForeach<#element_type>
+			for #name #ty_generics #where_clause
+		{
+			fn foreach<F: FnMut(&T)>(&self, f: F) {
+				self.#storage_field.foreach(f)
+			}
+		}
+
+		impl #impl_generics Index<usize>
+			for #name #ty_generics #where_clause
+		{
+			type Output = T;
+
+			fn index(&self, index: usize) -> &Self::Output {
+				self.#storage_field.index(index)
+			}
+		}
+
 	})
 }
 

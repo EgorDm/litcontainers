@@ -110,7 +110,7 @@ impl<'a, T, P, PS, SS> FullIter<'a, T, P, PS, SS>
 	}
 
 	pub fn from_storage_range<S, A, R>(s: &S, _a: A, r: R) -> Self
-		where T: Element, S: Storage<T>, R: SliceRange<<A as Axis<S::Rows, S::Cols>>::RetType, Size=P>,
+		where T: Element, S: Storage<T>, R: SliceRange<Size=P>,
 		      A: Axis<S::Rows, S::Cols> + Axis<S::RowStride, S::ColStride, RetType=PS>,
 		      AxisParallel<A, S::RowStride, S::ColStride>: Axis<S::RowStride, S::ColStride, RetType=SS>
 	{
@@ -172,7 +172,7 @@ impl<'a, T, P, PS, SS> FullIterMut<'a, T, P, PS, SS>
 	}
 
 	pub fn from_storage_range<S, A, R>(s: &mut S, _a: A, r: R) -> Self
-		where T: Element, S: StorageMut<T>, R: SliceRange<<A as Axis<S::Rows, S::Cols>>::RetType, Size=P>,
+		where T: Element, S: StorageMut<T>, R: SliceRange<Size=P>,
 		      A: Axis<S::Rows, S::Cols> + Axis<S::RowStride, S::ColStride, RetType=PS>,
 		      <A as Axis<S::RowStride, S::ColStride>>::Parallel: Axis<S::RowStride, S::ColStride, RetType=SS>
 	{

@@ -2,6 +2,7 @@ use crate::format::*;
 use crate::storage::*;
 use std::marker::PhantomData;
 use crate::Container;
+use std::ops::Index;
 
 
 /// Slice containing references to scalar values.

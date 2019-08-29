@@ -1,7 +1,7 @@
 use crate::format::dimensions::{Dim, U1, Dynamic};
 use std::ops::Range;
 
-pub trait SliceRange<D: Dim> {
+pub trait SliceRange {
 	type Size: Dim;
 
 	fn begin(&self) -> usize;
@@ -11,7 +11,7 @@ pub trait SliceRange<D: Dim> {
 	fn size(&self) -> Self::Size;
 }
 
-impl<D: Dim> SliceRange<D> for usize {
+impl SliceRange for usize {
 	type Size = U1;
 
 	#[inline(always)]
@@ -30,7 +30,7 @@ impl<D: Dim> SliceRange<D> for usize {
 	}
 }
 
-impl<D: Dim> SliceRange<D> for Range<usize> {
+impl SliceRange for Range<usize> {
 	type Size = Dynamic;
 
 	#[inline(always)]
@@ -58,7 +58,7 @@ impl<D: Dim> SizedRange<D> {
 	pub fn new(start: usize, size: D) -> Self { Self {start, size} }
 }
 
-impl<SD: Dim, D: Dim> SliceRange<SD> for SizedRange<D> {
+impl<D: Dim> SliceRange for SizedRange<D> {
 	type Size = D;
 
 	fn begin(&self) -> usize { self.start }

@@ -4,35 +4,42 @@ use crate::{Slice, SliceRange, SliceMut};
 
 pub trait Sliceable<T: Element>: Storage<T> {
 	#[inline]
-	fn slice_rows<RR: SliceRange<Self::Rows>>(&self, range: RR)
-		-> Slice<T, RR::Size, Self::RowStride, Self::Cols, Self::ColStride>
+	fn slice_axis<A, R>(&self, range: R, axis: A)
+		-> Slice<T, <A as AxisSelector<R::Size, Self::Rows>>::Result, Self::RowStride, <A as AxisSelector<Self::Cols, R::Size>>::Result, Self::ColStride>
+		where A: Axis<Self::Rows, Self::Cols> + AxisSelector<R::Size, Self::Rows> + AxisSelector<Self::Cols, R::Size>,
+		      <A as AxisSelector<R::Size, Self::Rows>>::Result: Dim,
+		      <A as AxisSelector<Self::Cols, R::Size>>::Result: Dim,
+		      R: SliceRange,
 	{
-		assert!(self.rows() <= range.end(), "Range is out of bounds!");
+		assert!(self.size().get_axis_size::<A>().value() <= range.end(), "Range is out of bounds!");
 		unsafe {
 			PtrStorage::new(
-				self.as_row_ptr(range.begin()),
-				Size::new(range.size(), self.col_dim()),
+				match A::axis_type() {
+					AxisType::Row => self.as_row_ptr(range.begin()),
+					AxisType::Col => self.as_col_ptr(range.begin()),
+				},
+				Size::new(
+					<A as AxisSelector<R::Size, Self::Rows>>::select(range.size(), self.row_dim()),
+					<A as AxisSelector<Self::Cols, R::Size>>::select(self.col_dim(), range.size()),
+				),
 				self.strides()
 			).into()
 		}
 	}
 
 	#[inline]
-	fn slice_cols<CR: SliceRange<Self::Cols>>(&self, range: CR)
-		-> Slice<T, Self::Rows, Self::RowStride, CR::Size, Self::ColStride>
-	{
-		assert!(self.cols() <= range.end(), "Range is out of bounds!");
-		unsafe {
-			PtrStorage::new(
-				self.as_col_ptr(range.begin()),
-				Size::new(self.row_dim(), range.size()),
-				self.strides()
-			).into()
-		}
-	}
+	fn slice_rows<R: SliceRange>(&self, range: R)
+		-> Slice<T, R::Size, Self::RowStride, Self::Cols, Self::ColStride>
+	{ self.slice_axis(range, RowAxis) }
 
 	#[inline]
-	fn slice<RR: SliceRange<Self::Rows>, CR: SliceRange<Self::Cols>>(&self, range_rows: RR, range_cols: CR)
+	fn slice_cols<R: SliceRange>(&self, range: R)
+		-> Slice<T, Self::Rows, Self::RowStride, R::Size, Self::ColStride>
+	{ self.slice_axis(range, ColAxis) }
+
+
+	#[inline]
+	fn slice<RR: SliceRange, CR: SliceRange>(&self, range_rows: RR, range_cols: CR)
 		-> Slice<T, RR::Size, Self::RowStride, CR::Size, Self::ColStride>
 	{
 		assert!(self.cols() <= range_cols.end() && self.rows() <= range_rows.end(), "Range is out of bounds!");
@@ -58,35 +65,43 @@ pub trait Sliceable<T: Element>: Storage<T> {
 
 pub trait SliceableMut<T: Element>: StorageMut<T> {
 	#[inline]
-	fn slice_rows_mut<RR: SliceRange<Self::Rows>>(&mut self, range: RR)
-		-> SliceMut<T, RR::Size, Self::RowStride, Self::Cols, Self::ColStride>
+	fn slice_axis_mut<A, R>(&mut self, range: R, axis: A)
+		-> SliceMut<T, <A as AxisSelector<R::Size, Self::Rows>>::Result, Self::RowStride, <A as AxisSelector<Self::Cols, R::Size>>::Result, Self::ColStride>
+		where A: Axis<Self::Rows, Self::Cols> + AxisSelector<R::Size, Self::Rows> + AxisSelector<Self::Cols, R::Size>,
+		      <A as AxisSelector<R::Size, Self::Rows>>::Result: Dim,
+		      <A as AxisSelector<Self::Cols, R::Size>>::Result: Dim,
+		      R: SliceRange,
 	{
-		assert!(self.rows() <= range.end(), "Range is out of bounds!");
+		assert!(self.size().get_axis_size::<A>().value() <= range.end(), "Range is out of bounds!");
 		unsafe {
 			PtrStorageMut::new(
-				self.as_row_ptr_mut(range.begin()),
-				Size::new(range.size(), self.col_dim()),
+				match A::axis_type() {
+					AxisType::Row => self.as_row_ptr_mut(range.begin()),
+					AxisType::Col => self.as_col_ptr_mut(range.begin()),
+				},
+				Size::new(
+					<A as AxisSelector<R::Size, Self::Rows>>::select(range.size(), self.row_dim()),
+					<A as AxisSelector<Self::Cols, R::Size>>::select(self.col_dim(), range.size()),
+				),
 				self.strides()
 			).into()
 		}
 	}
 
 	#[inline]
-	fn slice_cols_mut<CR: SliceRange<Self::Cols>>(&mut self, range: CR)
-		-> SliceMut<T, Self::Rows, Self::RowStride, CR::Size, Self::ColStride>
-	{
-		assert!(self.cols() <= range.end(), "Range is out of bounds!");
-		unsafe {
-			PtrStorageMut::new(
-				self.as_col_ptr_mut(range.begin()),
-				Size::new(self.row_dim(), range.size()),
-				self.strides()
-			).into()
-		}
-	}
+	fn slice_rows_mut<R: SliceRange>(&mut self, range: R)
+		-> SliceMut<T, R::Size, Self::RowStride, Self::Cols, Self::ColStride>
+	{ self.slice_axis_mut(range, RowAxis) }
+
 
 	#[inline]
-	fn slice_mut<RR: SliceRange<Self::Rows>, CR: SliceRange<Self::Cols>>(&mut self, range_rows: RR, range_cols: CR)
+	fn slice_cols_mut<R: SliceRange>(&mut self, range: R)
+		-> SliceMut<T, Self::Rows, Self::RowStride, R::Size, Self::ColStride>
+	{ self.slice_axis_mut(range, ColAxis) }
+
+
+	#[inline]
+	fn slice_mut<RR: SliceRange, CR: SliceRange>(&mut self, range_rows: RR, range_cols: CR)
 		-> SliceMut<T, RR::Size, Self::RowStride, CR::Size, Self::ColStride>
 	{
 		assert!(self.cols() <= range_cols.end() && self.rows() <= range_rows.end(), "Range is out of bounds!");

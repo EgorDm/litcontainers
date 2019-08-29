@@ -45,15 +45,17 @@ pub trait StorageConstructor<T>: StorageMut<T>
 		ret
 	}
 
-	/*
+
 	/// Creates a container with all rows containing regularly spaced values from start to end.
-	fn linspace_rows(s: SSize<Self>, start: T, end: T) -> Self {
+	fn linspace_rows(s: SSize<Self>, start: T, end: T) -> Self
+		where T: NumericElement
+	{
 		let interval = (end - start) / T::from_usize(s.cols() - 1);
-		let mut ret = Self::zeros(s);
+		let mut ret = Self::zeros(s.clone());
 
 		for r in 0..s.rows() {
 			let mut agg = start;
-			for s in ret.slice_rows_as_mut_iter(r) {
+			for s in ret.as_row_range_iter_mut(r) {
 				*s = agg;
 				agg += interval;
 			}
@@ -62,13 +64,15 @@ pub trait StorageConstructor<T>: StorageMut<T>
 	}
 
 	/// Creates a container with all cols containing regularly spaced values from start to end.
-	fn linspace_cols(s: SSize<Self>, start: T, end: T) -> Self {
-		let interval = (end - start) / T::from_usize(rows.value() - 1);
-		let mut ret = Self::zeros(s);
+	fn linspace_cols(s: SSize<Self>, start: T, end: T) -> Self
+		where T: NumericElement
+	{
+		let interval = (end - start) / T::from_usize(s.rows() - 1);
+		let mut ret = Self::zeros(s.clone());
 
-		for r in 0..cols.value() {
+		for r in 0..s.cols() {
 			let mut agg = start;
-			for s in ret.slice_cols_as_mut_iter(r) {
+			for s in ret.as_col_range_iter_mut(r) {
 				*s = agg;
 				agg += interval;
 			}
@@ -77,16 +81,21 @@ pub trait StorageConstructor<T>: StorageMut<T>
 	}
 
 	/// Creates a container with all rows containing regularly spaced values from start to start + col_count.
-	fn regspace_rows(s: SSize<Self>, start: T) -> Self {
+	fn regspace_rows(s: SSize<Self>, start: T) -> Self
+		where T: NumericElement
+
+	{
 		Self::regspace_step_rows(s, start, T::from(1).unwrap())
 	}
 
 	/// Creates a container with all rows containing regularly spaced values from start to start + col_count * step.
-	fn regspace_step_rows(s: SSize<Self>, start: T, step: T) -> Self {
-		let mut ret = Self::zeros(s);
-		for c in 0..rows.value() {
+	fn regspace_step_rows(s: SSize<Self>, start: T, step: T) -> Self
+		where T: NumericElement
+	{
+		let mut ret = Self::zeros(s.clone());
+		for c in 0..s.rows() {
 			let mut agg = start;
-			for s in ret.slice_rows_as_mut_iter(c) {
+			for s in ret.as_row_range_iter_mut(c) {
 				*s = agg;
 				agg += step;
 			}
@@ -95,20 +104,24 @@ pub trait StorageConstructor<T>: StorageMut<T>
 	}
 
 	/// Creates a container with all cols containing regularly spaced values from start to start + row_count.
-	fn regspace_cols(s: SSize<Self>, start: T) -> Self {
+	fn regspace_cols(s: SSize<Self>, start: T) -> Self
+		where T: NumericElement
+	{
 		Self::regspace_step_cols(s, start, T::from(1).unwrap())
 	}
 
 	/// Creates a container with all cols containing regularly spaced values from start to start + row_count * step.
-	fn regspace_step_cols(s: SSize<Self>, start: T, step: T) -> Self {
-		let mut ret = Self::zeros(s);
-		for c in 0..cols.value() {
+	fn regspace_step_cols(s: SSize<Self>, start: T, step: T) -> Self
+		where T: NumericElement
+	{
+		let mut ret = Self::zeros(s.clone());
+		for c in 0..s.cols() {
 			let mut agg = start;
-			for s in ret.slice_cols_as_mut_iter(c) {
+			for s in ret.as_col_range_iter_mut(c) {
 				*s = agg;
 				agg += step;
 			}
 		}
 		ret
-	}*/
+	}
 }

@@ -1,4 +1,3 @@
-use crate::{Scalar};
 use num_traits::{Float, Signed};
 pub use num_traits::pow::Pow;
 use num_complex::Complex;

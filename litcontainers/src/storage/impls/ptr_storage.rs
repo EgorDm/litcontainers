@@ -2,6 +2,7 @@ use crate::format::*;
 use std::marker::PhantomData;
 use crate::storage::*;
 use crate::{Slice, SliceBase, SliceMut, Container};
+use std::ops::Index;
 
 #[repr(C)]
 #[derive(Debug, new)]
@@ -78,6 +79,34 @@ impl<T, R, RS, C, CS> InplaceMap<T> for PtrStorageCore<T, R, RS, C, CS>
 	}
 }
 
+impl<T, R, RS, C, CS> InplaceForeach<T> for PtrStorageCore<T, R, RS, C, CS>
+	where T: Element, R: Dim, RS: Dim, C: Dim, CS: Dim
+{
+	fn foreach<F: FnMut(&T)>(&self, mut f: F) {
+		if self.rows() / self.row_stride() <= self.cols() / self.col_stride() {
+			for row in 0..self.rows() {
+				let mut row_ptr = self.as_row_ptr(row);
+				for _ in 0..self.cols() {
+					unsafe {
+						f(&*row_ptr);
+						row_ptr = row_ptr.offset(self.col_stride() as isize);
+					}
+				}
+			}
+		} else {
+			for col in 0..self.cols() {
+				let mut col_ptr = self.as_col_ptr(col);
+				for _ in 0..self.rows() {
+					unsafe {
+						f(&*col_ptr);
+						col_ptr = col_ptr.offset(self.row_stride() as isize);
+					}
+				}
+			}
+		}
+	}
+}
+
 impl<T, R, RS, C, CS> InplaceMapOrdered<T> for PtrStorageCore<T, R, RS, C, CS>
 	where T: Element, R: Dim, RS: Dim, C: Dim, CS: Dim
 {
@@ -98,6 +127,17 @@ impl<T, R, RS, C, CS> Ownable<T> for PtrStorageCore<T, R, RS, C, CS>
 	fn clone_owned(&self) -> Container<T, Self::OwnedType> {
 		let data = self.as_iter().cloned().collect();
 		Self::OwnedType::from_data(self.size(), data).into()
+	}
+}
+
+impl<T, R, RS, C, CS> Index<usize> for PtrStorageCore<T, R, RS, C, CS>
+	where T: Element, R: Dim, RS: Dim, C: Dim, CS: Dim {
+	type Output = T;
+
+	fn index(&self, index: usize) -> &Self::Output {
+		let r = index / self.cols();
+		let c = index % self.cols();
+		self.get_ref(r, c)
 	}
 }
 

@@ -3,6 +3,7 @@ use crate::storage::*;
 use crate::ops::*;
 use std::marker::PhantomData;
 use std::fmt;
+use std::ops::Index;
 
 // Container storing scalar values. Wraps around given storage.
 #[derive(Debug, Storage, StorageSize, Strided, Ownable, new)]
@@ -40,7 +41,7 @@ impl<T, S> DynamicColStorage<T> for Container<T, S>
 }
 
 impl<T, S> fmt::Display for Container<T, S>
-	where T: Element, S: StorageMut<T>
+	where T: Element, S: Storage<T>
 {
 	fn fmt(&self, f: &mut fmt::Formatter) -> Result<(), fmt::Error> {
 		write!(f, "{}", Fmt(|f| print_storage(self, f)))

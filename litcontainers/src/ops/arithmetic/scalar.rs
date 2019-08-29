@@ -1,5 +1,5 @@
 use crate::ops::*;
-use std::ops::{Add, AddAssign, Sub, Mul, Div, Rem, Neg};
+use std::ops::{Add, Sub, Mul, Div, Rem};
 use crate::{InplaceMap, StorageSize, Element};
 
 operation_scalar_binary_op!(

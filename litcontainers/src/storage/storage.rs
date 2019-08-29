@@ -5,9 +5,10 @@ use crate::slice::{SliceRange};
 use std::fmt::Debug;
 use std::slice;
 use crate::{Sliceable, Container};
+use std::ops::Index;
 
 // TODO: implement proper equality?
-pub trait Storage<T>: StorageSize + Strided + Debug + Sized + Ownable<T> + Send + Sync
+pub trait Storage<T>: StorageSize + Strided + Debug + Sized + Ownable<T> + Send + Sync + InplaceForeach<T> + Index<usize, Output=T>
 	where T: Element
 {
 	#[inline]
@@ -29,12 +30,12 @@ pub trait Storage<T>: StorageSize + Strided + Debug + Sized + Ownable<T> + Send 
 	fn get_ptr(&self, r: usize, c: usize) -> *const T {
 		assert!(r < self.rows(), "Out of range row!");
 		assert!(c < self.cols(), "Out of range col!");
-		unsafe { self.as_ptr().offset(self.index(r, c) as isize) }
+		unsafe { self.as_ptr().offset(self.get_index(r, c) as isize) }
 	}
 
 	#[inline]
 	unsafe fn get_unchecked(&self, r: usize, c: usize) -> T {
-		*self.as_ptr().offset(self.index(r, c) as isize)
+		*self.as_ptr().offset(self.get_index(r, c) as isize)
 	}
 
 	#[inline]
@@ -45,7 +46,7 @@ pub trait Storage<T>: StorageSize + Strided + Debug + Sized + Ownable<T> + Send 
 	}
 
 	#[inline]
-	unsafe fn get_ref_unchecked(&self, r: usize, c: usize) -> &T { &*self.as_ptr().offset(self.index(r, c) as isize) }
+	unsafe fn get_ref_unchecked(&self, r: usize, c: usize) -> &T { &*self.as_ptr().offset(self.get_index(r, c) as isize) }
 
 	#[inline]
 	fn as_row_ptr(&self, p: usize) -> *const T {
@@ -76,7 +77,7 @@ pub trait Storage<T>: StorageSize + Strided + Debug + Sized + Ownable<T> + Send 
 
 	fn as_row_slice_iter(&self) -> RowSliceIter<T, Self::Rows, Self::RowStride, Self::Cols, Self::ColStride> { RowSliceIter::from_storage(self) }
 
-	fn as_row_range_iter<RR: SliceRange<Self::Rows>>(&self, range: RR)
+	fn as_row_range_iter<RR: SliceRange>(&self, range: RR)
 		-> FullIter<T, RR::Size, Self::RowStride, Self::ColStride>
 	{
 		FullIter::from_storage_range(self, RowAxis, range)
@@ -86,13 +87,13 @@ pub trait Storage<T>: StorageSize + Strided + Debug + Sized + Ownable<T> + Send 
 
 	fn as_col_slice_iter(&self) -> ColSliceIter<T, Self::Rows, Self::RowStride, Self::Cols, Self::ColStride> { ColSliceIter::from_storage(self) }
 
-	fn as_col_range_iter<CR: SliceRange<Self::Cols>>(&self, range: CR)
+	fn as_col_range_iter<CR: SliceRange>(&self, range: CR)
 		-> FullIter<T, CR::Size, Self::ColStride, Self::RowStride>
 	{
 		FullIter::from_storage_range(self, ColAxis, range)
 	}
 
-	// Conatiner
+	// Container
 	fn into_container(self) -> Container<T, Self> { self.into() }
 }
 

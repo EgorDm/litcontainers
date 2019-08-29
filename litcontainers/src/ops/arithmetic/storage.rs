@@ -3,7 +3,7 @@ use crate::iterator::*;
 use crate::format::{StorageSize};
 use crate::storage::{InplaceMapOrdered};
 use std::ops::{Add, Sub, Mul, Div, Rem};
-use crate::{InplaceMap, Element};
+use crate::{Element};
 
 operation_storage_binary_op!(
     AddStorage | AddAssignStorage => Add: add,

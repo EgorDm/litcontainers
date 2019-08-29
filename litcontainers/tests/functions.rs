@@ -2,24 +2,24 @@ use litcontainers::*;
 
 #[test]
 fn test_cumsum() {
-	let data = ContainerRM::from_value(U3, U3, 1.);
+	let data = ContainerRM::from_value(Size::new(U3, U3), 1.);
 
-	assert_eq!(cumsum_rows(&data).as_slice(), [
+	assert_eq!(cumsum(&data, RowAxis).as_slice(), [
 		1., 2., 3.,
 		1., 2., 3.,
 		1., 2., 3.
 	]);
 
-	assert_eq!(cumsum_cols(&data).as_slice(), [ // Is colmajor
-		1., 2., 3.,
-		1., 2., 3.,
-		1., 2., 3.
+	assert_eq!(cumsum(&data, ColAxis).as_slice(), [ // Is colmajor
+		1.0, 1.0, 1.0,
+		2.0, 2.0, 2.0,
+		3.0, 3.0, 3.0
 	]);
 }
 
 #[test]
 fn test_sum() {
-	let data = ContainerRM::regspace_rows(U3, U3, 1.);
+	let data = ContainerRM::regspace_rows(Size::new(U3, U3), 1.);
 
 	assert_eq!(sum_rows(&data).as_slice(), [6., 6., 6.]);
 
@@ -28,7 +28,7 @@ fn test_sum() {
 
 #[test]
 fn test_mean() {
-	let data = ContainerRM::regspace_rows(U3, U3, 1.);
+	let data = ContainerRM::regspace_rows(Size::new(U3, U3), 1.);
 
 	assert_eq!(mean_rows(&data).as_slice(), [2., 2., 2.]);
 

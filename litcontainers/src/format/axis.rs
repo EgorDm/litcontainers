@@ -5,6 +5,12 @@ pub enum AxisType {
 	Col,
 }
 
+pub trait AxisSelector<R, C> {
+	type Result;
+
+	fn select(r: R, c: C) -> Self::Result;
+}
+
 pub trait Axis<R: Dim, C: Dim> {
 	type RetType: Dim;
 	type Parallel: Axis<R, C>;
@@ -37,6 +43,12 @@ impl<R: Dim, C: Dim> Axis<R, C> for RowAxis {
 	fn get_val<V>(r: V, _c: V) -> V { r }
 }
 
+impl<R, C> AxisSelector<R, C> for RowAxis {
+	type Result = R;
+
+	fn select(r: R, _: C) -> Self::Result { r }
+}
+
 pub struct ColAxis;
 
 impl<R: Dim, C: Dim> Axis<R, C> for ColAxis {
@@ -51,3 +63,12 @@ impl<R: Dim, C: Dim> Axis<R, C> for ColAxis {
 
 	fn get_val<V>(_r: V, c: V) -> V { c }
 }
+
+impl<R, C> AxisSelector<R, C> for ColAxis {
+	type Result = C;
+
+	fn select(_: R, c: C) -> Self::Result { c }
+}
+
+pub type Rows = RowAxis;
+pub type Cols = ColAxis;

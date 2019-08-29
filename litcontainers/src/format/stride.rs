@@ -53,7 +53,7 @@ pub trait Strided {
 	fn col_index(&self, p: usize) -> usize { p * self.col_stride() }
 
 	#[inline]
-	fn index(&self, r: usize, c: usize) -> usize { r * self.row_stride() + c * self.col_stride() }
+	fn get_index(&self, r: usize, c: usize) -> usize { r * self.row_stride() + c * self.col_stride() }
 
 	#[inline]
 	fn equal_strides<OS: Strided>(&self, o: &OS) -> bool {
