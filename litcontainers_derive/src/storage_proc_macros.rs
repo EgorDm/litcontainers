@@ -90,10 +90,10 @@ pub fn ownable_derive(input: TokenStream) -> TokenStream {
 			type OwnedType = <#storage_type as Ownable<#element_type>>::OwnedType;
 
 			#[inline]
-			fn owned(self) -> Self::OwnedType { self.#storage_field.owned() }
+			fn owned(self) -> Container<T, Self::OwnedType> { self.#storage_field.owned() }
 
 			#[inline]
-			fn clone_owned(&self) -> Self::OwnedType { self.#storage_field.clone_owned() }
+			fn clone_owned(&self) -> Container<T, Self::OwnedType> { self.#storage_field.clone_owned() }
 		}
 	})
 }

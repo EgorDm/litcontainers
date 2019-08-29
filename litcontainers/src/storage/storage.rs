@@ -1,10 +1,10 @@
 use crate::format::*;
 use crate::storage::*;
 use crate::iterator::*;
+use crate::slice::{SliceRange};
 use std::fmt::Debug;
 use std::slice;
-use crate::slice::{SliceRange};
-use crate::{Sliceable};
+use crate::{Sliceable, Container};
 
 // TODO: implement proper equality?
 pub trait Storage<T>: StorageSize + Strided + Debug + Sized + Ownable<T> + Send + Sync
@@ -91,6 +91,9 @@ pub trait Storage<T>: StorageSize + Strided + Debug + Sized + Ownable<T> + Send 
 	{
 		FullIter::from_storage_range(self, ColAxis, range)
 	}
+
+	// Conatiner
+	fn into_container(self) -> Container<T, Self> { self.into() }
 }
 
 impl<T: Element, S: Storage<T>> Sliceable<T> for S {}

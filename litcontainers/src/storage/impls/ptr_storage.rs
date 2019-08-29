@@ -1,7 +1,7 @@
 use crate::format::*;
 use std::marker::PhantomData;
 use crate::storage::*;
-use crate::{Slice, SliceBase, SliceMut};
+use crate::{Slice, SliceBase, SliceMut, Container};
 
 #[repr(C)]
 #[derive(Debug, new)]
@@ -92,12 +92,12 @@ impl<T, R, RS, C, CS> Ownable<T> for PtrStorageCore<T, R, RS, C, CS>
 	type OwnedType = VecStorageRM<T, R, C>;
 
 	#[inline]
-	fn owned(self) -> Self::OwnedType { self.clone_owned() }
+	fn owned(self) -> Container<T, Self::OwnedType> { self.clone_owned().into() }
 
 	#[inline]
-	fn clone_owned(&self) -> Self::OwnedType {
+	fn clone_owned(&self) -> Container<T, Self::OwnedType> {
 		let data = self.as_iter().cloned().collect();
-		Self::OwnedType::from_data(self.size(), data)
+		Self::OwnedType::from_data(self.size(), data).into()
 	}
 }
 

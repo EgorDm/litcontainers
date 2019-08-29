@@ -1,7 +1,7 @@
 use crate::format::*;
 use crate::storage::{Storage, StorageMut, DynamicRowStorage, DynamicColStorage, StorageConstructor, Ownable};
 use std::cmp::min;
-use crate::{InplaceMap, InplaceMapOrdered};
+use crate::{InplaceMap, InplaceMapOrdered, Container};
 
 #[repr(C)]
 #[derive(Eq, Debug, Clone, PartialEq)]
@@ -106,10 +106,10 @@ impl<T, R, C> Ownable<T> for VecStorageRM<T, R, C>
 {
 	type OwnedType = Self;
 
-	fn owned(self) -> Self::OwnedType { self }
+	fn owned(self) -> Container<T, Self::OwnedType> { self.into() }
 
-	fn clone_owned(&self) -> Self::OwnedType {
-		Self::from_data(self.size(), self.data.clone())
+	fn clone_owned(&self) -> Container<T, Self::OwnedType> {
+		Self::from_data(self.size(), self.data.clone()).into()
 	}
 }
 

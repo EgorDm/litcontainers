@@ -3,18 +3,19 @@ use crate::storage::*;
 use crate::container::*;
 use crate::slice::*;
 use crate::ops::*;
-use std::ops::{Add, Sub, Mul, Div, Rem, Neg};
+use std::ops::{Add, AddAssign, Sub, SubAssign, Mul, MulAssign, Div, DivAssign, Rem, RemAssign, Neg};
 use num_traits::{Pow};
 
-macro_rules! impl_arith_scalar_traits (
+macro_rules! impl_scalar_binary_traits (
 	(
-		$($Name: ident: $op_fn: ident => $Trait: ident: $trait_fn: ident),* $(,)*
+		$($Name: ident: $op_fn: ident => $Trait: ident: $trait_fn: ident
+			$(| $NameAssign: ident: $op_assign_fn: ident => $TraitAssign: ident: $trait_assign_fn: ident)?),* $(,)*
 	) => {
 		$(
 			impl<T, S, R> $Trait<R> for Container<T, S>
 				where T: Element, R: Element, S: Storage<T>, T: $Trait<T, Output=T> + From<R>
 			{
-				type Output = <Self as Ownable<T>>::OwnedType;
+				type Output = Container<T, <Self as Ownable<T>>::OwnedType>;
 
 				fn $trait_fn(self, rhs: R) -> Self::Output { self.$op_fn(rhs).apply() }
 			}
@@ -26,21 +27,34 @@ macro_rules! impl_arith_scalar_traits (
 
 				fn $trait_fn(self, rhs: R) -> Self::Output { self.into_slice().$op_fn(rhs).apply().into() }
 			}
+
+			$(
+				impl<T, S, R> $TraitAssign<R> for Container<T, S>
+					where T: Element, R: Element, S: StorageMut<T>, T: $Trait<T, Output=T> + From<R>
+				{
+					fn $trait_assign_fn(&mut self, rhs: R) { self.$op_assign_fn(rhs).apply() }
+				}
+			)?
 		)*
 	}
 );
 
-impl_arith_scalar_traits!(
-	AddScalar: add_scalar => Add: add,
-    SubScalar: sub_scalar => Sub: sub,
-	MulScalar: mul_scalar => Mul: mul,
-	DivScalar: div_scalar => Div: div,
-	RemScalar: rem_scalar => Rem: rem,
+impl_scalar_binary_traits!(
+	AddScalar: add_scalar => Add: add | AddAssignScalar: add_assign_scalar => AddAssign: add_assign,
+    SubScalar: sub_scalar => Sub: sub | SubAssignScalar: sub_assign_scalar => SubAssign: sub_assign,
+	MulScalar: mul_scalar => Mul: mul | MulAssignScalar: mul_assign_scalar => MulAssign: mul_assign,
+	DivScalar: div_scalar => Div: div | DivAssignScalar: div_assign_scalar => DivAssign: div_assign,
+	RemScalar: rem_scalar => Rem: rem | RemAssignScalar: rem_assign_scalar => RemAssign: rem_assign,
+	PowOp    : pow_op     => Pow: pow,
+	LogOp    : log_op     => Log: log,
+	MaxOp    : max_op     => Max: max,
+	MinOp    : min_op     => Min: min,
 );
 
-macro_rules! impl_arith_storage_traits (
+macro_rules! impl_storage_binary_traits (
 	(
-		$($Name: ident: $op_fn: ident => $Trait: ident: $trait_fn: ident),* $(,)*
+		$($Name: ident: $op_fn: ident => $Trait: ident: $trait_fn: ident
+			$(| $NameAssign: ident: $op_assign_fn: ident => $TraitAssign: ident: $trait_assign_fn: ident)?),* $(,)*
 	) => {
 		$(
 			impl<T, S, R> $Trait<Container<T, R>> for Container<T, S>
@@ -48,7 +62,7 @@ macro_rules! impl_arith_storage_traits (
 				      S: Storage<T>, R: Storage<T>,
 				      T: $Trait<T, Output=T>
 			{
-				type Output = <Self as Ownable<T>>::OwnedType;
+				type Output = Container<T, <Self as Ownable<T>>::OwnedType>;
 
 				fn $trait_fn(self, rhs: Container<T, R>) -> Self::Output { self.$op_fn(rhs).apply() }
 			}
@@ -62,30 +76,35 @@ macro_rules! impl_arith_storage_traits (
 
 				fn $trait_fn(self, rhs: Container<T, R>) -> Self::Output { self.into_slice().$op_fn(rhs).apply().into() }
 			}
+
+			$(
+				impl<T, S, R> $TraitAssign<Container<T, R>> for Container<T, S>
+					where T: Element, R: Storage<T>, S: StorageMut<T>, T: $Trait<T, Output=T>
+				{
+					fn $trait_assign_fn(&mut self, rhs: Container<T, R>) { self.$op_assign_fn(rhs).apply() }
+				}
+			)?
 		)*
 	}
 );
 
-impl_arith_storage_traits!(
-	AddStorage: add_storage => Add: add,
-    SubStorage: sub_storage => Sub: sub,
-	MulStorage: mul_storage => Mul: mul,
-	DivStorage: div_storage => Div: div,
-	RemStorage: rem_storage => Rem: rem,
+impl_storage_binary_traits!(
+	AddStorage: add_storage => Add: add | AddAssignStorage: add_assign_storage => AddAssign: add_assign,
+    SubStorage: sub_storage => Sub: sub | SubAssignStorage: sub_assign_storage => SubAssign: sub_assign,
+	MulStorage: mul_storage => Mul: mul | MulAssignStorage: mul_assign_storage => MulAssign: mul_assign,
+	DivStorage: div_storage => Div: div | DivAssignStorage: div_assign_storage => DivAssign: div_assign,
+	RemStorage: rem_storage => Rem: rem | RemAssignStorage: rem_assign_storage => RemAssign: rem_assign,
 );
 
-macro_rules! impl_scientific_traits (
+macro_rules! impl_unary_traits (
 	(
 		$($Name: ident: $op_fn: ident => $Trait: ident: $trait_fn: ident),* $(,)*
-		;
-		$($NameBi: ident: $op_fn_bi: ident => $TraitBi: ident: $trait_fn_bi: ident),* $(,)*
-
 	) => {
 		$(
 			impl<T, S> $Trait for Container<T, S>
 				where T: Element, S: Storage<T>, T: $Trait<Output=T>
 			{
-				type Output = <Self as Ownable<T>>::OwnedType;
+				type Output = Container<T, <Self as Ownable<T>>::OwnedType>;
 
 				fn $trait_fn(self) -> Self::Output { self.$op_fn().apply() }
 			}
@@ -98,27 +117,10 @@ macro_rules! impl_scientific_traits (
 				fn $trait_fn(self) -> Self::Output { self.into_slice().$op_fn().apply().into() }
 			}
 		)*
-		$(
-			impl<T, S, R> $TraitBi<R> for Container<T, S>
-				where T: Element, R: Element, S: Storage<T>, T: $TraitBi<T, Output=T> + From<R>
-			{
-				type Output = <Self as Ownable<T>>::OwnedType;
-
-				fn $trait_fn_bi(self, rhs: R) -> Self::Output { self.$op_fn_bi(rhs).apply() }
-			}
-
-			impl<'a, T, S, R> $TraitBi<R> for &'a Container<T, S>
-				where T: Element, R: Element, S: Storage<T>, T: $TraitBi<T, Output=T> + From<R>
-			{
-				type Output = ContainerRM<T, S::Rows, S::Cols>;
-
-				fn $trait_fn_bi(self, rhs: R) -> Self::Output { self.into_slice().$op_fn_bi(rhs).apply().into() }
-			}
-		)*
 	}
 );
 
-impl_scientific_traits!(
+impl_unary_traits!(
 	ASinOp  : asin_op     => ASin:      asin,
 	SinOp   : sin_op      => Sin:       sin,
 	ACosOp  : acos_op     => ACos:      acos,
@@ -136,17 +138,12 @@ impl_scientific_traits!(
 	Log10Op : log10_op    => Log10:     log10,
 	LnOp    : ln_op       => Ln:        ln,
 	NegOp   : neg_op     => Neg:       neg,
-	;
-	PowOp   : pow_op => Pow: pow,
-	LogOp   : log_op => Log: log,
-	MaxOp   : max_op => Max: max,
-	MinOp   : min_op => Min: min,
 );
 
 impl<T, S, R> Clamp<R> for Container<T, S>
 	where T: Element, R: Element, S: Storage<T>, T: Clamp<T, Output=T> + From<R>
 {
-	type Output = <Self as Ownable<T>>::OwnedType;
+	type Output = Container<T, <Self as Ownable<T>>::OwnedType>;
 
 	fn clamp(self, min: R, max: R) -> Self::Output { self.clamp_op(min, max).apply() }
 }
@@ -154,7 +151,8 @@ impl<T, S, R> Clamp<R> for Container<T, S>
 impl<'a, T, S, R> Clamp<R> for &'a Container<T, S>
 	where T: Element, R: Element, S: Storage<T>, T: Clamp<T, Output=T> + From<R>
 {
-	type Output = VecStorageRM<T, S::Rows, S::Cols>;
+	type Output = ContainerRM<T, S::Rows, S::Cols>;
 
 	fn clamp(self, min: R, max: R) -> Self::Output { self.into_slice().clamp_op(min, max).apply() }
 }
+

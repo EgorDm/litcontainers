@@ -17,7 +17,7 @@ impl<'a, T, S> Operation for OwnedProvider<T, S>
 	type Type = T;
 	type Rows = S::Rows;
 	type Cols = S::Cols;
-	type Result = S::OwnedType;
+	type Result = Container<T, S::OwnedType>;
 
 	fn apply(self) -> Self::Result {
 		self.data.owned()
