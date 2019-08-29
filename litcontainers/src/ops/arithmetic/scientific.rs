@@ -1,5 +1,5 @@
 use crate::ops::*;
-use crate::{InplaceMap, StorageSize, Element};
+use crate::{InplaceMap, InplaceMapOrdered, StorageSize, Element, ContainerRM, StorageConstructor, IntoOrderedIterator};
 use num_traits::{Pow};
 use std::ops::{Neg};
 
@@ -20,7 +20,7 @@ operation_unary_op!(
 	Log2Op     => Log2: log2,
 	Log10Op    => Log10: log10,
 	LnOp       => Ln: ln,
-	NegOp      => Neg: neg
+	NegOp      => Neg: neg,
 );
 
 operation_scalar_binary_op!(
@@ -58,6 +58,54 @@ impl<L, S> Operation for ClampOp<L>
 	}
 }
 
+#[derive(new)]
+pub struct NormOp<L>
+	where L: Operation
+{
+	left: L
+}
+
+impl<L> Operation for NormOp<L>
+	where L: Operation, L::Result: IntoOrderedIterator<L::Type> + StorageSize,
+	      L::Type: Norm, <L::Type as Norm>::Output: Element
+{
+	type Type = L::Type;
+	type Rows = <L::Result as StorageSize>::Rows;
+	type Cols = <L::Result as StorageSize>::Cols;
+	type Result = ContainerRM<<L::Type as Norm>::Output, Self::Rows, Self::Cols>;
+
+	fn apply(self) -> Self::Result {
+		let data = self.left.apply();
+		let mut ret = Self::Result::zeros(data.size());
+		ret.mapv_inplace_zip_ordered(data.into_ordered_iter(), |_, i| i.norm());
+		ret
+	}
+}
+
+#[derive(new)]
+pub struct NormSqrOp<L>
+	where L: Operation
+{
+	left: L
+}
+
+impl<L> Operation for NormSqrOp<L>
+	where L: Operation, L::Result: IntoOrderedIterator<L::Type> + StorageSize,
+	      L::Type: NormSqr, <L::Type as NormSqr>::Output: Element
+{
+	type Type = L::Type;
+	type Rows = <L::Result as StorageSize>::Rows;
+	type Cols = <L::Result as StorageSize>::Cols;
+	type Result = ContainerRM<<L::Type as NormSqr>::Output, Self::Rows, Self::Cols>;
+
+	fn apply(self) -> Self::Result {
+		let data = self.left.apply();
+		let mut ret = Self::Result::zeros(data.size());
+		ret.mapv_inplace_zip_ordered(data.into_ordered_iter(), |_, i| i.norm_sqr());
+		ret
+	}
+}
+
 pub trait ScientificOps: IntoOperation + Sized
 {
 	operation_group_unary!(
@@ -78,6 +126,8 @@ pub trait ScientificOps: IntoOperation + Sized
 		Log2Op  : log2_op     => Log2,
 		Log10Op : log10_op    => Log10,
 		LnOp    : ln_op       => Ln,
+//		NormOp  : norm_op     => Norm,
+//		NormSqrOp  : norm_sqr_op     => NormSqr,
 	);
 
 	operation_group_scalar_binary!(
@@ -92,6 +142,18 @@ pub trait ScientificOps: IntoOperation + Sized
 			  Output=<Self::OpType as Operation>::Type> + From<O>
 	{
 		ClampOp::new(self.into_operation(), min.into(), max.into())
+	}
+
+	fn norm_op(self) -> NormOp<Self::OpType>
+		where <Self::OpType as Operation>::Type: Norm
+	{
+		NormOp::new(self.into_operation())
+	}
+
+	fn norm_sqr_op(self) -> NormSqrOp<Self::OpType>
+		where <Self::OpType as Operation>::Type: NormSqr
+	{
+		NormSqrOp::new(self.into_operation())
 	}
 }
 

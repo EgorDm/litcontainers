@@ -4,7 +4,8 @@ use crate::container::*;
 use crate::slice::*;
 use crate::ops::*;
 use std::ops::{Add, AddAssign, Sub, SubAssign, Mul, MulAssign, Div, DivAssign, Rem, RemAssign, Neg};
-use num_traits::{Pow};
+use num_traits::{Pow, Float};
+use num_complex::Complex;
 
 macro_rules! impl_scalar_binary_traits (
 	(
@@ -137,7 +138,7 @@ impl_unary_traits!(
 	Log2Op  : log2_op     => Log2:      log2,
 	Log10Op : log10_op    => Log10:     log10,
 	LnOp    : ln_op       => Ln:        ln,
-	NegOp   : neg_op     => Neg:       neg,
+	NegOp   : neg_op      => Neg:       neg
 );
 
 impl<T, S, R> Clamp<R> for Container<T, S>
@@ -156,3 +157,18 @@ impl<'a, T, S, R> Clamp<R> for &'a Container<T, S>
 	fn clamp(self, min: R, max: R) -> Self::Output { self.into_slice().clamp_op(min, max).apply() }
 }
 
+impl<'a, T, S> Norm for &'a Container<Complex<T>, S>
+	where T: Float + Scalar, S: Storage<Complex<T>>
+{
+	type Output = ContainerRM<T, S::Rows, S::Cols>;
+
+	fn norm(self) -> Self::Output { self.norm_op().apply() }
+}
+
+impl<'a, T, S> NormSqr for &'a Container<Complex<T>, S>
+	where T: Float + Scalar, S: Storage<Complex<T>>
+{
+	type Output = ContainerRM<T, S::Rows, S::Cols>;
+
+	fn norm_sqr(self) -> Self::Output { self.norm_sqr_op().apply() }
+}

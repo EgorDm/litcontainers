@@ -1,18 +1,21 @@
 use crate::{Scalar};
 use num_traits::{Float, Signed};
 pub use num_traits::pow::Pow;
+use num_complex::Complex;
 
 macro_rules! unary_op_trait (
-	($($Trait: ident: $trait_fn: ident => $TraitAssign: ident: $trait_assign_fn: ident),* $(,)*) => {$(
+	($($Trait: ident: $trait_fn: ident $(=> $TraitAssign: ident: $trait_assign_fn: ident)?),* $(,)*) => {$(
 		pub trait $Trait {
 			type Output;
 
 			fn $trait_fn(self) -> Self::Output;
 		}
 
-		pub trait $TraitAssign {
-			fn $trait_assign_fn(&mut self);
-		}
+		$(
+			pub trait $TraitAssign {
+				fn $trait_assign_fn(&mut self);
+			}
+		)?
 	)*}
 );
 
@@ -34,6 +37,7 @@ unary_op_trait!(
 	Log10   : log10  => Log10Assign : log10_assign,
 	Ln      : ln     => LnAssign    : ln_assign,
 	Norm    : norm   => NormAssign  : norm_assign,
+	NormSqr : norm_sqr => NormSqrAssign  : norm_sqr_assign,
 );
 
 macro_rules! impl_op_traits (
@@ -126,4 +130,16 @@ impl<T: PartialOrd, A: Into<T>> Clamp<A> for T {
 	type Output = T;
 
 	fn clamp(self, min: A, max: A) -> Self::Output { clamp(self, min.into(), max.into())}
+}
+
+impl<T: Float> Norm for Complex<T> {
+	type Output = T;
+
+	fn norm(self) -> Self::Output { Complex::norm(&self) }
+}
+
+impl<T: Float> NormSqr for Complex<T> {
+	type Output = T;
+
+	fn norm_sqr(self) -> Self::Output { Complex::norm_sqr(&self) }
 }
