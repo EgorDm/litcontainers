@@ -1,7 +1,7 @@
 use crate::format::*;
 use std::marker::PhantomData;
 use crate::storage::*;
-use crate::{Slice, SliceBase, SliceMut, Container};
+use crate::{Slice, SliceBase, SliceMut, Container, OffsetStorage};
 use std::ops::Index;
 
 #[repr(C)]
@@ -172,8 +172,8 @@ impl<T, R, RS, CS> PtrStorageCore<T, R, RS, Dynamic, CS>
 	pub fn shift_col_to<S: Storage<T>>(&mut self, s: &S, pos: usize, length: usize)
 	{
 		assert!(pos + length <= s.cols());
-		assert!(self.equal_strides(s));
-		assert!(self.rows() == s.rows());
+		assert_eq!(self.col_stride(), s.col_stride());
+		assert_eq!(self.rows(), s.rows());
 		self.ptr = s.as_col_ptr(pos) as *mut T;
 		self.size.cols = Dynamic::new(length);
 	}
@@ -237,6 +237,24 @@ pub struct PtrStorage<'a, T, R, RS, C, CS>
 	_phantoms: PhantomData<&'a ()>,
 }
 
+impl<'a, T, RS, C, CS> PtrStorage<'a, T, Dynamic, RS, C, CS>
+	where T: Element, RS: Dim, C: Dim, CS: Dim
+{
+	#[inline]
+	pub fn offset_row(&mut self, p: usize) { self.storage.offset_row(p) }
+
+	pub fn shift_row_to<S: Storage<T>>(&mut self, s: &S, pos: usize, length: usize) { self.storage.shift_row_to(s, pos, length)}
+}
+
+impl<'a, T, R, RS, CS> PtrStorage<'a, T, R, RS, Dynamic, CS>
+	where T: Element, RS: Dim, R: Dim, CS: Dim
+{
+	#[inline]
+	pub fn offset_col(&mut self, p: usize) { self.storage.offset_col(p) }
+
+	pub fn shift_col_to<S: Storage<T>>(&mut self, s: &S, pos: usize, length: usize) { self.storage.shift_col_to(s, pos, length)}
+}
+
 impl<'a, T, R, RS, C, CS> PtrStorage<'a, T, R, RS, C, CS>
 	where T: Element, R: Dim, RS: Dim, C: Dim, CS: Dim
 {
@@ -266,6 +284,25 @@ impl<'a, T, R, RS, C, CS> PtrStorageMut<'a, T, R, RS, C, CS>
 		Self { storage: PtrStorageCore::new(ptr, size, strides), _phantoms: PhantomData }
 	}
 }
+
+impl<'a, T, RS, C, CS> PtrStorageMut<'a, T, Dynamic, RS, C, CS>
+	where T: Element, RS: Dim, C: Dim, CS: Dim
+{
+	#[inline]
+	pub fn offset_row(&mut self, p: usize) { self.storage.offset_row(p) }
+
+	pub fn shift_row_to<S: StorageMut<T>>(&mut self, s: &S, pos: usize, length: usize) { self.storage.shift_row_to(s, pos, length)}
+}
+
+impl<'a, T, R, RS, CS> PtrStorageMut<'a, T, R, RS, Dynamic, CS>
+	where T: Element, RS: Dim, R: Dim, CS: Dim
+{
+	#[inline]
+	pub fn offset_col(&mut self, p: usize) { self.storage.offset_col(p) }
+
+	pub fn shift_col_to<S: StorageMut<T>>(&mut self, s: &S, pos: usize, length: usize) { self.storage.shift_col_to(s, pos, length)}
+}
+
 
 impl<'a, T, R, RS, C, CS> Into<SliceMut<'a, T, R, RS, C, CS>> for PtrStorageMut<'a, T, R, RS, C, CS>
 	where T: Element, R: Dim, RS: Dim, C: Dim, CS: Dim {

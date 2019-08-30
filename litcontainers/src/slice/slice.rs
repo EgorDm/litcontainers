@@ -20,6 +20,16 @@ pub struct SliceBase<'a, T, S>
 	pub(crate) _phantoms: PhantomData<(&'a (), T, S)>
 }
 
+impl<'a, T, S> SliceBase<'a, T, S>
+	where T: Element, S: Storage<T>
+{
+	pub fn into_storage(self) -> S { self.storage }
+
+	pub fn storage(&self) -> &S { &self.storage}
+
+	pub fn storage_mut(&mut self) -> &mut S { &mut self.storage}
+}
+
 impl<'a, T, S> StorageMut<T> for SliceBase<'a, T, S>
 	where T: Element, S: StorageMut<T>
 {
