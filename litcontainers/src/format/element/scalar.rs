@@ -3,18 +3,18 @@ use num_traits::float::Float;
 
 #[derive(Debug, Clone, Copy, Eq, PartialEq)]
 pub enum ScalarType {
-	U8,
-	I8,
-	U16,
-	I16,
-	U32,
-	I32,
-	U64,
-	I64,
-	U128,
-	I128,
-	F32,
-	F64,
+	U8   = 1,
+	I8   = 2,
+	U16  = 3,
+	I16  = 4,
+	U32  = 5,
+	I32  = 6,
+	U64  = 7,
+	I64  = 8,
+	U128 = 9,
+	I128 = 10,
+	F32  = 11,
+	F64  = 12,
 }
 
 pub trait Scalar: NumericElement + PartialOrd {

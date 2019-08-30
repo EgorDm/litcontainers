@@ -1,8 +1,8 @@
 use litcontainers::*;
 use crate::{IOResult, SerializableScalar, DeserializableScalar};
 
-pub trait StorageSerializerLossy<T, R, C, S>: GeneralSerializer<S>
-	where T: Scalar + SerializableScalar, R: Dim, C: Dim, S: Storage<T, R, C>,
+pub trait StorageSerializerLossy<T, S>: GeneralSerializer<S>
+	where T: Scalar + SerializableScalar, S: Storage<T>,
 {}
 
 pub trait GeneralSerializer<T>
@@ -10,8 +10,8 @@ pub trait GeneralSerializer<T>
 	fn write<W: std::io::Write>(writer: &mut W, storage: &T) -> IOResult<()>;
 }
 
-pub trait StorageDeserializerLossy<T, R, C, S>: GeneralDeserializer<S>
-	where T: Scalar + DeserializableScalar, R: Dim, C: Dim, S: Storage<T, R, C>,
+pub trait StorageDeserializerLossy<T, S>: GeneralDeserializer<S>
+	where T: Scalar + DeserializableScalar, S: Storage<T>,
 {}
 
 pub trait GeneralDeserializer<T>

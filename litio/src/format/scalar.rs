@@ -1,43 +1,37 @@
 pub use litcontainers::format::*;
 
-pub fn scalar_to_bitmask(t: ScalarType) -> u8 {
+pub fn element_to_byte(t: ElementType) -> u8 {
 	match t {
-		ScalarType::Complex(simple_type) => 1 | elementary_scalar_to_bitmask(simple_type),
-		_ => {
-			let simple_type: Option<ScalarElementaryType> = t.into();
-			elementary_scalar_to_bitmask(simple_type.unwrap())
-		}
+		ElementType::Scalar(s) => scalar_to_byte(s),
+		ElementType::Complex(s) => scalar_to_byte(s) | 128,
+		ElementType::Bool => 64,
 	}
 }
 
-pub fn elementary_scalar_to_bitmask(t: ScalarElementaryType) -> u8 {
-	match t {
-		ScalarElementaryType::Float => 2,
-		ScalarElementaryType::Double => 4,
-		ScalarElementaryType::UInt8 => 8,
-		ScalarElementaryType::Int16 => 16,
-		ScalarElementaryType::Int32 => 32,
-		ScalarElementaryType::Int64 => 64,
-		ScalarElementaryType::UInt32 => 128,
-	}
-}
+pub fn scalar_to_byte(t: ScalarType) -> u8 { t as u8 }
 
-pub fn bitmask_to_scalar(m: u8) -> Option<ScalarType> {
+pub fn element_from_byte(m: u8) -> Option<ElementType> {
 	match m {
-		m if 1 & m == 1 => bitmask_to_elementary_scalar(m & !1).map(|t| ScalarType::Complex(t)),
-		m => bitmask_to_elementary_scalar(m).map(|t| t.into())
+		m if 64 & m == 1 => Some(ElementType::Bool),
+		m if 128 & m == 1 => scalar_from_byte(m & !128).map(|v| ElementType::Complex(v)),
+		m => scalar_from_byte(m).map(|v| ElementType::Scalar(v)),
 	}
 }
 
-pub fn bitmask_to_elementary_scalar(m: u8) -> Option<ScalarElementaryType> {
+pub fn scalar_from_byte(m: u8) -> Option<ScalarType> {
 	match m {
-		2 => Some(ScalarElementaryType::Float),
-		4 => Some(ScalarElementaryType::Double),
-		8 => Some(ScalarElementaryType::UInt8),
-		16 => Some(ScalarElementaryType::Int16),
-		32 => Some(ScalarElementaryType::Int32),
-		64 => Some(ScalarElementaryType::Int64),
-		128 => Some(ScalarElementaryType::UInt32),
+		1   => Some(ScalarType::U8),
+		2   => Some(ScalarType::I8),
+		3   => Some(ScalarType::U16),
+		4   => Some(ScalarType::I16),
+		5   => Some(ScalarType::U32),
+		6   => Some(ScalarType::I32),
+		7   => Some(ScalarType::U64),
+		8   => Some(ScalarType::I64),
+		9   => Some(ScalarType::U128),
+		10  => Some(ScalarType::I128),
+		11  => Some(ScalarType::F32),
+		12  => Some(ScalarType::F64),
 		_ => None
 	}
 }

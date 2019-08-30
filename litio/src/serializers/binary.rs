@@ -6,6 +6,8 @@ use std::marker::PhantomData;
 use serde::{Serialize, Deserialize};
 use std::path::Path;
 
+// TODO: can be improved alot by serialilzing certain types like size, stride. But works just fine for now
+
 #[derive(Debug, Clone, Serialize, Deserialize)]
 struct Header {
 	element_type: u8,
@@ -18,32 +20,32 @@ struct Header {
 
 impl Header {
 	pub fn element_type(&self) -> Option<ScalarType> {
-		bitmask_to_scalar(self.element_type)
+		scalar_from_byte(self.element_type)
 	}
 }
 
-pub struct BinarySerializer<T, R, C, S>
-	where T: Scalar + SerializableScalar, R: Dim, C: Dim, S: Storage<T, R, C>,
+pub struct BinarySerializer<T, S>
+	where T: Scalar + SerializableScalar, S: Storage<T>,
 {
-	_phantoms: PhantomData<(T, R, C, S)>
+	_phantoms: PhantomData<(T, S)>
 }
 
-impl<T, R, C, S> StorageSerializerLossy<T, R, C, S> for BinarySerializer<T, R, C, S>
-	where T: Scalar + SerializableScalar, R: Dim, C: Dim, S: Storage<T, R, C>
+impl<T, S> StorageSerializerLossy<T, S> for BinarySerializer<T, S>
+	where T: Scalar + SerializableScalar, S: Storage<T>
 {}
 
 /// Responsible for serializing storage into a binary format
 /// Output looks like this:
-impl<T, R, C, S> GeneralSerializer<S> for BinarySerializer<T, R, C, S>
-	where T: Scalar + SerializableScalar, R: Dim, C: Dim, S: Storage<T, R, C>
+impl<T, S> GeneralSerializer<S> for BinarySerializer<T, S>
+	where T: Scalar + SerializableScalar, S: Storage<T>
 {
 	/// Serializes storage to binary format into a writer
 	fn write<W: std::io::Write>(writer: &mut W, storage: &S) -> IOResult<()> {
 		let header = Header {
-			element_type: scalar_to_bitmask(T::get_scalar_type()),
-			element_size: T::get_scalar_size() as u64,
-			rows: storage.row_count() as u64,
-			cols: storage.col_count() as u64,
+			element_type: scalar_to_byte(T::scalar_type()),
+			element_size: T::byte_size() as u64,
+			rows: storage.rows() as u64,
+			cols: storage.cols() as u64,
 			row_stride: storage.row_stride() as u64,
 			col_stride: storage.col_stride() as u64
 		};
@@ -58,36 +60,36 @@ impl<T, R, C, S> GeneralSerializer<S> for BinarySerializer<T, R, C, S>
 	}
 }
 
-pub struct BinaryDeserializer<T, R, C, S>
-	where T: Scalar + DeserializableScalar, R: Dim, C: Dim, S: Storage<T, R, C>,
+pub struct BinaryDeserializer<T, S>
+	where T: Scalar + DeserializableScalar, S: Storage<T>,
 {
-	_phantoms: PhantomData<(T, R, C, S)>
+	_phantoms: PhantomData<(T, S)>
 }
 
-impl<T, R, C, S> StorageDeserializerLossy<T, R, C, S> for BinaryDeserializer<T, R, C, S>
-	where T: Scalar + DeserializableScalar, R: Dim, C: Dim, S: Storage<T, R, C> + StorageConstructor<T, R, C>,
+impl<T, S> StorageDeserializerLossy<T, S> for BinaryDeserializer<T, S>
+	where T: Scalar + DeserializableScalar, S: Storage<T> + StorageConstructor<T>,
 {}
 
-impl<T, R, C, S> GeneralDeserializer<S> for BinaryDeserializer<T, R, C, S>
-	where T: Scalar + DeserializableScalar, R: Dim, C: Dim, S: Storage<T, R, C> + StorageConstructor<T, R, C>,
+impl<T, S> GeneralDeserializer<S> for BinaryDeserializer<T, S>
+	where T: Scalar + DeserializableScalar, S: Storage<T> + StorageConstructor<T>,
 {
 	fn read<RD: std::io::Read>(reader: RD) -> IOResult<S> {
 		let mut reader = reader;
 
 		let header: Header = bincode::deserialize_from(&mut reader)?;
 		match header.element_type() {
-			Some(t) if t == T::get_scalar_type() => {},
+			Some(t) if t == T::scalar_type() => {},
 			_ => return Err(df_error("Invaid element format!"))
 		}
 
-		let rows = R::try_from_usize(header.rows as usize).ok_or(df_error("Invalid row dimension!"))?;
-		let cols = C::try_from_usize(header.cols as usize).ok_or(df_error("Invalid col dimension!"))?;
-		let row_stride = S::RStride::try_from_usize(header.row_stride as usize).ok_or(df_error("Invalid row stride dimension!"))?;
-		let col_stride = S::CStride::try_from_usize(header.col_stride as usize).ok_or(df_error("Invalid col stride dimension!"))?;
+		let rows = S::Rows::try_from_usize(header.rows as usize).ok_or(df_error("Invalid row dimension!"))?;
+		let cols = S::Cols::try_from_usize(header.cols as usize).ok_or(df_error("Invalid col dimension!"))?;
+		let row_stride = S::RowStride::try_from_usize(header.row_stride as usize).ok_or(df_error("Invalid row stride dimension!"))?;
+		let col_stride = S::ColStride::try_from_usize(header.col_stride as usize).ok_or(df_error("Invalid col stride dimension!"))?;
 
 		let body: Vec<ScalarDeserializer<T>> = bincode::deserialize_from(&mut reader)?;
 		let body: Vec<_> = body.into_iter().map(|v| v.data()).collect();
-		let ret = S::from_vec(rows, cols, &body);
+		let ret = S::from_vec(Size::new(rows, cols), &body);
 		if row_stride.value() != ret.row_stride() || col_stride.value() != ret.col_stride() {
 			return Err(df_error("Invalid storage strides!"))
 		}
@@ -96,26 +98,26 @@ impl<T, R, C, S> GeneralDeserializer<S> for BinaryDeserializer<T, R, C, S>
 	}
 }
 
-pub fn write_binary<T, R, C, S, W>(writer: &mut W, data: &S) -> IOResult<()>
-	where T: Scalar + SerializableScalar, R: Dim, C: Dim, S: Storage<T, R, C>, W: std::io::Write
+pub fn write_binary<T, S, W>(writer: &mut W, data: &S) -> IOResult<()>
+	where T: Scalar + SerializableScalar, S: Storage<T>, W: std::io::Write
 {
 	BinarySerializer::write(writer, data)
 }
 
-pub fn read_binary<T, R, C, S, RD>(reader: RD) -> IOResult<S>
-	where T: Scalar + DeserializableScalar, R: Dim, C: Dim, S: Storage<T, R, C> + StorageConstructor<T, R, C>, RD: std::io::Read,
+pub fn read_binary<T, S, RD>(reader: RD) -> IOResult<S>
+	where T: Scalar + DeserializableScalar, S: Storage<T> + StorageConstructor<T>, RD: std::io::Read,
 {
 	BinaryDeserializer::read(reader)
 }
 
-pub fn write_binary_file<T, R, C, S>(path: &Path, data: &S) -> IOResult<()>
-	where T: Scalar + SerializableScalar, R: Dim, C: Dim, S: Storage<T, R, C>,
+pub fn write_binary_file<T, S>(path: &Path, data: &S) -> IOResult<()>
+	where T: Scalar + SerializableScalar, S: Storage<T>,
 {
-	crate::file::write::<BinarySerializer<_, _, _, _>, _>(path, data)
+	crate::file::write::<BinarySerializer<_, _>, _>(path, data)
 }
 
-pub fn read_binary_file<T, R, C, S>(path: &Path) -> IOResult<S>
-	where T: Scalar + DeserializableScalar, R: Dim, C: Dim, S: Storage<T, R, C> + StorageConstructor<T, R, C>,
+pub fn read_binary_file<T, S>(path: &Path) -> IOResult<S>
+	where T: Scalar + DeserializableScalar, S: Storage<T> + StorageConstructor<T>,
 {
-	crate::file::read::<BinaryDeserializer<_, _, _, _>, _>(path)
+	crate::file::read::<BinaryDeserializer<_, _>, _>(path)
 }

@@ -8,19 +8,8 @@ use crate::{NumericElement, Scalar, ScalarType};
 #[derive(Debug, Clone, Copy, Eq, PartialEq)]
 pub enum ElementType {
 	Bool,
-	U8,
-	I8,
-	U16,
-	I16,
-	U32,
-	I32,
-	U64,
-	I64,
-	U128,
-	I128,
-	F32,
-	F64,
-	Complex(ScalarType)
+	Scalar(ScalarType),
+	Complex(ScalarType),
 }
 
 pub trait Element: Copy + Clone + Debug + Sized + Default + Send + Sync
@@ -28,6 +17,8 @@ pub trait Element: Copy + Clone + Debug + Sized + Default + Send + Sync
 	fn element_type() -> ElementType;
 
 	fn fmt_elem(&self, f: &mut fmt::Formatter, precision: usize, sci: bool) -> Result<(), fmt::Error>;
+
+	fn byte_size() -> usize { std::mem::size_of::<Self>() }
 
 	fn numeric() -> bool { true }
 
@@ -45,7 +36,7 @@ impl Element for bool {
 }
 
 impl Element for u8 {
-	fn element_type() -> ElementType { ElementType::U8 }
+	fn element_type() -> ElementType { ElementType::Scalar(ScalarType::U8) }
 
 	fn fmt_elem(&self, f: &mut fmt::Formatter, _: usize, _: bool) -> Result<(), fmt::Error> { write!(f, "{}", self) }
 
@@ -53,7 +44,7 @@ impl Element for u8 {
 }
 
 impl Element for i8 {
-	fn element_type() -> ElementType { ElementType::I8 }
+	fn element_type() -> ElementType { ElementType::Scalar(ScalarType::I8) }
 
 	fn fmt_elem(&self, f: &mut fmt::Formatter, _: usize, _: bool) -> Result<(), fmt::Error> { write!(f, "{}", self) }
 
@@ -61,7 +52,7 @@ impl Element for i8 {
 }
 
 impl Element for u16 {
-	fn element_type() -> ElementType { ElementType::U16 }
+	fn element_type() -> ElementType { ElementType::Scalar(ScalarType::U16) }
 
 	fn fmt_elem(&self, f: &mut fmt::Formatter, _: usize, _: bool) -> Result<(), fmt::Error> { write!(f, "{}", self) }
 
@@ -69,7 +60,7 @@ impl Element for u16 {
 }
 
 impl Element for i16 {
-	fn element_type() -> ElementType { ElementType::I16 }
+	fn element_type() -> ElementType { ElementType::Scalar(ScalarType::I16) }
 
 	fn fmt_elem(&self, f: &mut fmt::Formatter, _: usize, _: bool) -> Result<(), fmt::Error> { write!(f, "{}", self) }
 
@@ -77,7 +68,7 @@ impl Element for i16 {
 }
 
 impl Element for u32 {
-	fn element_type() -> ElementType { ElementType::U32 }
+	fn element_type() -> ElementType { ElementType::Scalar(ScalarType::U32) }
 
 	fn fmt_elem(&self, f: &mut fmt::Formatter, precision: usize, sci: bool) -> Result<(), fmt::Error> {
 		if sci {
@@ -91,7 +82,7 @@ impl Element for u32 {
 }
 
 impl Element for i32 {
-	fn element_type() -> ElementType { ElementType::I32 }
+	fn element_type() -> ElementType { ElementType::Scalar(ScalarType::I32) }
 
 	fn fmt_elem(&self, f: &mut fmt::Formatter, precision: usize, sci: bool) -> Result<(), fmt::Error> {
 		if sci {
@@ -105,7 +96,7 @@ impl Element for i32 {
 }
 
 impl Element for u64 {
-	fn element_type() -> ElementType { ElementType::U64 }
+	fn element_type() -> ElementType { ElementType::Scalar(ScalarType::U64) }
 
 	fn fmt_elem(&self, f: &mut fmt::Formatter, precision: usize, sci: bool) -> Result<(), fmt::Error> {
 		if sci {
@@ -119,7 +110,7 @@ impl Element for u64 {
 }
 
 impl Element for i64 {
-	fn element_type() -> ElementType { ElementType::I64 }
+	fn element_type() -> ElementType { ElementType::Scalar(ScalarType::I64) }
 
 	fn fmt_elem(&self, f: &mut fmt::Formatter, precision: usize, sci: bool) -> Result<(), fmt::Error> {
 		if sci {
@@ -133,7 +124,7 @@ impl Element for i64 {
 }
 
 impl Element for u128 {
-	fn element_type() -> ElementType { ElementType::U128 }
+	fn element_type() -> ElementType { ElementType::Scalar(ScalarType::U128) }
 
 	fn fmt_elem(&self, f: &mut fmt::Formatter, precision: usize, sci: bool) -> Result<(), fmt::Error> {
 		if sci {
@@ -147,7 +138,7 @@ impl Element for u128 {
 }
 
 impl Element for i128 {
-	fn element_type() -> ElementType { ElementType::I128 }
+	fn element_type() -> ElementType { ElementType::Scalar(ScalarType::I128) }
 
 	fn fmt_elem(&self, f: &mut fmt::Formatter, precision: usize, sci: bool) -> Result<(), fmt::Error> {
 		if sci {
@@ -161,7 +152,7 @@ impl Element for i128 {
 }
 
 impl Element for f32 {
-	fn element_type() -> ElementType { ElementType::F32 }
+	fn element_type() -> ElementType { ElementType::Scalar(ScalarType::F32) }
 
 	fn fmt_elem(&self, f: &mut fmt::Formatter, precision: usize, sci: bool) -> Result<(), fmt::Error> {
 		if sci {
@@ -175,7 +166,7 @@ impl Element for f32 {
 }
 
 impl Element for f64 {
-	fn element_type() -> ElementType { ElementType::F64 }
+	fn element_type() -> ElementType { ElementType::Scalar(ScalarType::F64) }
 
 	fn fmt_elem(&self, f: &mut fmt::Formatter, precision: usize, sci: bool) -> Result<(), fmt::Error> {
 		if sci {

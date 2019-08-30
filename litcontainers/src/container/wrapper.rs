@@ -14,6 +14,14 @@ pub struct Container<T, S>
 	_phantoms: PhantomData<(T)>,
 }
 
+impl<T, S> Container<T, S> where T: Element, S: Storage<T> {
+	pub fn into_storage(self) -> S { self.storage }
+
+	pub fn storage(&self) -> &S { &self.storage}
+
+	pub fn storage_mut(&mut self) -> &mut S { &mut self.storage}
+}
+
 impl<T, S> StorageMut<T> for Container<T, S>
 	where T: Element, S: StorageMut<T>
 {
@@ -79,12 +87,3 @@ impl<'a, T, S> IntoOperation for &'a Container<T, S>
 
 	fn into_operation(self) -> Self::OpType { BorrowedProvider::new(self) }
 }
-
-/*
-impl<'a, T, S> IntoOrderedIterator<T> for &'a Container<T, S>
-	where T: Element, S: Storage<T>
-{
-	type IntoIter = Cloned<FullAxisIter<'a, T, Self, RowAxis>>;
-
-	fn into_ordered_iter(self) -> Self::IntoIter { self.as_iter().cloned() }
-}*/

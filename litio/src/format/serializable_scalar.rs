@@ -1,13 +1,13 @@
-use litcontainers::{Scalar};
+use litcontainers::{Scalar, Element};
 use num_complex::Complex;
 use num_traits::Float;
 use serde::{Serializer, Serialize, Deserialize, Deserializer};
 
-pub trait SerializableScalar: Scalar {
+pub trait SerializableScalar: Element {
 	fn serialize_scalar<S: Serializer>(&self, serializer: S) -> Result<S::Ok, S::Error>;
 }
 
-pub trait DeserializableScalar: Scalar {
+pub trait DeserializableScalar: Element {
 	fn deserialize_scalar<'de, D: Deserializer<'de>>(deserializer: D) -> Result<Self, D::Error>;
 }
 
@@ -36,11 +36,11 @@ struct ComplexDef<T> {
 }
 
 
-impl<T: Serialize + ElementaryScalar + Float> SerializableScalar for Complex<T> {
+impl<T: Serialize + Scalar + Float> SerializableScalar for Complex<T> {
 	fn serialize_scalar<S: Serializer>(&self, serializer: S) -> Result<S::Ok, S::Error> { ComplexDef::serialize(self, serializer) }
 }
 
-impl<T: for<'de> Deserialize<'de> + ElementaryScalar + Float> DeserializableScalar for Complex<T> {
+impl<T: for<'de> Deserialize<'de> + Scalar + Float> DeserializableScalar for Complex<T> {
 	fn deserialize_scalar<'de, D: Deserializer<'de>>(deserializer: D) -> Result<Self, D::Error> {
 		ComplexDef::deserialize(deserializer)
 	}

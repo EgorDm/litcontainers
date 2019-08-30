@@ -52,30 +52,6 @@ pub trait StorageMut<T>: Storage<T> + InplaceMap<T> + InplaceMapOrdered<T>
 	#[inline]
 	unsafe fn as_col_ptr_mut_unchecked(&mut self, p: usize) -> *mut T { self.as_ptr_mut().offset(self.col_index(p) as isize) }
 
-	// Row Contigious Access Functions
-	#[inline]
-	fn as_row_mut_ptr(&mut self, v: usize) -> *mut T {
-		assert!(v < self.rows(), "Row out of bounds!");
-		unsafe { self.as_row_mut_ptr_unchecked(v) }
-	}
-
-	#[inline]
-	unsafe fn as_row_mut_ptr_unchecked(&mut self, v: usize) -> *mut T {
-		self.as_ptr_mut().offset(self.row_index(v) as isize)
-	}
-
-	// Col Contigious Access Functions
-	#[inline]
-	fn as_col_mut_ptr(&mut self, v: usize) -> *mut T {
-		assert!(v < self.cols(), "Col out of bounds!");
-		unsafe { self.as_col_mut_ptr_unchecked(v) }
-	}
-
-	#[inline]
-	unsafe fn as_col_mut_ptr_unchecked(&mut self, v: usize) -> *mut T {
-		self.as_ptr_mut().offset(self.col_index(v) as isize)
-	}
-
 	// Iterator
 	fn as_iter_mut(&mut self) -> FullAxisIterMut<T, Self, RowAxis> { self.as_row_iter_mut() }
 

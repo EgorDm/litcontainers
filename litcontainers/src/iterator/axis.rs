@@ -250,7 +250,7 @@ pub fn row_iter<T: Element, S: Storage<T>>(s: &S, pos: usize) -> AxisIter<T, S::
 pub fn row_iter_mut<T, S>(s: &mut S, pos: usize) -> AxisIterMut<T, S::ColStride>
 	where T: Element, S: StorageMut<T>
 {
-	AxisIterMut::new(s.as_row_mut_ptr(pos), s.col_stride_dim(), s.cols())
+	AxisIterMut::new(s.as_row_ptr_mut(pos), s.col_stride_dim(), s.cols())
 }
 
 pub fn col_iter<T, S>(s: &S, pos: usize) -> AxisIter<T, S::RowStride>
@@ -263,5 +263,5 @@ pub fn col_iter<T, S>(s: &S, pos: usize) -> AxisIter<T, S::RowStride>
 pub fn col_iter_mut<T, S>(s: &mut S, pos: usize) -> AxisIterMut<T, S::RowStride>
 	where T: Element, S: StorageMut<T>
 {
-	AxisIterMut::new(s.as_col_mut_ptr(pos), s.row_stride_dim(), s.rows())
+	AxisIterMut::new(s.as_col_ptr_mut(pos), s.row_stride_dim(), s.rows())
 }
