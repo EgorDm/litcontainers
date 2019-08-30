@@ -33,7 +33,7 @@ fn size() {
 
 #[test]
 fn splittable_iter() {
-	let mut s = ContainerRM::from_vec(Size::new(U3, Dynamic::new(2)), &[1., 2., 3., 4., 5., 6.]);
+	let s = ContainerRM::from_vec(Size::new(U3, Dynamic::new(2)), &[1., 2., 3., 4., 5., 6.]);
 	let slice = s.slice_rows(0..s.rows());
 	let iter = slice.as_row_slice_iter();
 

@@ -19,7 +19,7 @@ fn test_cumsum() {
 
 #[test]
 fn test_sum() {
-	let data = ContainerRM::regspace_rows(Size::new(U3, U3), 1.);
+	let data = ContainerRM::regspace(Size::new(U3, U3), RowAxis, 1.);
 
 	assert_eq!(sum_rows(&data).as_slice(), [6., 6., 6.]);
 
@@ -28,7 +28,7 @@ fn test_sum() {
 
 #[test]
 fn test_mean() {
-	let data = ContainerRM::regspace_rows(Size::new(U3, U3), 1.);
+	let data = ContainerRM::regspace(Size::new(U3, U3), RowAxis, 1.);
 
 	assert_eq!(mean_rows(&data).as_slice(), [2., 2., 2.]);
 

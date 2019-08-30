@@ -1,5 +1,4 @@
 use litcontainers::*;
-use std::ops::Deref;
 
 fn mock_container() -> ContainerRM<f64, U3, Dynamic> {
 	ContainerRM::from_vec(Size::new(U3, Dynamic::new(2)), &[1., 2., 3., 4., 5., 6.])
@@ -93,4 +92,29 @@ fn slice() {
 	assert_eq!(s.slice_cols(1).iter().collect::<Vec<_>>(), vec![2., 4., 6.]);
 	assert_eq!(s.slice_rows(1..3).slice_cols(1).iter().collect::<Vec<_>>(), vec![4., 6.]);
 	assert_eq!(s.slice_rows(1..3).slice_cols(1).slice_rows(1).iter().collect::<Vec<_>>(), vec![6.]);
+}
+
+#[test]
+fn constructors() {
+	assert_eq!(ContainerRM::linspace(Size::new(U3, U3), RowAxis, 1, 3).as_slice(), [
+		1, 2, 3,
+		1, 2, 3,
+		1, 2, 3,
+	]);
+	assert_eq!(ContainerRM::linspace(Size::new(U3, U3), ColAxis, 1, 3).as_slice(), [
+		1, 1, 1,
+		2, 2, 2,
+		3, 3, 3,
+	]);
+
+	assert_eq!(ContainerRM::regspace(Size::new(U3, U3), RowAxis, 1).as_slice(), [
+		1, 2, 3,
+		1, 2, 3,
+		1, 2, 3,
+	]);
+	assert_eq!(ContainerRM::regspace(Size::new(U3, U3), ColAxis, 1).as_slice(), [
+		1, 1, 1,
+		2, 2, 2,
+		3, 3, 3,
+	]);
 }
