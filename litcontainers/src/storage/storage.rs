@@ -30,6 +30,11 @@ pub trait Storage<T>: StorageSize + Strided + Debug + Sized + Ownable<T> + Send 
 	fn get_ptr(&self, r: usize, c: usize) -> *const T {
 		assert!(r < self.rows(), "Out of range row!");
 		assert!(c < self.cols(), "Out of range col!");
+		unsafe { self.get_ptr_unchecked(r, c) }
+	}
+
+	#[inline]
+	fn get_ptr_unchecked(&self, r: usize, c: usize) -> *const T {
 		unsafe { self.as_ptr().offset(self.get_index(r, c) as isize) }
 	}
 

@@ -25,7 +25,7 @@ fn ops_storage() {
 
 	{
 		let mut s = l.clone_owned();
-		s += r.into_slice();
+		s += &r;
 		assert_eq!(s.as_slice(), [2., 4., 6., 8., 10., 12.]);
 	}
 

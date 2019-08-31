@@ -79,10 +79,10 @@ macro_rules! impl_storage_binary_traits (
 			}
 
 			$(
-				impl<T, S, R> $TraitAssign<Container<T, R>> for Container<T, S>
+				impl<'a, T, S, R> $TraitAssign<&'a Container<T, R>> for Container<T, S>
 					where T: Element, R: Storage<T>, S: StorageMut<T>, T: $Trait<T, Output=T>
 				{
-					fn $trait_assign_fn(&mut self, rhs: Container<T, R>) { self.$op_assign_fn(rhs).apply() }
+					fn $trait_assign_fn(&mut self, rhs: &'a Container<T, R>) { self.$op_assign_fn(rhs).apply() }
 				}
 			)?
 		)*

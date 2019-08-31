@@ -86,4 +86,4 @@ pub trait StorageMut<T>: Storage<T> + InplaceMap<T> + InplaceMapOrdered<T>
 	}
 }
 
-impl<T: Scalar, S: StorageMut<T>> SliceableMut<T> for S {}
+impl<T: Element, S: StorageMut<T>> SliceableMut<T> for S {}

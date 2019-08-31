@@ -7,6 +7,7 @@ pub mod slice;
 pub mod into;
 
 #[doc(inline)] pub use parallel::*;
+#[doc(inline)] pub use iter_tools::*;
 #[doc(inline)] pub use axis::*;
 #[doc(inline)] pub use full::*;
 #[doc(inline)] pub use slice::*;
