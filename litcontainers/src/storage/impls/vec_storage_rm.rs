@@ -2,7 +2,7 @@ use crate::format::*;
 use crate::storage::{Storage, StorageMut, DynamicRowStorage, DynamicColStorage, StorageConstructor, Ownable};
 use std::cmp::min;
 use crate::{InplaceMap, InplaceMapOrdered, Container, InplaceForeach};
-use std::ops::Index;
+use std::ops::{Index, IndexMut};
 
 #[repr(C)]
 #[derive(Eq, Debug, Clone, PartialEq)]
@@ -156,5 +156,14 @@ impl<T, R, C> Index<usize> for VecStorageRM<T, R, C>
 	fn index(&self, index: usize) -> &Self::Output {
 		assert!(index < self.len(), "Index out of bounds");
 		unsafe { &*self.as_ptr().offset(index as isize) }
+	}
+}
+
+impl<T, R, C> IndexMut<usize> for VecStorageRM<T, R, C>
+	where T: Element, R: Dim, C: Dim
+{
+	fn index_mut(&mut self, index: usize) -> &mut Self::Output {
+		assert!(index < self.len(), "Index out of bounds");
+		unsafe { &mut *self.as_ptr_mut().offset(index as isize) }
 	}
 }

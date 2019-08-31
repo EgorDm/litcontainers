@@ -103,3 +103,19 @@ pub fn mean_cols<T, S>(s: &S) -> RowVec<T, S::Cols>
 	}
 	ret
 }
+
+pub trait SumOperations<T: NumericElement>: Storage<T> {
+	fn sum(&self) -> T { Sum::new(BorrowedProvider::new(self)).apply() }
+
+	fn mean(&self) -> T { Sum::new(BorrowedProvider::new(self)).apply() / num_traits::cast(self.len()).unwrap() }
+
+	fn sum_rows(&self) -> ColVec<T, Self::Rows> { sum_rows(self) }
+
+	fn sum_cols(&self) -> RowVec<T, Self::Cols> { sum_cols(self) }
+
+	fn mean_rows(&self) -> ColVec<T, Self::Rows> { mean_rows(self) }
+
+	fn mean_cols(&self) -> RowVec<T, Self::Cols> { mean_cols(self) }
+}
+
+impl<T: NumericElement, S: Storage<T>> SumOperations<T> for S {}

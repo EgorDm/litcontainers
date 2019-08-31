@@ -2,7 +2,7 @@ use crate::format::*;
 use crate::storage::*;
 use std::marker::PhantomData;
 use crate::Container;
-use std::ops::Index;
+use std::ops::{Index, IndexMut};
 
 
 /// Slice containing references to scalar values.
@@ -46,4 +46,10 @@ impl<'a, T, S> InplaceMapOrdered<T> for SliceBase<'a, T, S>
 	where T: Element, S: StorageMut<T> + InplaceMapOrdered<T>
 {
 	fn map_inplace_ordered<F: FnMut(&mut T)>(&mut self, f: F) { self.storage.map_inplace_ordered(f) }
+}
+
+impl<'a, T, S> IndexMut<usize> for SliceBase<'a, T, S>
+	where T: Element, S: StorageMut<T> + IndexMut<usize>
+{
+	fn index_mut(&mut self, index: usize) -> &mut Self::Output { self.storage_mut().index_mut(index) }
 }

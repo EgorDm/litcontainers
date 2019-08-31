@@ -2,7 +2,7 @@ use crate::format::*;
 use std::marker::PhantomData;
 use crate::storage::*;
 use crate::{Slice, SliceBase, SliceMut, Container, OffsetStorage};
-use std::ops::Index;
+use std::ops::{Index, IndexMut};
 
 #[repr(C)]
 #[derive(Debug, new)]
@@ -319,4 +319,14 @@ impl<'a, T, R, RS, C, CS> InplaceMapOrdered<T> for PtrStorageMut<'a, T, R, RS, C
 	where T: Element, R: Dim, RS: Dim, C: Dim, CS: Dim
 {
 	fn map_inplace_ordered<F: FnMut(&mut T)>(&mut self, f: F) { self.storage.map_inplace_ordered(f) }
+}
+
+impl<'a, T, R, RS, C, CS> IndexMut<usize> for PtrStorageMut<'a, T, R, RS, C, CS>
+	where T: Element, R: Dim, RS: Dim, C: Dim, CS: Dim
+{
+	fn index_mut(&mut self, index: usize) -> &mut Self::Output {
+		let r = index / self.cols();
+		let c = index % self.cols();
+		self.get_mut(r, c)
+	}
 }

@@ -11,7 +11,7 @@ pub trait Sliceable<T: Element>: Storage<T> {
 		      <A as AxisSelector<Self::Cols, R::Size>>::Result: Dim,
 		      R: SliceRange,
 	{
-		assert!(self.size().get_axis_size::<A>().value() <= range.end(), "Range is out of bounds!");
+		assert!(range.end() <= self.size().get_axis_size::<A>().value(), "Range is out of bounds!");
 		unsafe {
 			PtrStorage::new(
 				match A::axis_type() {
@@ -42,7 +42,7 @@ pub trait Sliceable<T: Element>: Storage<T> {
 	fn slice<RR: SliceRange, CR: SliceRange>(&self, range_rows: RR, range_cols: CR)
 		-> Slice<T, RR::Size, Self::RowStride, CR::Size, Self::ColStride>
 	{
-		assert!(self.cols() <= range_cols.end() && self.rows() <= range_rows.end(), "Range is out of bounds!");
+		assert!(range_cols.end() <= self.cols() && range_rows.end() <= self.rows(), "Range is out of bounds!");
 		unsafe {
 			PtrStorage::new(
 				self.get_ptr(range_rows.begin(), range_cols.begin()),
@@ -72,7 +72,7 @@ pub trait SliceableMut<T: Element>: StorageMut<T> {
 		      <A as AxisSelector<Self::Cols, R::Size>>::Result: Dim,
 		      R: SliceRange,
 	{
-		assert!(self.size().get_axis_size::<A>().value() <= range.end(), "Range is out of bounds!");
+		assert!(range.end() <= self.size().get_axis_size::<A>().value(), "Range is out of bounds!");
 		unsafe {
 			PtrStorageMut::new(
 				match A::axis_type() {
@@ -104,7 +104,7 @@ pub trait SliceableMut<T: Element>: StorageMut<T> {
 	fn slice_mut<RR: SliceRange, CR: SliceRange>(&mut self, range_rows: RR, range_cols: CR)
 		-> SliceMut<T, RR::Size, Self::RowStride, CR::Size, Self::ColStride>
 	{
-		assert!(self.cols() <= range_cols.end() && self.rows() <= range_rows.end(), "Range is out of bounds!");
+		assert!(range_cols.end() <= self.cols() && range_rows.end() <= self.rows(), "Range is out of bounds!");
 		unsafe {
 			PtrStorageMut::new(
 				self.get_ptr_mut(range_rows.begin(), range_cols.begin()),

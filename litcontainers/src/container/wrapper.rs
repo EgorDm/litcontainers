@@ -3,7 +3,7 @@ use crate::storage::*;
 use crate::ops::*;
 use std::marker::PhantomData;
 use std::fmt;
-use std::ops::Index;
+use std::ops::{Index, IndexMut};
 
 // Container storing scalar values. Wraps around given storage.
 #[derive(Debug, Storage, StorageSize, Strided, Ownable, new)]
@@ -86,4 +86,10 @@ impl<'a, T, S> IntoOperation for &'a Container<T, S>
 	type OpType = BorrowedProvider<'a, T, Container<T, S>>;
 
 	fn into_operation(self) -> Self::OpType { BorrowedProvider::new(self) }
+}
+
+impl<T, S> IndexMut<usize> for Container<T, S>
+	where T: Element, S: StorageMut<T> + IndexMut<usize>
+{
+	fn index_mut(&mut self, index: usize) -> &mut Self::Output { self.storage_mut().index_mut(index) }
 }
