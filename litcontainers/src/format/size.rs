@@ -45,6 +45,9 @@ pub trait StorageSize {
 	fn size(&self) -> Size<Self::Rows, Self::Cols> { Size::new(self.row_dim(), self.col_dim()) }
 
 	#[inline]
+	fn transpose(&self) -> Size<Self::Cols, Self::Rows> { Size::new(self.col_dim(), self.row_dim())}
+
+	#[inline]
 	fn equal_size<OS: StorageSize>(&self, o: &OS) -> bool {
 		self.cols() == o.cols() && self.rows() == o.rows()
 	}

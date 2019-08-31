@@ -47,6 +47,9 @@ pub trait Strided {
 	fn strides(&self) -> Strides<Self::RowStride, Self::ColStride> { Strides::new(self.row_stride_dim(), self.col_stride_dim()) }
 
 	#[inline]
+	fn transpose(&self) -> Strides<Self::ColStride, Self::RowStride> { Strides::new(self.col_stride_dim(), self.row_stride_dim())}
+
+	#[inline]
 	fn row_index(&self, p: usize) -> usize { p * self.row_stride() }
 
 	#[inline]
