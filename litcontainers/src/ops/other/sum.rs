@@ -23,7 +23,7 @@ impl<L> Operation for Sum<L>
 	}
 }
 
-pub fn cumsum<T, S, A>(s: &S, a: A) -> ContainerRM<T, S::Rows, S::Cols>
+pub fn cumsum<T, S, A>(s: &S, _: A) -> ContainerRM<T, S::Rows, S::Cols>
 	where T: NumericElement, S: Storage<T>, A: Axis<S::Rows, S::Cols>
 {
 	let mut ret = ContainerRM::zeros(s.size());
@@ -116,6 +116,8 @@ pub trait SumOperations<T: NumericElement>: Storage<T> {
 	fn mean_rows(&self) -> ColVec<T, Self::Rows> { mean_rows(self) }
 
 	fn mean_cols(&self) -> RowVec<T, Self::Cols> { mean_cols(self) }
+
+	fn cumsum<A: Axis<Self::Rows, Self::Cols>>(&self, a: A) -> ContainerRM<T, Self::Rows, Self::Cols> { cumsum(self, a) }
 }
 
 impl<T: NumericElement, S: Storage<T>> SumOperations<T> for S {}

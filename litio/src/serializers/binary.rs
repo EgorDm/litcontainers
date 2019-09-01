@@ -19,30 +19,30 @@ struct Header {
 }
 
 impl Header {
-	pub fn element_type(&self) -> Option<ScalarType> {
-		scalar_from_byte(self.element_type)
+	pub fn element_type(&self) -> Option<ElementType> {
+		element_from_byte(self.element_type)
 	}
 }
 
 pub struct BinarySerializer<T, S>
-	where T: Scalar + SerializableScalar, S: Storage<T>,
+	where T: NumericElement + SerializableScalar, S: Storage<T>,
 {
 	_phantoms: PhantomData<(T, S)>
 }
 
 impl<T, S> StorageSerializerLossy<T, S> for BinarySerializer<T, S>
-	where T: Scalar + SerializableScalar, S: Storage<T>
+	where T: NumericElement + SerializableScalar, S: Storage<T>
 {}
 
 /// Responsible for serializing storage into a binary format
 /// Output looks like this:
 impl<T, S> GeneralSerializer<S> for BinarySerializer<T, S>
-	where T: Scalar + SerializableScalar, S: Storage<T>
+	where T: NumericElement + SerializableScalar, S: Storage<T>
 {
 	/// Serializes storage to binary format into a writer
 	fn write<W: std::io::Write>(writer: &mut W, storage: &S) -> IOResult<()> {
 		let header = Header {
-			element_type: scalar_to_byte(T::scalar_type()),
+			element_type: element_to_byte(T::element_type()),
 			element_size: T::byte_size() as u64,
 			rows: storage.rows() as u64,
 			cols: storage.cols() as u64,
@@ -61,24 +61,26 @@ impl<T, S> GeneralSerializer<S> for BinarySerializer<T, S>
 }
 
 pub struct BinaryDeserializer<T, S>
-	where T: Scalar + DeserializableScalar, S: Storage<T>,
+	where T: NumericElement + DeserializableScalar, S: Storage<T>,
 {
 	_phantoms: PhantomData<(T, S)>
 }
 
 impl<T, S> StorageDeserializerLossy<T, S> for BinaryDeserializer<T, S>
-	where T: Scalar + DeserializableScalar, S: Storage<T> + StorageConstructor<T>,
+	where T: NumericElement + DeserializableScalar, S: Storage<T> + StorageConstructor<T>,
 {}
 
 impl<T, S> GeneralDeserializer<S> for BinaryDeserializer<T, S>
-	where T: Scalar + DeserializableScalar, S: Storage<T> + StorageConstructor<T>,
+	where T: NumericElement + DeserializableScalar, S: Storage<T> + StorageConstructor<T>,
 {
 	fn read<RD: std::io::Read>(reader: RD) -> IOResult<S> {
 		let mut reader = reader;
 
 		let header: Header = bincode::deserialize_from(&mut reader)?;
+		let test = T::element_type();
+		let test2 = header.element_type();
 		match header.element_type() {
-			Some(t) if t == T::scalar_type() => {},
+			Some(t) if t == T::element_type() => {},
 			_ => return Err(df_error("Invaid element format!"))
 		}
 
@@ -99,25 +101,25 @@ impl<T, S> GeneralDeserializer<S> for BinaryDeserializer<T, S>
 }
 
 pub fn write_binary<T, S, W>(writer: &mut W, data: &S) -> IOResult<()>
-	where T: Scalar + SerializableScalar, S: Storage<T>, W: std::io::Write
+	where T: NumericElement + SerializableScalar, S: Storage<T>, W: std::io::Write
 {
 	BinarySerializer::write(writer, data)
 }
 
 pub fn read_binary<T, S, RD>(reader: RD) -> IOResult<S>
-	where T: Scalar + DeserializableScalar, S: Storage<T> + StorageConstructor<T>, RD: std::io::Read,
+	where T: NumericElement + DeserializableScalar, S: Storage<T> + StorageConstructor<T>, RD: std::io::Read,
 {
 	BinaryDeserializer::read(reader)
 }
 
 pub fn write_binary_file<T, S>(path: &Path, data: &S) -> IOResult<()>
-	where T: Scalar + SerializableScalar, S: Storage<T>,
+	where T: NumericElement + SerializableScalar, S: Storage<T>,
 {
 	crate::file::write::<BinarySerializer<_, _>, _>(path, data)
 }
 
 pub fn read_binary_file<T, S>(path: &Path) -> IOResult<S>
-	where T: Scalar + DeserializableScalar, S: Storage<T> + StorageConstructor<T>,
+	where T: NumericElement + DeserializableScalar, S: Storage<T> + StorageConstructor<T>,
 {
 	crate::file::read::<BinaryDeserializer<_, _>, _>(path)
 }

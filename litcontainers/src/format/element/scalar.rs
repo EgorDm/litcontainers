@@ -32,7 +32,7 @@ macro_rules! impl_scalar (
 
 			fn max_val() -> Self { <$Type>::max_value() }
 
-			fn min_val() -> Self { <$Type>::max_value() }
+			fn min_val() -> Self { <$Type>::min_value() }
 		}
 	)*}
 );

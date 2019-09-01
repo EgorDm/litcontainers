@@ -9,7 +9,7 @@ pub trait Flip<T: Element>: Storage<T> {
 		ret
 	}
 
-	fn flip_axis<A: Axis<Self::Rows, Self::Cols>>(&self) -> Container<T, Self::OwnedType> {
+	fn flip_axis<A: Axis<Self::Rows, Self::Cols>>(&self, _: A) -> Container<T, Self::OwnedType> {
 		let mut ret = self.clone_owned();
 		match A::axis_type() {
 			AxisType::Row => {

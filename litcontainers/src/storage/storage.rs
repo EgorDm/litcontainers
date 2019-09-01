@@ -34,8 +34,8 @@ pub trait Storage<T>: StorageSize + Strided + Debug + Sized + Ownable<T> + Send 
 	}
 
 	#[inline]
-	fn get_ptr_unchecked(&self, r: usize, c: usize) -> *const T {
-		unsafe { self.as_ptr().offset(self.get_index(r, c) as isize) }
+	unsafe fn get_ptr_unchecked(&self, r: usize, c: usize) -> *const T {
+		self.as_ptr().offset(self.get_index(r, c) as isize)
 	}
 
 	#[inline]

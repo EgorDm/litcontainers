@@ -2,7 +2,7 @@ use litcontainers::*;
 use crate::{IOResult, SerializableScalar, DeserializableScalar};
 
 pub trait StorageSerializerLossy<T, S>: GeneralSerializer<S>
-	where T: Scalar + SerializableScalar, S: Storage<T>,
+	where T: NumericElement + SerializableScalar, S: Storage<T>,
 {}
 
 pub trait GeneralSerializer<T>
@@ -11,7 +11,7 @@ pub trait GeneralSerializer<T>
 }
 
 pub trait StorageDeserializerLossy<T, S>: GeneralDeserializer<S>
-	where T: Scalar + DeserializableScalar, S: Storage<T>,
+	where T: NumericElement + DeserializableScalar, S: Storage<T>,
 {}
 
 pub trait GeneralDeserializer<T>

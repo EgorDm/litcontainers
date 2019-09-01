@@ -12,8 +12,8 @@ pub fn scalar_to_byte(t: ScalarType) -> u8 { t as u8 }
 
 pub fn element_from_byte(m: u8) -> Option<ElementType> {
 	match m {
-		m if 64 & m == 1 => Some(ElementType::Bool),
-		m if 128 & m == 1 => scalar_from_byte(m & !128).map(|v| ElementType::Complex(v)),
+		m if 64 & m == 64 => Some(ElementType::Bool),
+		m if 128 & m == 128 => scalar_from_byte(m & !128).map(|v| ElementType::Complex(v)),
 		m => scalar_from_byte(m).map(|v| ElementType::Scalar(v)),
 	}
 }
