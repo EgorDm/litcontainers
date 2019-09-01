@@ -243,7 +243,6 @@ impl<'a, T: Send + Sync, S: Dim> IntoParallelIterator for AxisIterMut<'a, T, S> 
 
 pub fn row_iter<T: Element, S: Storage<T>>(s: &S, pos: usize) -> AxisIter<T, S::ColStride>
 {
-	//AxisIter::new(s.as_row_ptr(pos), s.col_stride_dim(), s.cols())
 	AxisIter::from_storage(s, RowAxis, pos)
 }
 
@@ -256,7 +255,6 @@ pub fn row_iter_mut<T, S>(s: &mut S, pos: usize) -> AxisIterMut<T, S::ColStride>
 pub fn col_iter<T, S>(s: &S, pos: usize) -> AxisIter<T, S::RowStride>
 	where T: Element, S: Storage<T>
 {
-	//AxisIter::new(s.as_col_ptr(pos), s.row_stride_dim(), s.rows())
 	AxisIter::from_storage(s, ColAxis, pos)
 }
 

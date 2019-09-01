@@ -5,13 +5,9 @@ pub trait SplittableIterator: Sized + Iterator + ExactSizeIterator + DoubleEnded
 	fn split_at(self, pos: usize) -> (Self, Self);
 }
 
-#[derive(Copy, Clone, Debug)]
+#[derive(Copy, Clone, Debug, new)]
 pub struct Parallel<I> {
 	iter: I,
-}
-
-impl<I> Parallel<I> {
-	pub fn new(iter: I) -> Self { Self { iter } }
 }
 
 #[derive(Copy, Clone, Debug)]
