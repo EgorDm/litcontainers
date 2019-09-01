@@ -46,7 +46,7 @@ pub trait StorageConstructor<T>: StorageMut<T>
 	}
 
 	/// Creates a container with all rows containing regularly spaced values from start to end.
-	fn linspace<A: Axis<Self::Rows, Self::Cols>>(s: SSize<Self>, axis: A, start: T, end: T) -> Self
+	fn linspace<A: Axis<Self::Rows, Self::Cols>>(s: SSize<Self>, _: A, start: T, end: T) -> Self
 		where T: NumericElement
 	{
 		let interval = (end - start) / T::from_usize(s.cols() - 1);
@@ -85,7 +85,7 @@ pub trait StorageConstructor<T>: StorageMut<T>
 	}
 
 	/// Creates a container with all rows containing regularly spaced values from start to start + axis_size * step.
-	fn regspace_step<A: Axis<Self::Rows, Self::Cols>>(s: SSize<Self>, axis: A, start: T, step: T) -> Self
+	fn regspace_step<A: Axis<Self::Rows, Self::Cols>>(s: SSize<Self>, _: A, start: T, step: T) -> Self
 		where T: NumericElement
 	{
 		let mut ret = Self::zeros(s.clone());

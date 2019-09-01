@@ -4,7 +4,7 @@ use crate::{Slice, SliceRange, SliceMut};
 
 pub trait Sliceable<T: Element>: Storage<T> {
 	#[inline]
-	fn slice_axis<A, R>(&self, range: R, axis: A)
+	fn slice_axis<A, R>(&self, range: R, _: A)
 		-> Slice<T, <A as AxisSelector<R::Size, Self::Rows>>::Result, Self::RowStride, <A as AxisSelector<Self::Cols, R::Size>>::Result, Self::ColStride>
 		where A: Axis<Self::Rows, Self::Cols> + AxisSelector<R::Size, Self::Rows> + AxisSelector<Self::Cols, R::Size>,
 		      <A as AxisSelector<R::Size, Self::Rows>>::Result: Dim,
@@ -65,7 +65,7 @@ pub trait Sliceable<T: Element>: Storage<T> {
 
 pub trait SliceableMut<T: Element>: StorageMut<T> {
 	#[inline]
-	fn slice_axis_mut<A, R>(&mut self, range: R, axis: A)
+	fn slice_axis_mut<A, R>(&mut self, range: R, _: A)
 		-> SliceMut<T, <A as AxisSelector<R::Size, Self::Rows>>::Result, Self::RowStride, <A as AxisSelector<Self::Cols, R::Size>>::Result, Self::ColStride>
 		where A: Axis<Self::Rows, Self::Cols> + AxisSelector<R::Size, Self::Rows> + AxisSelector<Self::Cols, R::Size>,
 		      <A as AxisSelector<R::Size, Self::Rows>>::Result: Dim,

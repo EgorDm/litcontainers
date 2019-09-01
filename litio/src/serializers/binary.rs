@@ -77,8 +77,6 @@ impl<T, S> GeneralDeserializer<S> for BinaryDeserializer<T, S>
 		let mut reader = reader;
 
 		let header: Header = bincode::deserialize_from(&mut reader)?;
-		let test = T::element_type();
-		let test2 = header.element_type();
 		match header.element_type() {
 			Some(t) if t == T::element_type() => {},
 			_ => return Err(df_error("Invaid element format!"))

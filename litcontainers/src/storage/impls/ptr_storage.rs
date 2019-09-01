@@ -1,7 +1,7 @@
 use crate::format::*;
 use std::marker::PhantomData;
 use crate::storage::*;
-use crate::{Slice, SliceBase, SliceMut, Container, OffsetStorage};
+use crate::{Slice, SliceBase, SliceMut, Container};
 use std::ops::{Index, IndexMut};
 
 #[repr(C)]

@@ -247,11 +247,24 @@ impl<T, P, PS, SS, S> Iterator for FullIterOwned<T, P, PS, SS, S>
 	fn size_hint(&self) -> (usize, Option<usize>) { self.iter.size_hint() }
 }
 
-pub type FullAxisIter<'a, T: Element, S: Storage<T>, A: Axis<S::Rows, S::Cols> + Axis<S::RowStride, S::ColStride>>
-= FullIter<'a, T, AxisRes<A, S::Rows, S::Cols>, AxisRes<A, S::RowStride, S::ColStride>, AxisParallelRes<A, S::RowStride, S::ColStride>>;
+pub type FullAxisIter<'a, T, S, A>
+= FullIter< 'a, T,
+	AxisRes<A, <S as StorageSize>::Rows, <S as StorageSize>::Cols>,
+	AxisRes<A, <S as Strided>::RowStride, <S as Strided>::ColStride>,
+	AxisParallelRes<A, <S as Strided>::RowStride, <S as Strided>::ColStride>
+>;
 
-pub type FullAxisIterMut<'a, T: Element, S: StorageMut<T>, A: Axis<S::Rows, S::Cols> + Axis<S::RowStride, S::ColStride>>
-= FullIterMut<'a, T, AxisRes<A, S::Rows, S::Cols>, AxisRes<A, S::RowStride, S::ColStride>, AxisParallelRes<A, S::RowStride, S::ColStride>>;
+pub type FullAxisIterMut<'a, T, S, A>
+= FullIterMut<'a, T,
+	AxisRes<A, <S as StorageSize>::Rows, <S as StorageSize>::Cols>,
+	AxisRes<A, <S as Strided>::RowStride, <S as Strided>::ColStride>,
+	AxisParallelRes<A, <S as Strided>::RowStride, <S as Strided>::ColStride>
+>;
 
-pub type FullAxisIterOwned<T: Element, S: Storage<T>, A: Axis<S::Rows, S::Cols> + Axis<S::RowStride, S::ColStride>>
-= FullIterOwned<T, AxisRes<A, S::Rows, S::Cols>, AxisRes<A, S::RowStride, S::ColStride>, AxisParallelRes<A, S::RowStride, S::ColStride>, S>;
+pub type FullAxisIterOwned<T, S, A>
+= FullIterOwned<T,
+	AxisRes<A, <S as StorageSize>::Rows, <S as StorageSize>::Cols>,
+	AxisRes<A, <S as Strided>::RowStride, <S as Strided>::ColStride>,
+	AxisParallelRes<A, <S as Strided>::RowStride, <S as Strided>::ColStride>,
+	S
+>;
