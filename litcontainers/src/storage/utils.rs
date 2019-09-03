@@ -32,4 +32,8 @@ pub trait InplaceMapOrdered<T: Clone> {
 
 pub trait InplaceForeach<T: Clone> {
 	fn foreach<F: FnMut(&T)>(&self, f: F);
+
+	fn foreach_zip<U, F: FnMut(&T, U), I: Iterator<Item=U>>(&self, mut i: I, mut f: F) {
+		self.foreach(|v| f(v, i.next().unwrap()))
+	}
 }
