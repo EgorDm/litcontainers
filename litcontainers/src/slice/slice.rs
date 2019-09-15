@@ -53,3 +53,55 @@ impl<'a, T, S> IndexMut<usize> for SliceBase<'a, T, S>
 {
 	fn index_mut(&mut self, index: usize) -> &mut Self::Output { self.storage_mut().index_mut(index) }
 }
+
+impl<'a, T, R, RS, C, CS> Slice<'a, T, R, RS, C, CS>
+	where T: Element, R: Dim, RS: Dim, C: Dim, CS: Dim
+{
+	pub fn split_at_row<P: Dim>(self, pos: P)
+		-> (
+			Slice<'a, T, P, RS, C, CS>,
+			Slice<'a, T, <R as DimSub<P>>::Output, RS, C, CS>,
+		)
+		where P: Dim, R: DimSub<P>
+	{
+		let (l, r) = self.into_storage().into_storage().split_at_row(pos);
+		(l.into(), r.into())
+	}
+
+	pub fn split_at_col<P: Dim>(self, pos: P)
+		-> (
+			Slice<'a, T, R, RS, P, CS>,
+			Slice<'a, T, R, RS, <C as DimSub<P>>::Output, CS>,
+		)
+		where P: Dim, C: DimSub<P>
+	{
+		let (l, r) = self.into_storage().into_storage().split_at_col(pos);
+		(l.into(), r.into())
+	}
+}
+
+impl<'a, T, R, RS, C, CS> SliceMut<'a, T, R, RS, C, CS>
+	where T: Element, R: Dim, RS: Dim, C: Dim, CS: Dim
+{
+	pub fn split_at_row<P: Dim>(self, pos: P)
+		-> (
+			SliceMut<'a, T, P, RS, C, CS>,
+			SliceMut<'a, T, <R as DimSub<P>>::Output, RS, C, CS>,
+		)
+		where P: Dim, R: DimSub<P>
+	{
+		let (l, r) = self.into_storage().into_storage().split_at_row(pos);
+		(l.into(), r.into())
+	}
+
+	pub fn split_at_col<P: Dim>(self, pos: P)
+		-> (
+			SliceMut<'a, T, R, RS, P, CS>,
+			SliceMut<'a, T, R, RS, <C as DimSub<P>>::Output, CS>,
+		)
+		where P: Dim, C: DimSub<P>
+	{
+		let (l, r) = self.into_storage().into_storage().split_at_col(pos);
+		(l.into(), r.into())
+	}
+}

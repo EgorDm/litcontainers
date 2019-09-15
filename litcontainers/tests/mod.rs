@@ -7,3 +7,4 @@ mod iterators;
 mod macros;
 mod ops;
 mod functions;
+mod slice;

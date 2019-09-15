@@ -243,7 +243,7 @@ impl<'a, T, RS, C, CS> PtrStorage<'a, T, Dynamic, RS, C, CS>
 	#[inline]
 	pub fn offset_row(&mut self, p: usize) { self.storage.offset_row(p) }
 
-	pub fn shift_row_to<S: Storage<T>>(&mut self, s: &S, pos: usize, length: usize) { self.storage.shift_row_to(s, pos, length)}
+	pub fn shift_row_to<S: Storage<T>>(&mut self, s: &S, pos: usize, length: usize) { self.storage.shift_row_to(s, pos, length) }
 }
 
 impl<'a, T, R, RS, CS> PtrStorage<'a, T, R, RS, Dynamic, CS>
@@ -252,14 +252,38 @@ impl<'a, T, R, RS, CS> PtrStorage<'a, T, R, RS, Dynamic, CS>
 	#[inline]
 	pub fn offset_col(&mut self, p: usize) { self.storage.offset_col(p) }
 
-	pub fn shift_col_to<S: Storage<T>>(&mut self, s: &S, pos: usize, length: usize) { self.storage.shift_col_to(s, pos, length)}
+	pub fn shift_col_to<S: Storage<T>>(&mut self, s: &S, pos: usize, length: usize) { self.storage.shift_col_to(s, pos, length) }
 }
 
 impl<'a, T, R, RS, C, CS> PtrStorage<'a, T, R, RS, C, CS>
 	where T: Element, R: Dim, RS: Dim, C: Dim, CS: Dim
 {
+	fn from_core(storage: PtrStorageCore<T, R, RS, C, CS>) -> Self { Self { storage, _phantoms: PhantomData } }
+
 	pub unsafe fn new(ptr: *const T, size: Size<R, C>, strides: Strides<RS, CS>) -> Self {
 		Self { storage: PtrStorageCore::new(ptr as *mut T, size, strides), _phantoms: PhantomData }
+	}
+
+	pub fn split_at_row<P: Dim>(self, pos: P)
+		-> (PtrStorage<'a, T, P, RS, C, CS>, PtrStorage<'a, T, <R as DimSub<P>>::Output, RS, C, CS>)
+		where P: Dim, R: DimSub<P>
+	{
+		let (l, r) = self.storage.split_at_row(pos);
+		(
+			PtrStorage::from_core(l),
+			PtrStorage::from_core(r)
+		)
+	}
+
+	pub fn split_at_col<P: Dim>(self, pos: P)
+		-> (PtrStorage<'a, T, R, RS, P, CS>, PtrStorage<'a, T, R, RS, <C as DimSub<P>>::Output, CS>)
+		where P: Dim, C: DimSub<P>
+	{
+		let (l, r) = self.storage.split_at_col(pos);
+		(
+			PtrStorage::from_core(l),
+			PtrStorage::from_core(r)
+		)
 	}
 }
 
@@ -280,8 +304,32 @@ pub struct PtrStorageMut<'a, T, R, RS, C, CS>
 impl<'a, T, R, RS, C, CS> PtrStorageMut<'a, T, R, RS, C, CS>
 	where T: Element, R: Dim, RS: Dim, C: Dim, CS: Dim
 {
+	fn from_core(storage: PtrStorageCore<T, R, RS, C, CS>) -> Self { Self { storage, _phantoms: PhantomData } }
+
 	pub unsafe fn new(ptr: *mut T, size: Size<R, C>, strides: Strides<RS, CS>) -> Self {
 		Self { storage: PtrStorageCore::new(ptr, size, strides), _phantoms: PhantomData }
+	}
+
+	pub fn split_at_row<P: Dim>(self, pos: P)
+		-> (PtrStorageMut<'a, T, P, RS, C, CS>, PtrStorageMut<'a, T, <R as DimSub<P>>::Output, RS, C, CS>)
+		where P: Dim, R: DimSub<P>
+	{
+		let (l, r) = self.storage.split_at_row(pos);
+		(
+			PtrStorageMut::from_core(l),
+			PtrStorageMut::from_core(r)
+		)
+	}
+
+	pub fn split_at_col<P: Dim>(self, pos: P)
+		-> (PtrStorageMut<'a, T, R, RS, P, CS>, PtrStorageMut<'a, T, R, RS, <C as DimSub<P>>::Output, CS>)
+		where P: Dim, C: DimSub<P>
+	{
+		let (l, r) = self.storage.split_at_col(pos);
+		(
+			PtrStorageMut::from_core(l),
+			PtrStorageMut::from_core(r)
+		)
 	}
 }
 
@@ -291,7 +339,7 @@ impl<'a, T, RS, C, CS> PtrStorageMut<'a, T, Dynamic, RS, C, CS>
 	#[inline]
 	pub fn offset_row(&mut self, p: usize) { self.storage.offset_row(p) }
 
-	pub fn shift_row_to<S: StorageMut<T>>(&mut self, s: &S, pos: usize, length: usize) { self.storage.shift_row_to(s, pos, length)}
+	pub fn shift_row_to<S: StorageMut<T>>(&mut self, s: &S, pos: usize, length: usize) { self.storage.shift_row_to(s, pos, length) }
 }
 
 impl<'a, T, R, RS, CS> PtrStorageMut<'a, T, R, RS, Dynamic, CS>
@@ -300,7 +348,7 @@ impl<'a, T, R, RS, CS> PtrStorageMut<'a, T, R, RS, Dynamic, CS>
 	#[inline]
 	pub fn offset_col(&mut self, p: usize) { self.storage.offset_col(p) }
 
-	pub fn shift_col_to<S: StorageMut<T>>(&mut self, s: &S, pos: usize, length: usize) { self.storage.shift_col_to(s, pos, length)}
+	pub fn shift_col_to<S: StorageMut<T>>(&mut self, s: &S, pos: usize, length: usize) { self.storage.shift_col_to(s, pos, length) }
 }
 
 

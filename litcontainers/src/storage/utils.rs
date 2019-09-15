@@ -5,8 +5,8 @@ pub trait InplaceMap<T: Clone> {
 		self.map_inplace(|v| *v = f(v.clone()))
 	}
 
-	fn map_inplace_zip<U, F: FnMut(&mut T, U) -> T, I: Iterator<Item=U>>(&mut self, mut i: I, mut f: F) {
-		self.map_inplace(|v| *v = f(v, i.next().unwrap()))
+	fn map_inplace_zip<U, F: FnMut(&mut T, U), I: Iterator<Item=U>>(&mut self, mut i: I, mut f: F) {
+		self.map_inplace(|v| f(v, i.next().unwrap()))
 	}
 
 	fn mapv_inplace_zip<U, F: FnMut(T, U) -> T, I: Iterator<Item=U>>(&mut self, mut i: I, mut f: F) {
