@@ -15,8 +15,6 @@ fn split_at() {
 
 #[test]
 fn split_into() {
-
-
 	{
 		let s = ContainerRM::regspace(Size::new(U4, U4), RowAxis, 0);
 		let slice = s.into_slice();
@@ -39,7 +37,7 @@ fn split_into() {
 		for (i, chunk) in chunks.iter().enumerate() {
 			let i = i as i32;
 			let test =
-			assert_eq!(chunk.as_slice(), [i, i, i, i]);
+				assert_eq!(chunk.as_slice(), [i, i, i, i]);
 		}
 	}
 }
