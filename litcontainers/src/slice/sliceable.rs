@@ -113,4 +113,17 @@ pub trait SliceableMut<T: Element>: StorageMut<T> {
 			).into()
 		}
 	}
+
+	#[inline]
+	fn into_slice_mut(&mut self)
+		-> SliceMut<T, Self::Rows, Self::RowStride, Self::Cols, Self::ColStride>
+	{
+		unsafe {
+			PtrStorageMut::new(
+				self.as_ptr_mut(),
+				self.size(),
+				self.strides()
+			).into()
+		}
+	}
 }

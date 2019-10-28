@@ -16,6 +16,11 @@ pub trait StorageMut<T>: Storage<T> + InplaceMap<T> + InplaceMapOrdered<T>
 	}
 
 	#[inline]
+	fn as_row_slice_mut<'b, 'a: 'b>(&'a mut self, row: usize) -> &'b mut [T] {
+		unsafe { slice::from_raw_parts_mut(self.as_row_ptr_mut(row), self.cols()) }
+	}
+
+	#[inline]
 	fn get_mut(&mut self, r: usize, c: usize) -> &mut T {
 		assert!(r < self.rows(), "Out of range row!");
 		assert!(c < self.cols(), "Out of range col!");
